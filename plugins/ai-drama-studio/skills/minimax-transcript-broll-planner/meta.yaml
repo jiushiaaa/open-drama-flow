@@ -1,0 +1,17 @@
+display-name-zh: 口播视频B-roll规划器
+version: 1.0.1
+tag-en: "Professional Film"
+tag-cn: "专业影视"
+complete-tags-en:
+  - "Professional Film / Full Production"
+complete-tags-cn:
+  - "专业影视 / 成片制作"
+summary-en: "Turns transcript-led narration into reviewable B-roll plans and approval-gated video shots for knowledge and talking-head edits."
+summary-cn: "把口播逐字稿按语义拆成可审片的 B-roll 镜头方案，并在用户确认后生成已批准的视频素材。"
+desc-en: "For creators turning a transcript, voiceover, data-led narration, or talking-head script into reviewable B-roll and approved video assets. Provide the full script and optional logos, screenshots, documents, charts, product images, data, or visual references. The workflow segments meaning, decides whether each unit keeps A-roll, reuses supplied evidence, uses motion typography, becomes visual B-roll, or joins a continuous take, then selects a template and flags missing material. It delivers a shot plan with screen-language, continuity, and deterministic-production notes before generation, then produces only approved shots. Best for knowledge videos, explainers, market analysis, and transcript-led edits; not subtitle-only export, simple trimming, one-off image prompts, or unrelated long-form editing."
+desc-cn: "面向把逐字稿、配音稿、数据型讲稿或口播脚本转成可审片 B-roll 和视频素材的创作者。用户提供完整脚本，可补充 Logo、截图、文档、图表、产品图、数据表或参考。流程先按语义拆分，判断各段应保留 A-roll、复用来源素材、使用动态文字、转为纯视觉副镜头或纳入连续长镜头，再选择模板并标出缺失素材。生成前交付包含屏幕文字语言、连续性和确定性制作说明的镜头计划，确认后仅生成已批准镜头。适合知识视频、讲解、市场分析和逐字稿驱动剪辑；不用于纯字幕导出、简单剪切、单次图片提示词或无关长篇剪辑。"
+cover: "https://cdn.hailuoai.com/pre/2026-08-14-21/video/1786713893768400104-1786713893760.mp4"
+cover-en: "https://cdn.hailuoai.com/pre/2026-08-14-21/video/1786713893768400104-1786713893760.mp4"
+author-en: "MiniMax Design"
+author-cn: "MiniMax Design"
+source: official-featured

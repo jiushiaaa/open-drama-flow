@@ -2,7 +2,7 @@
 
 ## Automatic path
 
-For every creative request, call `drama_route_skills` with the user's original wording. The tool scores the 48 Codex-adapted MiniMax capability profiles, loads up to three matching `SKILL.md` bodies, and returns the generic `ai-drama-producer` only when no specialized route matches.
+For every creative request, call `drama_route_skills` with the user's original wording. The tool scores the 44 enabled Codex-adapted MiniMax capability profiles, loads up to three matching `SKILL.md` bodies, and returns the generic `ai-drama-producer` only when no specialized route matches.
 
 The user never needs to install, attach, tick or choose a Skill. Codex implicit skill discovery remains enabled, while the MCP router provides deterministic fallback and makes the selected guidance available in the same turn.
 

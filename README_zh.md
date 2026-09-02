@@ -48,7 +48,7 @@ OpenDramaFlow 专为 **Windows PC 上的 Codex Desktop** 设计。
 | --- | --- |
 | 稳定复用制作流程 | 结构化管理项目、人物、场景、分镜、任务、审批和成片 |
 | Codex 全程操作 | 通过 MCP 创建、读取、修改、生成和渲染项目 |
-| 自动选择专业能力 | 48 个专业 Skill 加 1 个总控 Skill，按用户需求自动加载 |
+| 自动选择专业能力 | 44 个专业 Skill 加 1 个总控 Skill，按用户需求自动加载 |
 | 控制真实费用 | 付费调用前必须审批，并设置图片和视频硬性次数上限 |
 | 本地保护密钥 | 使用 Windows DPAPI 加密，MCP 永远不会返回 API Key 明文 |
 | 拒绝伪造产物 | FFmpeg 只合成真实生成或导入的图片与视频 |
@@ -104,10 +104,10 @@ flowchart LR
 
 ### 自动 Skill 路由
 
-OpenDramaFlow 当前包含 49 个项目 Skill：
+OpenDramaFlow 当前包含 45 个项目 Skill：
 
 - 1 个 AI 漫剧总控制作 Skill。
-- 48 个 Codex 原生专业 Skill，覆盖漫剧、广告、MV、科普、提示词、拆片、配音规划、UI 动效和剪辑判断等场景。
+- 44 个 Codex 原生专业 Skill，覆盖漫剧、广告、MV、科普、提示词、拆片、UI 动效和剪辑判断等场景。
 
 `drama_route_skills` 会分析用户原始需求，自动读取最多三个最相关的专业 Skill。用户不需要为每次创作手动安装、勾选或判断 Skill。没有专业命中时，系统自动回退到总控 Skill。
 
@@ -133,9 +133,9 @@ Node.js 20+、FFmpeg、Codex 插件和免账号 HTTPS 辅助程序都会由仓�
 
 打开 Codex Desktop，直接发送下面这段话。Codex 会完成安装，普通用户不需要手动输入安装命令：
 
-> 请在这台 Windows 电脑上克隆或打开 https://github.com/jiushiaaa/open-drama-flow。先阅读仓库说明并检查 `scripts/install.ps1`，然后在仓库根目录执行它。验证仓库内置的 49 个 Skill 全部存在、Codex 插件已经启用、本地工作台健康接口能够响应。不要索取或输出任何 API Key。完成后提醒我重启 Codex Desktop，再打开 OpenDramaFlow。
+> 请在这台 Windows 电脑上克隆或打开 https://github.com/jiushiaaa/open-drama-flow。先阅读仓库说明并检查 `scripts/install.ps1`，然后在仓库根目录执行它。验证仓库内置的 45 个 Skill 全部存在、Codex 插件已经启用、本地工作台健康接口能够响应。不要索取或输出任何 API Key。完成后提醒我重启 Codex Desktop，再打开 OpenDramaFlow。
 
-如果使用 Fork 仓库，只需把 Prompt 中的地址替换成自己的 Fork 地址。49 个内置 Skill、安装器和 HTTPS 桥实现都跟随 Git 仓库提交，不依赖作者电脑上的本地文件。
+如果使用 Fork 仓库，只需把 Prompt 中的地址替换成自己的 Fork 地址。45 个内置 Skill、安装器和 HTTPS 桥实现都跟随 Git 仓库提交，不依赖作者电脑上的本地文件。
 
 ### 直接运行安装器（开发备用）
 
@@ -163,7 +163,7 @@ HTTP 服务只监听本机回环地址。项目状态默认保存在 `%LOCALAPPD
 
 ## Codex 插件
 
-仓库已经包含 Codex 插件清单、MCP 配置、本地 marketplace 和全部 49 个 Skill。
+仓库已经包含 Codex 插件清单、MCP 配置、本地 marketplace 和全部 45 个 Skill。
 
 `scripts/install.ps1` 会自动把仓库注册为本地 marketplace、刷新 `ai-drama-studio@ai-drama-local` 并启动工作台。安装完成后重启 Codex Desktop，使新的 Skill 与 MCP 服务生效。
 
@@ -211,7 +211,7 @@ npm run check
 npm test
 ```
 
-当前回归测试覆盖空项目无模拟数据、仓库自带的全部 49 个 Skill、Skill 导入与持久化开关、代表性创作请求的自动路由、总控回退和确定性成片渲染。
+当前回归测试覆盖空项目无模拟数据、仓库自带的全部 45 个 Skill、Skill 导入与持久化开关、代表性创作请求的自动路由、总控回退和确定性成片渲染。
 
 ## 安全边界
 

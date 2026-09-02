@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>项目库 — OpenDramaFlow</title>
+  <title>开始创作 — OpenDramaFlow</title>
   <link rel="icon" href="/assets/studio-favicon.png" type="image/png">
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/desktop-overrides.css">
@@ -12,14 +12,14 @@
 <body>
   <div class="desktop-shell">
     <aside class="sidebar" aria-label="主导航">
-      <a class="brand" href="#project-library">
+      <a class="brand" href="#start">
         <img src="/assets/studio-pixel-icon.png" width="38" height="38" alt="">
-        <span><strong>OpenDramaFlow</strong><small>AI 漫剧本地片场</small></span>
+        <span><strong>OpenDramaFlow</strong><small>AI 视频本地工作台</small></span>
       </a>
 
       <nav class="primary-nav">
-        <button class="nav-create" type="button" data-action="create-project"><img src="/icons/plus.svg" alt="">开始创作</button>
-        <a class="nav-item active" href="#project-library"><img src="/icons/folder-kanban.svg" alt="">项目库</a>
+        <a class="nav-create active" href="#start"><img src="/icons/plus.svg" alt="">开始创作</a>
+        <a class="nav-item" href="#project-library"><img src="/icons/folder-kanban.svg" alt="">项目库</a>
         <a class="nav-item" href="#skills"><img src="/icons/sparkles.svg" alt="">Skill</a>
         <a class="nav-item" href="#project-guide"><img src="/icons/book-open.svg" alt="">项目新手指引</a>
         <button id="settings-button" class="nav-item" type="button"><img src="/icons/key-round.svg" alt="">API Key</button>
@@ -45,6 +45,18 @@
     </aside>
 
     <main class="main-surface">
+      <section id="start-view" class="route-view start-view">
+        <div class="start-hero-card">
+          <img class="start-hero-art" src="/assets/studio-pixel-hero.png" alt="Codex AI 视频创作工作台像素海报">
+          <h1>用 Codex 创作你的 AI 视频</h1>
+          <div class="start-actions">
+            <button class="button primary" type="button" data-route="project-library"><img src="/icons/folder-plus.svg" alt="">新建空白项目</button>
+            <button id="start-settings-button" class="button outline" type="button"><img src="/icons/settings-2.svg" alt="">配置 API Key</button>
+            <button class="button outline" type="button" data-route="project-guide"><img src="/icons/book-open.svg" alt="">查看新手指引</button>
+          </div>
+        </div>
+      </section>
+
       <section id="project-library-view" class="route-view library-view">
         <header class="library-header">
           <div>
@@ -52,7 +64,6 @@
             <h1>项目库</h1>
             <p>管理创作页、生成素材与最终成片。这里只显示你真实创建的本机项目。</p>
           </div>
-          <img class="library-illustration" src="/assets/project-cover-rain-station.png" alt="" aria-hidden="true">
         </header>
         <div class="library-toolbar">
           <button class="button primary" type="button" data-action="create-project"><img src="/icons/plus.svg" alt="">新建项目</button>
@@ -77,30 +88,55 @@
           <button id="creations-tab" class="active" type="button" role="tab">创作页</button>
           <button id="assets-tab" type="button" role="tab">项目资产</button>
           <div class="toolbar-spacer"></div>
+          <button id="new-world-button" class="button subtle" type="button"><img src="/icons/folder-plus.svg" alt="">新建分卷 / 季度</button>
           <button id="new-creation-button" class="button primary" type="button"><img src="/icons/plus.svg" alt="">新建创作页</button>
         </div>
-        <div id="creations-panel" class="tab-panel"><div id="creation-grid" class="creation-grid"></div></div>
+        <div id="creations-panel" class="tab-panel">
+          <div class="world-toolbar"><div><span class="world-toolbar-label">分卷 / 季度</span><div id="world-filter-list" class="world-filter-list"></div></div><p id="world-context-note">父项目保存整部 IP；分卷或季度负责一段独立内容；创作页负责一集或一个明确任务。</p></div>
+          <div id="creation-grid" class="creation-grid"></div>
+        </div>
         <div id="assets-panel" class="tab-panel" hidden>
           <div class="asset-actions">
-            <label class="asset-action-card" for="asset-file"><img src="/icons/upload.svg" alt=""><span><strong>上传文件</strong><small>支持图片与视频素材</small></span></label>
-            <input id="asset-file" type="file" accept=".png,.jpg,.jpeg,.webp,.mp4,.mov" multiple hidden>
-            <label class="search-field asset-search"><img src="/icons/search.svg" alt=""><input id="asset-search" type="search" placeholder="搜索素材" autocomplete="off"></label>
+            <button id="new-asset-folder-button" class="asset-action-card" type="button"><img src="/icons/folder-plus.svg" alt=""><span><strong>新建文件夹</strong><small>在当前目录归类素材</small></span></button>
+            <label class="asset-action-card" for="asset-file"><img src="/icons/upload.svg" alt=""><span><strong>上传文件</strong><small>图片 · 视频 · 音频 · 文档 · 表格</small></span></label>
+            <input id="asset-file" type="file" accept=".png,.jpg,.jpeg,.webp,.mp4,.mov,.mp3,.wav,.m4a,.aac,.flac,.ogg,.docx,.doc,.md,.txt,.pdf,.json,.xlsx,.xls,.csv" multiple hidden>
           </div>
-          <div id="asset-grid" class="asset-grid"></div>
+          <div class="asset-browser-bar">
+            <nav id="asset-breadcrumbs" class="asset-breadcrumbs" aria-label="素材文件夹"></nav>
+            <div class="asset-browser-tools">
+              <label class="search-field asset-search"><img src="/icons/search.svg" alt=""><input id="asset-search" type="search" placeholder="搜索文件名" autocomplete="off"></label>
+              <div class="asset-view-switch" role="group" aria-label="视图方式">
+                <button id="asset-list-button" type="button" title="列表视图"><img src="/icons/list.svg" alt=""></button>
+                <button id="asset-grid-button" class="active" type="button" title="网格视图"><img src="/icons/layout-grid.svg" alt=""></button>
+              </div>
+              <button id="asset-refresh-button" class="icon-button quiet" type="button" title="刷新素材"><img src="/icons/refresh-cw.svg" alt=""></button>
+            </div>
+          </div>
+          <div id="asset-grid" class="asset-grid" aria-live="polite"></div>
         </div>
       </section>
 
       <section id="workspace-view" class="route-view workspace-view" hidden>
-        <header class="breadcrumb-bar"><button type="button" data-route="project-library">项目库</button><span>›</span><button id="workspace-project-link" type="button"></button><span>›</span><strong id="workspace-creation-title">主创作页</strong></header>
-        <div class="workspace-heading">
-          <div><p class="eyebrow">CODEX PRODUCTION CANVAS</p><h1 id="workspace-title">创作画板</h1><p id="workspace-logline">等待 Codex 写入正式故事与分镜。</p></div>
-          <div class="workspace-actions"><button id="request-real-button" class="button outline" type="button">创建模型审批</button><button id="render-button" class="button primary" type="button"><img src="/icons/play.svg" alt="">合成最终视频</button></div>
-        </div>
-        <nav class="stage-strip" aria-label="制作阶段"><ol id="stage-list"></ol></nav>
-        <div class="workspace-grid">
-          <aside class="studio-panel brief-panel"><header><h2>故事与角色</h2><span id="project-status" class="status-chip">草稿</span></header><div id="project-summary"></div><h3>角色锚点</h3><div id="character-list"></div></aside>
-          <section class="studio-panel shot-panel"><header><h2>镜头工作台</h2><span id="shot-count">0 个镜头</span></header><div id="shot-board" class="shot-board"></div><div id="final-output" class="final-output" hidden></div></section>
-          <aside class="studio-panel activity-panel"><header><h2>任务与审批</h2></header><div id="approval-list" class="stack"></div><div id="job-list" class="stack"></div><h3>最近记录</h3><ol id="event-list" class="event-list"></ol></aside>
+        <div class="canvas-shell">
+          <section class="canvas-pane">
+            <header class="canvas-topbar">
+              <nav class="canvas-breadcrumbs" aria-label="创作位置"><button type="button" data-route="project-library">项目库</button><span>›</span><button id="workspace-project-link" type="button"></button><span id="workspace-world-separator">›</span><button id="workspace-world-link" type="button"></button><span>›</span><strong id="workspace-creation-title">主创作页</strong></nav>
+              <div class="canvas-controls" role="group" aria-label="画布缩放"><button id="canvas-zoom-out" type="button" title="缩小">−</button><output id="canvas-zoom-label">78%</output><button id="canvas-zoom-in" type="button" title="放大">＋</button><button id="canvas-fit" type="button" title="适应内容">适应</button><button id="canvas-minimap-toggle" class="active" type="button">小地图</button></div>
+            </header>
+            <div id="canvas-stage" class="canvas-stage" tabindex="0" aria-label="无限画布：鼠标左键拖动空白区域或按住滚轮拖动画布，滚轮滚动，Ctrl 加滚轮缩放">
+              <div id="canvas-world" class="canvas-world"><svg id="canvas-edges" class="canvas-edges" aria-hidden="true"></svg><div id="canvas-nodes" class="canvas-nodes"></div></div>
+              <div id="canvas-empty" class="canvas-empty" hidden><img src="/assets/studio-pixel-icon.png" alt=""><strong>从一条创作指令开始</strong><span>回到当前 Codex 对话描述目标，或把项目文件拖入画布。</span></div>
+              <div id="canvas-minimap" class="canvas-minimap" aria-label="画布小地图"><div id="minimap-nodes"></div><span id="minimap-viewport"></span></div>
+              <div class="canvas-toolbar" role="toolbar" aria-label="画布工具"><button id="canvas-add-button" class="canvas-add" type="button" title="添加节点"><img src="/icons/plus.svg" alt=""></button><button id="canvas-select-button" class="active" type="button" title="选择与移动">选择</button><label for="canvas-file" title="上传文件到当前创作">上传</label><input id="canvas-file" type="file" accept=".png,.jpg,.jpeg,.webp,.mp4,.mov,.mp3,.wav,.m4a,.aac,.flac,.ogg,.docx,.doc,.md,.txt,.pdf,.json,.xlsx,.xls,.csv" multiple hidden><button id="canvas-fit-bottom" type="button">定位全部</button></div>
+            </div>
+          </section>
+          <div id="canvas-inspector-resizer" class="canvas-inspector-resizer" role="separator" aria-label="调整画布与创作检查器宽度" aria-orientation="vertical" tabindex="0"></div>
+          <aside class="inspector-panel">
+            <header class="inspector-header"><div><span class="inspector-status-dot"></span><strong>创作检查器</strong></div><button id="inspector-panel-toggle" type="button" title="收起检查器">›</button></header>
+            <section class="inspector-context"><small>当前生产单元</small><strong id="inspector-creation-title"></strong><div><span id="agent-project-context"></span><span id="agent-world-context"></span></div><p>创作指令、追问与确认直接在当前 Codex 对话中完成；这里仅展示画布上下文和可执行状态。</p></section>
+            <section class="creation-reference-panel"><header><strong>当前创作引用</strong><span id="reference-count">0</span></header><p>自动加载系列公共资产与当前分卷 / 季度资产，并锁定实际使用版本。</p><div id="creation-reference-list"></div></section>
+            <section class="inspector-run-panel"><small>执行入口</small><p>真实模型调用仍需先创建审批；本地剪辑只使用当前创作页已确认的镜头与素材版本。</p><div class="agent-run-actions"><button id="request-real-button" class="button outline" type="button">创建模型审批</button><button id="render-button" class="button primary" type="button"><img src="/icons/play.svg" alt="">合成最终视频</button></div></section>
+          </aside>
         </div>
       </section>
 
@@ -131,12 +167,14 @@
   <dialog id="project-dialog" class="modal">
     <form id="project-form" method="dialog">
       <header><div><p class="eyebrow">LOCAL PROJECT</p><h2 id="project-dialog-title">新建项目</h2></div><button class="icon-button" type="button" data-close-dialog="project-dialog"><img src="/icons/x.svg" alt=""></button></header>
-      <label for="project-name">项目名称</label><input id="project-name" maxlength="80" autocomplete="off" placeholder="例如：雨夜便利店"><p id="project-form-error" class="field-error"></p>
+      <label id="project-name-label" for="project-name">项目名称</label><input id="project-name" maxlength="80" autocomplete="off" placeholder="例如：雨夜便利店">
+      <div id="creation-meta-fields" class="dialog-field-grid" hidden><label for="creation-world">所属分卷 / 季度</label><select id="creation-world"></select><label for="creation-type">创作页类型</label><select id="creation-type"><option value="episode">单集生产</option><option value="world-control">分卷 / 季度总控</option><option value="asset-development">资产开发</option><option value="series-control">系列总览</option></select></div>
+      <p id="project-form-error" class="field-error"></p>
       <footer><button class="button subtle" type="button" data-close-dialog="project-dialog">取消</button><button id="project-submit" class="button primary" type="submit">创建项目</button></footer>
     </form>
   </dialog>
 
-  <dialog id="delete-dialog" class="modal danger-modal"><form id="delete-form" method="dialog"><header><div><p class="eyebrow">RECOVERABLE DELETE</p><h2>删除项目？</h2></div><button class="icon-button" type="button" data-close-dialog="delete-dialog"><img src="/icons/x.svg" alt=""></button></header><p>项目将移入本机回收目录，不会永久擦除。确认删除“<strong id="delete-project-name"></strong>”吗？</p><footer><button class="button subtle" type="button" data-close-dialog="delete-dialog">取消</button><button class="button danger" type="submit">删除项目</button></footer></form></dialog>
+  <dialog id="delete-dialog" class="modal danger-modal"><form id="delete-form" method="dialog"><header><div><p class="eyebrow">LOCAL DELETE</p><h2 id="delete-dialog-title">删除项目？</h2></div><button class="icon-button" type="button" data-close-dialog="delete-dialog"><img src="/icons/x.svg" alt=""></button></header><p id="delete-dialog-copy"><span id="delete-target-kind">项目</span>删除后无法从界面恢复，项目删除会保留在本机回收目录。确认删除“<strong id="delete-target-name"></strong>”吗？</p><footer><button class="button subtle" type="button" data-close-dialog="delete-dialog">取消</button><button id="delete-submit" class="button danger" type="submit">删除项目</button></footer></form></dialog>
 
   <dialog id="settings-dialog" class="modal settings-modal">
     <form id="credential-form" method="dialog">
@@ -165,6 +203,24 @@
       <div class="skill-detail-body"><nav id="skill-file-tree" class="skill-file-tree" aria-label="Skill 文件"></nav><article class="skill-document"><div class="skill-document-bar"><span id="skill-selected-file">SKILL.md</span></div><pre id="skill-file-content"></pre></article></div>
       <footer class="skill-detail-footer"><label class="toggle-label"><input id="skill-detail-toggle" type="checkbox"><span class="toggle-ui"></span><span id="skill-detail-toggle-label">已启用</span></label><span>状态会影响 Codex 自动路由</span></footer>
     </div>
+  </dialog>
+
+  <div id="asset-context-menu" class="popover asset-context-menu" role="menu" hidden></div>
+
+  <dialog id="asset-preview-dialog" class="modal asset-preview-dialog">
+    <div class="asset-preview-shell">
+      <header><div><p id="asset-preview-type" class="eyebrow">PROJECT ASSET</p><h2 id="asset-preview-title"></h2><p id="asset-preview-meta"></p></div><button class="icon-button" type="button" data-close-dialog="asset-preview-dialog"><img src="/icons/x.svg" alt=""></button></header>
+      <div id="asset-preview-body" class="asset-preview-body"></div>
+      <footer><button id="asset-preview-reveal" class="button subtle" type="button">在文件资源管理器中打开</button><span></span><button id="asset-preview-edit" class="button primary" type="button">编辑文档</button><button class="button subtle" type="button" data-close-dialog="asset-preview-dialog">关闭</button></footer>
+    </div>
+  </dialog>
+
+  <dialog id="asset-editor-dialog" class="modal asset-editor-dialog">
+    <form id="asset-editor-form" method="dialog"><header><div><p class="eyebrow">NEW VERSION</p><h2 id="asset-editor-title">编辑文档</h2><p>仅编辑文本内容；保存后生成新版本，已锁定引用保持不变。</p></div><button class="icon-button" type="button" data-close-dialog="asset-editor-dialog"><img src="/icons/x.svg" alt=""></button></header><textarea id="asset-editor-content" spellcheck="false"></textarea><p id="asset-editor-error" class="field-error"></p><footer><button class="button subtle" type="button" data-close-dialog="asset-editor-dialog">取消</button><button id="asset-editor-submit" class="button primary" type="submit">保存为新版本</button></footer></form>
+  </dialog>
+
+  <dialog id="asset-move-dialog" class="modal asset-move-dialog">
+    <form id="asset-move-form" method="dialog"><header><div><p class="eyebrow">MOVE ASSET</p><h2 id="asset-move-title">移动素材</h2></div><button class="icon-button" type="button" data-close-dialog="asset-move-dialog"><img src="/icons/x.svg" alt=""></button></header><label for="asset-move-target">目标文件夹</label><select id="asset-move-target"></select><p id="asset-move-error" class="field-error"></p><footer><button class="button subtle" type="button" data-close-dialog="asset-move-dialog">取消</button><button class="button primary" type="submit">移动</button></footer></form>
   </dialog>
 
   <div id="toast-viewport" class="toast-viewport" aria-live="polite"></div>

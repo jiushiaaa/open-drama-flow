@@ -1,0 +1,17 @@
+display-name-zh: IP潮玩六宫格动态海报
+version: 1.0.1
+tag-en: "Creative & Experimental"
+tag-cn: "创意实验"
+complete-tags-en:
+  - "Creative & Experimental / Creative Generation"
+complete-tags-cn:
+  - "创意实验 / 创作生成"
+summary-en: "Generates a vertical 3D designer-toy six-panel motion video from a user-uploaded character image."
+summary-cn: "基于用户上传的角色形象，生成3D潮玩六宫格竖版动态视频，适合IP提案与社媒展示。"
+desc-en: "Converts one uploaded IP character image into a 9:16 designer-toy six-panel poster and a six-second motion version. Panel 4 opens full screen, returns to the grid, and the full layout animates subtly while identity, props, coverage, colors, and panel structure remain consistent. 旧 MiniMax H3 is the default video model; another model requires explicit user selection and capability checking."
+desc-cn: "本 Skill 面向需要把单个 IP 角色、吉祥物、二次元角色、品牌角色或原创形象转化为短视频视觉资产的创作者。用户提供一张角色图，也可补充角色名、音频或文字需求。流程先生成 9:16 黑底不规则圆角六宫格静态海报，再生成 6 秒竖版动态海报：宫格4先全屏开场，再缩小归位并让其他宫格飞入，最后六宫格稳定微动。图像和视频阶段都保持角色身份、身体覆盖状态、道具、背景色逻辑、宫格布局和运动结构。默认先把旧 旧 H3 意图改写成连续自然语言，再通过审批链调用 Seedance 2.5；用户明确指定其他模型时先检查能力再执行。"
+author-en: "MiniMax Design"
+author-cn: "MiniMax Design"
+source: official-featured
+cover: "https://cdn.hailuoai.com/hailuo-video-web/public_assets/59c62dd8-8b28-4b31-b559-99e717119928.mp4"
+cover-en: "https://cdn.hailuoai.com/hailuo-video-web/public_assets/59c62dd8-8b28-4b31-b559-99e717119928.mp4"

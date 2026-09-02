@@ -169,34 +169,6 @@ export const specializedSkills = [
     "name": "minimax-character-scene-storyboard"
   },
   {
-    "slug": "clip-export",
-    "label": "剪辑工程导出",
-    "origin": "user",
-    "author": "MiniMax Design",
-    "description": "把已完成的镜头、音频和字幕时间线导出到可继续精修的剪辑工程；适用于剪映/CapCut 交接。",
-    "keywords": [
-      "剪映导出",
-      "capcut导出",
-      "剪辑工程",
-      "草稿工程",
-      "时间线导出"
-    ],
-    "excludes": [
-      "直接成片"
-    ],
-    "focus": [
-      "先验证源素材路径、帧率、画幅和时间线",
-      "优先使用项目已有本地素材和 FFmpeg 产物",
-      "只有目标格式适配器真实可用时才声明工程已导出"
-    ],
-    "quality": [
-      "素材引用不丢失且时间码一致",
-      "字幕、音频和视频轨道对齐",
-      "不以 JSON 占位文件冒充可打开工程"
-    ],
-    "name": "minimax-clip-export"
-  },
-  {
     "slug": "co-op-game-intro-generator",
     "label": "双人游戏开场",
     "origin": "user",
@@ -793,35 +765,6 @@ export const specializedSkills = [
     "name": "minimax-promo-video"
   },
   {
-    "slug": "short-drama-multilingual-dubbing",
-    "label": "短剧多语言配音",
-    "origin": "user",
-    "author": "MiniMax Design",
-    "description": "把短剧对白本地化为目标语言配音与字幕；适用于保留角色音色、情绪、节奏和时长的出海版本。",
-    "keywords": [
-      "短剧多语言配音",
-      "短剧出海",
-      "出海配音",
-      "英文配音",
-      "本地化配音",
-      "多语言字幕"
-    ],
-    "excludes": [
-      "改写剧情"
-    ],
-    "focus": [
-      "先从干净人声或字幕建立对白与时间码表",
-      "翻译以角色关系、口语自然度和时长为约束",
-      "在可用合规音频能力下逐句生成并回混背景声"
-    ],
-    "quality": [
-      "未配置语音供应商时只交付计划和可编辑表",
-      "不得克隆未授权音色",
-      "字幕、口型节奏和句长尽量对齐"
-    ],
-    "name": "minimax-short-drama-multilingual-dubbing"
-  },
-  {
     "slug": "silkscreen-decorative-illustration-short",
     "label": "丝印装饰插画短片",
     "origin": "user",
@@ -991,34 +934,6 @@ export const specializedSkills = [
       "先审阅提示词，再触发真实调用"
     ],
     "name": "minimax-video-prompting"
-  },
-  {
-    "slug": "voice-clone",
-    "label": "合规音色克隆",
-    "origin": "user",
-    "author": "MiniMax Design",
-    "description": "为有权使用的参考音频规划合规音色克隆与 TTS；适用于短剧角色配音，不代表当前项目已接入克隆供应商。",
-    "keywords": [
-      "音色克隆",
-      "声音克隆",
-      "voice clone",
-      "克隆配音",
-      "角色音色"
-    ],
-    "excludes": [
-      "未授权声音"
-    ],
-    "focus": [
-      "先确认声音权利、用途和可撤回性",
-      "检查人声纯度、时长、静音、噪声和语种",
-      "只有已配置真实供应商时才提交克隆，否则输出接入计划"
-    ],
-    "quality": [
-      "不得克隆公众人物或未授权第三方",
-      "不生成或保存虚假的 voice_id",
-      "试听文本不得包含敏感或误导用途"
-    ],
-    "name": "minimax-voice-clone"
   },
   {
     "slug": "vox-style-video-generator",
@@ -1321,34 +1236,6 @@ export const specializedSkills = [
     "name": "minimax-video-deconstruct"
   },
   {
-    "slug": "3d-director-stage",
-    "label": "3D 导演舞台",
-    "origin": "plugin",
-    "author": "MiniMax Design",
-    "description": "为 3D 场景进行角色走位、构图、相机和运动设计；适用于可控 3D 预演与镜头审查。",
-    "keywords": [
-      "3d导演",
-      "3d预演",
-      "角色走位",
-      "相机dsl",
-      "场景blocking"
-    ],
-    "excludes": [
-      "普通3d动画生成"
-    ],
-    "focus": [
-      "先感知现有场景、角色、相机与坐标系",
-      "用可验证 blocking、构图和相机运动描述镜头",
-      "无 3D 编辑会话时输出预演合同而不冒充已修改场景"
-    ],
-    "quality": [
-      "空间关系和轴线可复现",
-      "相机运动不穿模或丢失主体",
-      "修改后必须从目标视角复核"
-    ],
-    "name": "minimax-3d-director-stage"
-  },
-  {
     "slug": "clip-studio-craft",
     "label": "剪辑判断与精修",
     "origin": "plugin",
@@ -1379,4 +1266,4 @@ export const specializedSkills = [
   }
 ];
 
-export const sourceSkillCount = 48;
+export const sourceSkillCount = 44;

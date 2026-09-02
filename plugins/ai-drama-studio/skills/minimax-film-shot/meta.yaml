@@ -1,0 +1,18 @@
+display-name-zh: 影视镜头与角色卡
+version: 1.0.13
+tag-en: "Visual Production / Image Generation"
+tag-cn: "视觉创作 / 图像生成"
+complete-tags-en:
+  - "Short Drama / Planning"
+  - "Animation / Planning"
+complete-tags-cn:
+  - "短剧漫剧 / 计划制定"
+  - "动画 / 计划制定"
+summary-en: "Cinematic shot designer with 8 styles"
+summary-cn: "提供8种风格的电影感分镜设计"
+desc-en: "For cinematic shot design, film stills and character cards with professional camera language application. Takes a script, scene description or character setup as input. Produces shots applying six camera-language dimensions including framing, angle, movement, lighting, mood and temporal, across eight visual styles such as cyberpunk, HK noir and IMAX epic. Also generates character sheets in 3, 4 and 8 views with cross-shot identity lock."
+desc-cn: "适用于影视分镜、剧照、角色卡的专业设计,运用专业电影镜头语言。输入剧本、场景描述或角色设定,输出运用六维镜头语言(景别、机位、运镜、光影、情绪、时间)的镜头图,覆盖赛博朋克、港片黑色电影、IMAX 史诗等 8 种视觉风格。同时生成三视图、四视图和八视图角色卡,跨镜头保持角色身份一致性。"
+cover: ""
+author-en: "MiniMax Design"
+author-cn: "MiniMax Design"
+source: official

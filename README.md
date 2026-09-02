@@ -48,7 +48,7 @@ OpenDramaFlow targets **Codex Desktop on Windows PC**.
 | --- | --- |
 | Repeatable production | Structured project, character, scene, shot, task, approval, and render state |
 | Agent-native control | MCP tools that let Codex create, inspect, update, generate, and render projects |
-| Automatic creative expertise | 48 specialist Skills plus one producer Skill, selected automatically from the request |
+| Automatic creative expertise | 44 specialist Skills plus one producer Skill, selected automatically from the request |
 | Real cost boundaries | Explicit approval and hard image/video call caps before paid provider calls |
 | Local credential safety | Windows DPAPI storage; plaintext API keys are never returned through MCP |
 | Honest outputs | FFmpeg only assembles real generated or imported assets |
@@ -104,10 +104,10 @@ Users configure only the Volcengine Ark API key. Model IDs, aspect ratio, resolu
 
 ### Automatic Skill routing
 
-OpenDramaFlow includes 49 project Skills:
+OpenDramaFlow includes 45 project Skills:
 
 - 1 producer/orchestrator Skill.
-- 48 Codex-native specialist Skills adapted for drama, ads, MV, explainers, prompting, video analysis, dubbing planning, UI motion, and editing decisions.
+- 44 Codex-native specialist Skills adapted for drama, ads, MV, explainers, prompting, video analysis, UI motion, and editing decisions.
 
 `drama_route_skills` evaluates the user's original wording and loads up to three relevant specialist instructions. Users do not install, tick, or manually select a Skill for each request. When no specialist matches, the producer Skill is used automatically.
 
@@ -133,9 +133,9 @@ Node.js 20+, FFmpeg, the Codex plugin, and the zero-account HTTPS helper are che
 
 Open Codex Desktop and send this single prompt. Codex performs the setup; the user does not need to type installation commands:
 
-> Clone or open https://github.com/jiushiaaa/open-drama-flow on this Windows PC. Read the repository instructions, inspect `scripts/install.ps1`, then run it from the repository root. Verify that all 49 bundled Skills are present, the Codex plugin is enabled, and the local workbench health endpoint responds. Do not request or print any API key. When complete, tell me to restart Codex Desktop and then open OpenDramaFlow.
+> Clone or open https://github.com/jiushiaaa/open-drama-flow on this Windows PC. Read the repository instructions, inspect `scripts/install.ps1`, then run it from the repository root. Verify that all 45 bundled Skills are present, the Codex plugin is enabled, and the local workbench health endpoint responds. Do not request or print any API key. When complete, tell me to restart Codex Desktop and then open OpenDramaFlow.
 
-If you are using a fork, replace the URL in that prompt with your fork URL. All 49 built-in Skills, the installer, and the HTTPS bridge implementation are committed in the repository; they are not copied from the maintainer's computer.
+If you are using a fork, replace the URL in that prompt with your fork URL. All 45 built-in Skills, the installer, and the HTTPS bridge implementation are committed in the repository; they are not copied from the maintainer's computer.
 
 ### Direct installer (development fallback)
 
@@ -163,7 +163,7 @@ The HTTP service binds to the loopback interface only. Project state is stored i
 
 ## Codex Plugin
 
-The repository contains a Codex plugin manifest, MCP configuration, local marketplace entry, and all 49 Skills.
+The repository contains a Codex plugin manifest, MCP configuration, local marketplace entry, and all 45 Skills.
 
 `scripts/install.ps1` registers the repository as a local marketplace, refreshes `ai-drama-studio@ai-drama-local`, and starts the workbench. Restart Codex Desktop after installation so the refreshed Skills and MCP server are loaded.
 
@@ -211,7 +211,7 @@ npm run check
 npm test
 ```
 
-The regression suite checks blank-project integrity, all 49 shipped Skill entrypoints, Skill import and persistent toggles, automatic routing, producer fallback, and deterministic media rendering.
+The regression suite checks blank-project integrity, all 45 shipped Skill entrypoints, Skill import and persistent toggles, automatic routing, producer fallback, and deterministic media rendering.
 
 ## Security
 

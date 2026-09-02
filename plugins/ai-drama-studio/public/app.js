@@ -6,16 +6,27 @@ const sortLabels = { updated: "最近更新", created: "最近创建", title: "�
 let studioState = null;
 let activeProjectId = null;
 let activeCreationId = null;
+let activeWorldId = "all";
 let activeProjectTab = "creations";
+let activeAssetFolderId = null;
+let assetViewMode = "grid";
+let expandedProjectIds = new Set();
 let projectSort = "updated";
 let projectSearch = "";
 let projectDialogMode = "create-project";
 let mutationTargetId = null;
+let mutationParentId = null;
+let deleteTargetType = "project";
 let pollTimer = null;
 let availableSkills = [];
 let skillSearch = "";
 let skillFilter = "all";
 let activeSkillDetail = null;
+let assetContextTarget = null;
+let activePreviewAssetId = null;
+let activeEditorAssetId = null;
+let assetMoveTarget = null;
+let canvasRuntime = { x: 120, y: 90, zoom: 0.78, dragging: null, saveTimer: null, nodeIds: [] };
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -43,13 +54,21 @@ function toast(message, tone = "info") {
 }
 
 function activeProject() { return studioState?.projects.find(project => project.id === activeProjectId) || null; }
-function currentRoute() { return ["project-library", "project", "workspace", "skills", "project-guide"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "project-library"; }
+function activeCreation() { return activeProject()?.creations?.find(item => item.id === activeCreationId) || null; }
+function activeWorld() { return activeProject()?.worlds?.find(item => item.id === activeCreation()?.worldId) || null; }
+function currentRoute() { return ["start", "project-library", "project", "workspace", "skills", "project-guide"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "start"; }
 function go(route) { location.hash = route; }
 
 function sortedProjects() {
   const items = [...(studioState?.projects || [])].filter(item => item.title.toLowerCase().includes(projectSearch.toLowerCase()));
-  return items.sort((a, b) => projectSort === "title" ? a.title.localeCompare(b.title, "zh-CN") : new Date(projectSort === "created" ? b.createdAt : b.updatedAt) - new Date(projectSort === "created" ? a.createdAt : a.updatedAt));
+  return sortItems(items);
 }
+
+function sortItems(items) {
+  return items.sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || (projectSort === "title" ? a.title.localeCompare(b.title, "zh-CN") : new Date(projectSort === "created" ? b.createdAt : b.updatedAt) - new Date(projectSort === "created" ? a.createdAt : a.updatedAt)));
+}
+
+function sortedCreations(project) { return sortItems([...(project?.creations || [])]); }
 
 async function refreshState({ quiet = false } = {}) {
   try {
@@ -57,6 +76,7 @@ async function refreshState({ quiet = false } = {}) {
     studioState = stateResponse;
     availableSkills = skillResponse.skills || [];
     if (!activeProjectId || !studioState.projects.some(project => project.id === activeProjectId)) activeProjectId = studioState.projects[0]?.id || null;
+    if (activeProjectId && !expandedProjectIds.size) expandedProjectIds.add(activeProjectId);
     const project = activeProject();
     if (project && (!activeCreationId || !project.creations?.some(item => item.id === activeCreationId))) activeCreationId = project.creations?.[0]?.id || null;
     render();
@@ -76,68 +96,122 @@ function render() {
   renderSidebar();
   renderLibrary();
   renderProjectOverview();
-  renderWorkspace();
   renderSettings();
   renderSkills();
   applyRoute();
+  if (currentRoute() === "workspace") renderWorkspace();
 }
 
 function applyRoute() {
   let route = currentRoute();
   if (!activeProject() && ["project", "workspace"].includes(route)) route = "project-library";
-  const routeViewIds = { "project-library": "project-library-view", project: "project-overview-view", workspace: "workspace-view", skills: "skills-view", "project-guide": "project-guide-view" };
+  const routeViewIds = { start: "start-view", "project-library": "project-library-view", project: "project-overview-view", workspace: "workspace-view", skills: "skills-view", "project-guide": "project-guide-view" };
   $$(".route-view").forEach(view => { view.hidden = view.id !== routeViewIds[route]; });
   $$(".primary-nav a").forEach(link => link.classList.toggle("active", link.getAttribute("href") === `#${route}` || (route === "project" && link.getAttribute("href") === "#project-library") || (route === "workspace" && link.getAttribute("href") === "#project-library")));
-  document.title = `${route === "project-library" ? "项目库" : activeProject()?.title || "OpenDramaFlow"} — OpenDramaFlow`;
+  const routeTitle = route === "start" ? "开始创作" : route === "project-library" ? "项目库" : route === "skills" ? "Skill" : route === "project-guide" ? "项目新手指引" : activeProject()?.title || "OpenDramaFlow";
+  document.title = `${routeTitle} — OpenDramaFlow`;
 }
 
 function renderSidebar() {
   const container = $("#sidebar-projects");
   container.replaceChildren();
-  const projects = [...(studioState?.projects || [])].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+  const projects = sortItems([...(studioState?.projects || [])]);
   if (!projects.length) container.append(el("p", { class: "sidebar-empty", text: "暂无项目" }));
-  for (const project of projects) container.append(el("button", { class: project.id === activeProjectId ? "active" : "", type: "button", onclick: () => openProject(project.id) }, el("img", { src: "/icons/folder-kanban.svg", alt: "" }), el("span", { text: project.title })));
+  for (const project of projects) {
+    const expanded = expandedProjectIds.has(project.id);
+    const projectRow = el("section", { class: `sidebar-project-row ${project.id === activeProjectId ? "active" : ""} ${expanded ? "expanded" : ""}` });
+    projectRow.append(el("div", { class: "sidebar-project-head" },
+      el("button", { class: "sidebar-project-main", type: "button", "aria-expanded": expanded, onclick: () => { if (expanded) expandedProjectIds.delete(project.id); else expandedProjectIds.add(project.id); renderSidebar(); } }, el("img", { src: "/icons/folder-kanban.svg", alt: "" }), el("span", { text: project.title })),
+      el("div", { class: "sidebar-row-actions" },
+        el("button", { type: "button", title: "进入项目详情", "aria-label": `进入${project.title}项目详情`, onclick: event => { event.stopPropagation(); openProject(project.id); } }, el("img", { src: "/icons/chevron-right.svg", alt: "" })),
+        el("button", { type: "button", title: "新建创作页", "aria-label": `在${project.title}中新建创作页`, onclick: event => { event.stopPropagation(); activeProjectId = project.id; expandedProjectIds.add(project.id); activeWorldId = "all"; openProjectDialog("create-creation", null, project.id); } }, el("img", { src: "/icons/plus.svg", alt: "" }))
+      )
+    ));
+    if (expanded) projectRow.append(renderSidebarHierarchy(project));
+    container.append(projectRow);
+  }
 }
 
-function projectCover(project) {
-  const image = [...(project.assets || [])].reverse().find(asset => asset.kind === "image");
-  return image?.mediaUrl || "/assets/project-cover-rain-station.png";
+function sidebarCreationRow(project, creation) {
+  return el("div", { class: `sidebar-creation-row ${creation.id === activeCreationId && currentRoute() === "workspace" ? "current" : ""}` },
+    el("button", { class: "sidebar-creation-main", type: "button", onclick: () => { activeProjectId = project.id; expandedProjectIds.add(project.id); openWorkspace(creation.id); } }, el("span", { text: creation.title })),
+    el("div", { class: "sidebar-row-actions" },
+      el("button", { type: "button", title: creation.pinned ? "取消置顶" : "置顶", "aria-label": `${creation.pinned ? "取消置顶" : "置顶"}${creation.title}`, onclick: event => toggleCreationPinned(event, project.id, creation) }, el("img", { src: creation.pinned ? "/icons/pin-filled.svg" : "/icons/pin.svg", alt: "" })),
+      el("button", { type: "button", title: "更多", "aria-label": `管理${creation.title}`, onclick: event => toggleCreationMenu(event, project.id, creation.id) }, el("img", { src: "/icons/ellipsis.svg", alt: "" })), creationMenu(project.id, creation)
+    )
+  );
+}
+
+function renderSidebarHierarchy(project) {
+  const tree = el("div", { class: "sidebar-creations hierarchy" });
+  for (const creation of sortedCreations(project).filter(item => !item.worldId)) tree.append(sidebarCreationRow(project, creation));
+  for (const world of [...(project.worlds || [])].sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || a.title.localeCompare(b.title, "zh-CN"))) {
+    const group = el("section", { class: "sidebar-world-group" },
+      el("div", { class: "sidebar-world-title" }, el("img", { src: "/icons/folder-kanban.svg", alt: "" }), el("strong", { text: world.title }), el("span", { text: String(project.creations.filter(item => item.worldId === world.id).length) }))
+    );
+    for (const creation of sortedCreations(project).filter(item => item.worldId === world.id)) group.append(sidebarCreationRow(project, creation));
+    tree.append(group);
+  }
+  return tree;
+}
+
+function projectPreview(project) {
+  const image = (project.assets || []).find(asset => asset.kind === "image");
+  return { src: image?.mediaUrl || "/assets/empty-project-pixel.png", hasAsset: Boolean(image) };
 }
 
 function renderLibrary() {
   const grid = $("#project-library-grid");
   grid.replaceChildren();
   for (const project of sortedProjects()) {
-    const card = el("article", { class: "project-card", tabindex: "0" },
+    const preview = projectPreview(project);
+    const card = el("article", { class: `project-card ${project.pinned ? "pinned" : ""}`, tabindex: "0" },
       el("button", { class: "project-card-main", type: "button", onclick: () => openProject(project.id) },
-        el("div", { class: "project-cover" }, el("img", { src: projectCover(project), alt: "" })),
+        el("div", { class: "project-stack" }, el("div", { class: "project-layer project-layer-back" }), el("div", { class: `project-layer project-preview ${preview.hasAsset ? "has-asset" : "empty"}` }, el("img", { src: preview.src, alt: preview.hasAsset ? `${project.title} 的首项图片素材` : "空白项目素材" }))),
         el("div", { class: "project-card-copy" }, el("strong", { text: project.title }), el("time", { datetime: project.updatedAt, text: formatDate(project.updatedAt) }), el("small", { text: `${project.creations?.length || 0} 个创作页 · ${project.assets?.length || 0} 项素材` }))
       ),
-      el("button", { class: "card-more", type: "button", "aria-label": `管理 ${project.title}`, onclick: event => toggleProjectMenu(event, project.id) }, el("img", { src: "/icons/ellipsis.svg", alt: "" })),
-      projectMenu(project)
+      el("div", { class: "card-actions-hover" },
+        el("button", { type: "button", title: project.pinned ? "取消置顶" : "置顶", "aria-label": `${project.pinned ? "取消置顶" : "置顶"}${project.title}`, onclick: event => toggleProjectPinned(event, project) }, el("img", { src: project.pinned ? "/icons/pin-filled.svg" : "/icons/pin.svg", alt: "" })),
+        el("button", { type: "button", title: "重命名", "aria-label": `重命名${project.title}`, onclick: event => { event.stopPropagation(); openProjectDialog("rename-project", project.id); } }, el("img", { src: "/icons/pencil.svg", alt: "" })),
+        el("button", { class: "danger-action", type: "button", title: "删除", "aria-label": `删除${project.title}`, onclick: event => { event.stopPropagation(); openDeleteDialog("project", project.id); } }, el("img", { src: "/icons/trash-2.svg", alt: "" }))
+      )
     );
     grid.append(card);
   }
-  if (!projectSearch) grid.append(el("button", { class: "new-project-tile", type: "button", onclick: () => openProjectDialog("create-project") }, el("img", { src: "/icons/folder-plus.svg", alt: "" }), el("strong", { text: studioState?.projects.length ? "新建项目" : "新建第一个项目" }), el("span", { text: "从空白本地项目开始" })));
-  else if (!sortedProjects().length) grid.append(el("div", { class: "empty-result" }, el("strong", { text: "没有匹配的项目" }), el("p", { text: "换一个关键词试试。" })));
+  if (!sortedProjects().length) grid.append(el("div", { class: "empty-result" }, el("img", { src: "/assets/empty-project-pixel.png", alt: "" }), el("strong", { text: projectSearch ? "没有匹配的项目" : "还没有项目" }), el("p", { text: projectSearch ? "换一个关键词试试。" : "点击上方“新建项目”开始第一段创作。" })));
 }
 
-function projectMenu(project) {
-  return el("div", { class: "project-menu", "data-project-menu": project.id, hidden: true },
-    el("button", { type: "button", onclick: () => openProjectDialog("rename-project", project.id) }, el("img", { src: "/icons/pencil.svg", alt: "" }), "重命名"),
-    el("button", { class: "danger-text", type: "button", onclick: () => openDeleteDialog(project.id) }, el("img", { src: "/icons/trash-2.svg", alt: "" }), "删除")
+async function toggleProjectPinned(event, project) {
+  event.stopPropagation();
+  try { await api(`/api/projects/${project.id}`, { method: "PATCH", body: JSON.stringify({ pinned: !project.pinned }) }); await refreshState({ quiet: true }); toast(project.pinned ? "已取消项目置顶。" : "项目已置顶。", "success"); }
+  catch (error) { toast(error.message, "error"); }
+}
+
+function creationMenu(projectId, creation) {
+  return el("div", { class: "creation-menu", "data-creation-menu": creation.id, hidden: true },
+    el("button", { type: "button", onclick: event => { event.stopPropagation(); openProjectDialog("rename-creation", creation.id, projectId); } }, el("img", { src: "/icons/pencil.svg", alt: "" }), "重命名"),
+    el("button", { class: "danger-text", type: "button", onclick: event => { event.stopPropagation(); openDeleteDialog("creation", projectId, creation.id); } }, el("img", { src: "/icons/trash-2.svg", alt: "" }), "删除")
   );
 }
 
-function toggleProjectMenu(event, projectId) {
+function toggleCreationMenu(event, projectId, creationId) {
   event.stopPropagation();
-  $$('[data-project-menu]').forEach(menu => { menu.hidden = menu.dataset.projectMenu !== projectId || !menu.hidden; });
+  $$('[data-creation-menu]').forEach(menu => { menu.hidden = menu.dataset.creationMenu !== creationId || !menu.hidden; });
+}
+
+async function toggleCreationPinned(event, projectId, creation) {
+  event.stopPropagation();
+  try { await api(`/api/projects/${projectId}/creations/${creation.id}`, { method: "PATCH", body: JSON.stringify({ pinned: !creation.pinned }) }); await refreshState({ quiet: true }); toast(creation.pinned ? "已取消创作页置顶。" : "创作页已置顶。", "success"); }
+  catch (error) { toast(error.message, "error"); }
 }
 
 function openProject(projectId) {
   activeProjectId = projectId;
+  expandedProjectIds.add(projectId);
   activeCreationId = activeProject()?.creations?.[0]?.id || null;
   activeProjectTab = "creations";
+  activeWorldId = "all";
+  activeAssetFolderId = null;
   render();
   go("project");
 }
@@ -151,33 +225,389 @@ function renderProjectOverview() {
   $("#creations-panel").hidden = activeProjectTab !== "creations";
   $("#assets-panel").hidden = activeProjectTab !== "assets";
   $("#new-creation-button").hidden = activeProjectTab !== "creations";
+  $("#new-world-button").hidden = activeProjectTab !== "creations";
   const creations = $("#creation-grid");
   creations.replaceChildren();
-  for (const creation of project.creations || []) creations.append(el("button", { class: "creation-card", type: "button", onclick: () => openWorkspace(creation.id) }, el("div", { class: "creation-art" }, el("img", { src: projectCover(project), alt: "" }), el("span", {}, el("img", { src: "/icons/message-square.svg", alt: "" }), friendlyStatus(creation.status))), el("strong", { text: creation.title }), el("time", { datetime: creation.updatedAt, text: formatDate(creation.updatedAt) })));
-  if (!project.creations?.length) creations.append(el("button", { class: "new-project-tile creation-empty", type: "button", onclick: () => openProjectDialog("create-creation") }, el("img", { src: "/icons/message-square.svg", alt: "" }), el("strong", { text: "新建创作页" }), el("span", { text: "一个项目可以保存多个创作会话" })));
+  const worlds = project.worlds || [];
+  const worldFilters = $("#world-filter-list");
+  worldFilters.replaceChildren(
+    el("button", { class: activeWorldId === "all" ? "active" : "", type: "button", onclick: () => { activeWorldId = "all"; renderProjectOverview(); } }, `全部 ${project.creations?.length || 0}`),
+    el("button", { class: activeWorldId === "series" ? "active" : "", type: "button", onclick: () => { activeWorldId = "series"; renderProjectOverview(); } }, `系列总览 ${project.creations?.filter(item => !item.worldId).length || 0}`),
+    ...worlds.map(world => el("button", { class: activeWorldId === world.id ? "active" : "", type: "button", onclick: () => { activeWorldId = world.id; renderProjectOverview(); } }, `${world.title} ${project.creations?.filter(item => item.worldId === world.id).length || 0}`))
+  );
+  $("#world-context-note").textContent = activeWorldId === "series" ? "当前显示系列总览与跨分卷、跨季度创作。" : activeWorldId === "all" ? "父项目保存整部 IP；分卷或季度负责一段独立内容；创作页负责一集或一个明确任务。" : `当前分卷 / 季度：${worlds.find(item => item.id === activeWorldId)?.title || "未命名"}。创作会自动继承系列公共资产与当前分卷 / 季度资产。`;
+  const preview = projectPreview(project);
+  const visibleCreations = sortedCreations(project).filter(creation => activeWorldId === "all" || (activeWorldId === "series" ? !creation.worldId : creation.worldId === activeWorldId));
+  for (const creation of visibleCreations) creations.append(el("article", { class: `creation-card ${creation.pinned ? "pinned" : ""}` },
+    el("button", { class: "creation-card-main", type: "button", onclick: () => openWorkspace(creation.id) }, el("div", { class: `creation-art ${preview.hasAsset ? "has-asset" : "empty"}` }, el("img", { src: preview.src, alt: "" }), el("span", {}, el("img", { src: "/icons/message-square.svg", alt: "" }), friendlyStatus(creation.status))), el("strong", { text: creation.title }), el("time", { datetime: creation.updatedAt, text: formatDate(creation.updatedAt) })),
+    el("div", { class: "card-actions-hover creation-actions" },
+      el("button", { type: "button", title: creation.pinned ? "取消置顶" : "置顶", onclick: event => toggleCreationPinned(event, project.id, creation) }, el("img", { src: creation.pinned ? "/icons/pin-filled.svg" : "/icons/pin.svg", alt: "" })),
+      el("button", { type: "button", title: "重命名", onclick: event => { event.stopPropagation(); openProjectDialog("rename-creation", creation.id, project.id); } }, el("img", { src: "/icons/pencil.svg", alt: "" })),
+      el("button", { class: "danger-action", type: "button", title: "删除", onclick: event => { event.stopPropagation(); openDeleteDialog("creation", project.id, creation.id); } }, el("img", { src: "/icons/trash-2.svg", alt: "" }))
+    )
+  ));
+  if (!visibleCreations.length) creations.append(el("button", { class: "new-project-tile creation-empty", type: "button", onclick: () => openProjectDialog("create-creation") }, el("img", { src: "/icons/message-square.svg", alt: "" }), el("strong", { text: "新建创作页" }), el("span", { text: activeWorldId === "all" ? "先建立分卷 / 季度，或直接创建系列总览" : "每张画布负责一集或一个明确生产任务" })));
   renderAssets(project);
 }
 
+function assetKindLabel(kind) { return ({ image: "图片", video: "视频", audio: "音频", document: "文档", spreadsheet: "表格" })[kind] || "文件"; }
+function assetKindIcon(kind) { return ({ image: "image.svg", video: "film.svg", audio: "clapperboard.svg", document: "book-open.svg", spreadsheet: "layout-grid.svg" })[kind] || "folder-kanban.svg"; }
+function assetFileSize(size) {
+  const value = Number(size || 0);
+  if (!value) return "";
+  if (value < 1024 * 1024) return `${Math.max(1, Math.round(value / 1024))} KB`;
+  return `${(value / 1024 / 1024).toFixed(value > 10 * 1024 * 1024 ? 0 : 1)} MB`;
+}
+function assetFolderPath(project) {
+  const folders = project.assetFolders || [];
+  const path = [];
+  let cursor = folders.find(folder => folder.id === activeAssetFolderId);
+  while (cursor) { path.unshift(cursor); cursor = folders.find(folder => folder.id === cursor.parentId); }
+  return path;
+}
+function openAssetFolder(folderId) { activeAssetFolderId = folderId || null; renderAssets(activeProject()); }
+function renderAssetPreview(asset) {
+  if (asset.kind === "image") return el("img", { src: asset.mediaUrl, alt: asset.originalName || "项目图片素材" });
+  if (asset.kind === "video") return el("video", { src: asset.mediaUrl, muted: true, preload: "metadata" });
+  if (asset.kind === "audio") return el("div", { class: "asset-audio-preview" }, el("img", { src: `/icons/${assetKindIcon(asset.kind)}`, alt: "" }), el("span", { text: "AUDIO" }));
+  const extension = String(asset.originalName || "").split(".").pop()?.toUpperCase() || assetKindLabel(asset.kind);
+  return el("div", { class: `asset-file-preview ${asset.kind}` }, el("img", { src: `/icons/${assetKindIcon(asset.kind)}`, alt: "" }), el("strong", { text: extension }));
+}
+function assetEditable(asset) { return /\.(md|txt|docx)$/i.test(asset?.originalName || ""); }
+function folderDisplayPath(project, folderId) {
+  if (!folderId) return "全部文件";
+  const parts = []; let cursor = project.assetFolders?.find(item => item.id === folderId);
+  while (cursor) { parts.unshift(cursor.name); cursor = project.assetFolders?.find(item => item.id === cursor.parentId); }
+  return parts.join(" / ");
+}
+function closeAssetContextMenu() { const menu = $("#asset-context-menu"); menu.hidden = true; menu.replaceChildren(); assetContextTarget = null; }
+function openAssetContextMenu(event, type, id) {
+  event.preventDefault(); event.stopPropagation();
+  assetContextTarget = { type, id };
+  const project = activeProject();
+  const asset = type === "asset" ? project?.assets?.find(item => item.id === id) : null;
+  const menu = $("#asset-context-menu");
+  const action = (name, label, icon, danger = false) => el("button", { type: "button", role: "menuitem", class: danger ? "danger-text" : "", onclick: () => runAssetContextAction(name) }, el("img", { src: `/icons/${icon}`, alt: "" }), label);
+  menu.replaceChildren(...[
+    action("open", "打开", type === "folder" ? "folder-kanban.svg" : "chevron-right.svg"),
+    type === "asset" ? action("reveal", "在文件资源管理器中打开", "folder-kanban.svg") : null,
+    type === "asset" && assetEditable(asset) ? action("edit", "编辑文档", "pencil.svg") : null,
+    action("rename", "重命名", "pencil.svg"),
+    action("move", "移动到", "folder-kanban.svg"),
+    action("delete", "删除", "trash-2.svg", true)
+  ].filter(Boolean));
+  menu.hidden = false;
+  const width = 244; const height = menu.offsetHeight || 250;
+  menu.style.left = `${Math.max(12, Math.min(event.clientX, window.innerWidth - width - 12))}px`;
+  menu.style.top = `${Math.max(12, Math.min(event.clientY, window.innerHeight - height - 12))}px`;
+}
+async function runAssetContextAction(name) {
+  const target = assetContextTarget; closeAssetContextMenu(); if (!target) return;
+  const project = activeProject();
+  const asset = target.type === "asset" ? project?.assets?.find(item => item.id === target.id) : null;
+  const folder = target.type === "folder" ? project?.assetFolders?.find(item => item.id === target.id) : null;
+  if (name === "open") { target.type === "folder" ? openAssetFolder(target.id) : openAssetPreview(target.id); return; }
+  if (name === "reveal") { try { await api(`/api/projects/${project.id}/assets/${target.id}/reveal`, { method: "POST", body: "{}" }); } catch (error) { toast(error.message, "error"); } return; }
+  if (name === "edit") { openAssetEditor(target.id); return; }
+  if (name === "rename") { openProjectDialog(target.type === "asset" ? "rename-asset" : "rename-folder", target.id, project.id); return; }
+  if (name === "move") { openAssetMoveDialog(target.type, target.id); return; }
+  if (name === "delete") openDeleteDialog(target.type, project.id, target.id);
+}
+async function openAssetPreview(assetId) {
+  const asset = activeProject()?.assets?.find(item => item.id === assetId); if (!asset) return;
+  activePreviewAssetId = assetId;
+  $("#asset-preview-title").textContent = asset.originalName || `${assetKindLabel(asset.kind)}素材`;
+  $("#asset-preview-type").textContent = `${assetKindLabel(asset.kind)} · V${asset.version || 1}`;
+  $("#asset-preview-meta").textContent = `${formatDate(asset.createdAt)} · ${assetFileSize(asset.size) || "本地文件"}`;
+  $("#asset-preview-edit").hidden = !assetEditable(asset);
+  const body = $("#asset-preview-body"); body.replaceChildren(el("p", { class: "asset-preview-loading", text: "正在读取素材…" }));
+  if (!$("#asset-preview-dialog").open) $("#asset-preview-dialog").showModal();
+  try {
+    if (asset.kind === "image") body.replaceChildren(el("img", { src: asset.mediaUrl, alt: asset.originalName || "图片素材" }));
+    else if (asset.kind === "video") body.replaceChildren(el("video", { src: asset.mediaUrl, controls: true, preload: "metadata" }));
+    else if (asset.kind === "audio") body.replaceChildren(el("audio", { src: asset.mediaUrl, controls: true, preload: "metadata" }));
+    else if (/\.pdf$/i.test(asset.originalName || "")) body.replaceChildren(el("iframe", { src: asset.mediaUrl, title: asset.originalName || "PDF 预览" }));
+    else if (assetEditable(asset)) { const result = await api(`/api/projects/${activeProjectId}/assets/${assetId}/content`); body.replaceChildren(el("pre", { text: result.content || "（空文档）" })); }
+    else body.replaceChildren(el("div", { class: "asset-preview-unavailable" }, renderAssetPreview(asset), el("strong", { text: "该格式可打开查看，但不支持在工作台内编辑" })));
+  } catch (error) { body.replaceChildren(el("p", { class: "field-error", text: error.message })); }
+}
+async function openAssetEditor(assetId) {
+  const asset = activeProject()?.assets?.find(item => item.id === assetId); if (!asset || !assetEditable(asset)) return;
+  activeEditorAssetId = assetId; $("#asset-editor-title").textContent = `编辑 ${asset.originalName}`; $("#asset-editor-content").value = "正在读取…"; $("#asset-editor-content").disabled = true; $("#asset-editor-error").textContent = "";
+  if ($("#asset-preview-dialog").open) $("#asset-preview-dialog").close();
+  $("#asset-editor-dialog").showModal();
+  try { const result = await api(`/api/projects/${activeProjectId}/assets/${assetId}/content`); $("#asset-editor-content").value = result.content || ""; $("#asset-editor-content").disabled = false; $("#asset-editor-content").focus(); }
+  catch (error) { $("#asset-editor-error").textContent = error.message; }
+}
+function openAssetMoveDialog(type, id) {
+  const project = activeProject(); if (!project) return; assetMoveTarget = { type, id };
+  const excluded = new Set([id]);
+  if (type === "folder") { let changed = true; while (changed) { changed = false; for (const folder of project.assetFolders || []) if (excluded.has(folder.parentId) && !excluded.has(folder.id)) { excluded.add(folder.id); changed = true; } } }
+  $("#asset-move-title").textContent = type === "folder" ? "移动文件夹" : "移动素材";
+  $("#asset-move-target").replaceChildren(el("option", { value: "", text: "全部文件（根目录）" }), ...(project.assetFolders || []).filter(folder => !excluded.has(folder.id)).map(folder => el("option", { value: folder.id, text: folderDisplayPath(project, folder.id) })));
+  $("#asset-move-error").textContent = ""; $("#asset-move-dialog").showModal();
+}
+async function moveAssetToFolder(assetId, folderId) {
+  await api(`/api/projects/${activeProjectId}/assets/${assetId}`, { method: "PATCH", body: JSON.stringify({ folderId: folderId || null }) });
+  await refreshState({ quiet: true }); toast("素材已移动。", "success");
+}
 function renderAssets(project) {
+  if (!project) return;
+  if (activeAssetFolderId && !(project.assetFolders || []).some(folder => folder.id === activeAssetFolderId)) activeAssetFolderId = null;
   const query = $("#asset-search")?.value?.trim().toLowerCase() || "";
   const grid = $("#asset-grid");
+  grid.classList.toggle("list-view", assetViewMode === "list");
+  $("#asset-grid-button").classList.toggle("active", assetViewMode === "grid");
+  $("#asset-list-button").classList.toggle("active", assetViewMode === "list");
   grid.replaceChildren();
-  const assets = (project.assets || []).filter(asset => String(asset.originalName || asset.shotId || "").toLowerCase().includes(query));
-  for (const asset of assets) grid.append(el("article", { class: "asset-card" }, asset.kind === "image" ? el("img", { src: asset.mediaUrl, alt: asset.originalName || "项目图片素材" }) : el("video", { src: asset.mediaUrl, muted: true, preload: "metadata" }), el("div", {}, el("strong", { text: asset.originalName || (asset.kind === "image" ? "生成图片" : "视频镜头") }), el("small", { text: `${asset.provider} · ${formatDate(asset.createdAt)}` }), el("span", { class: `source-badge ${asset.remoteSourceType === "local" ? "local" : "ready"}`, text: asset.remoteSourceType === "local" ? "本地" : "Seedance 可用" }))));
-  if (!assets.length) grid.append(el("div", { class: "asset-empty" }, el("img", { src: "/icons/images.svg", alt: "" }), el("strong", { text: "还没有项目资产" }), el("p", { text: "Codex Image Gen 生成的图片和导入文件会自动出现在这里。" })));
+
+  const breadcrumbs = $("#asset-breadcrumbs");
+  breadcrumbs.replaceChildren(el("button", { type: "button", class: activeAssetFolderId ? "" : "current", onclick: () => openAssetFolder(null) }, "全部文件"));
+  for (const folder of assetFolderPath(project)) breadcrumbs.append(el("span", { text: "›" }), el("button", { type: "button", class: folder.id === activeAssetFolderId ? "current" : "", onclick: () => openAssetFolder(folder.id) }, folder.name));
+
+  const folders = (project.assetFolders || []).filter(folder => (folder.parentId || null) === activeAssetFolderId && folder.name.toLowerCase().includes(query));
+  const assets = (project.assets || []).filter(asset => (asset.folderId || null) === activeAssetFolderId && String(asset.originalName || asset.shotId || "").toLowerCase().includes(query));
+  for (const folder of folders) {
+    const itemCount = (project.assetFolders || []).filter(item => item.parentId === folder.id).length + (project.assets || []).filter(asset => asset.folderId === folder.id).length;
+    const card = el("article", { class: "asset-folder-card", oncontextmenu: event => openAssetContextMenu(event, "folder", folder.id) },
+      el("button", { class: "asset-folder-main", type: "button", onclick: () => openAssetFolder(folder.id) }, el("img", { src: "/icons/folder-kanban.svg", alt: "" }), el("div", {}, el("strong", { text: folder.name }), el("small", { text: `${itemCount} 项 · ${formatDate(folder.updatedAt)}` }))),
+      el("button", { class: "asset-more-button", type: "button", title: "更多", onclick: event => openAssetContextMenu(event, "folder", folder.id) }, el("img", { src: "/icons/ellipsis.svg", alt: "" }))
+    );
+    card.addEventListener("dragover", event => { event.preventDefault(); event.stopPropagation(); card.classList.add("drop-target"); });
+    card.addEventListener("dragleave", () => card.classList.remove("drop-target"));
+    card.addEventListener("drop", event => { event.preventDefault(); event.stopPropagation(); card.classList.remove("drop-target"); const assetId = event.dataTransfer.getData("application/x-opendrama-asset"); if (assetId) moveAssetToFolder(assetId, folder.id); else importAssets([...event.dataTransfer.files], folder.id); });
+    grid.append(card);
+  }
+  for (const asset of assets) {
+    const card = el("article", { class: `asset-card asset-${asset.kind}`, draggable: true, oncontextmenu: event => openAssetContextMenu(event, "asset", asset.id) },
+      el("button", { class: "asset-card-preview", type: "button", title: `查看${asset.originalName || "素材"}`, onclick: () => openAssetPreview(asset.id) }, renderAssetPreview(asset)),
+      el("div", { class: "asset-card-copy" }, el("strong", { text: asset.originalName || `${assetKindLabel(asset.kind)}素材` }), el("small", { text: `${assetKindLabel(asset.kind)} · ${formatDate(asset.createdAt)}` })),
+      el("button", { class: "asset-more-button", type: "button", title: "更多", onclick: event => openAssetContextMenu(event, "asset", asset.id) }, el("img", { src: "/icons/ellipsis.svg", alt: "" }))
+    );
+    card.addEventListener("dragstart", event => { event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("application/x-opendrama-asset", asset.id); card.classList.add("dragging"); });
+    card.addEventListener("dragend", () => card.classList.remove("dragging"));
+    grid.append(card);
+  }
+  if (!folders.length && !assets.length) grid.append(el("div", { class: "asset-empty" }, el("img", { src: "/icons/folder-kanban.svg", alt: "" }), el("strong", { text: activeAssetFolderId ? "当前文件夹暂无素材" : "还没有项目资产" }), el("p", { text: "上传原作、设定、图片、视频或音频，也可以新建文件夹分类整理。" }), el("label", { class: "button primary", for: "asset-file" }, el("img", { src: "/icons/upload.svg", alt: "" }), "上传文件")));
 }
 
-function openWorkspace(creationId) { activeCreationId = creationId; renderWorkspace(); go("workspace"); }
+function openWorkspace(creationId) {
+  activeCreationId = creationId;
+  const creation = activeProject()?.creations?.find(item => item.id === creationId);
+  activeWorldId = creation?.worldId || "series";
+  go("workspace");
+  renderWorkspace();
+}
+
+function creationTypeLabel(type) {
+  return ({ episode: "单集生产", "world-control": "分卷 / 季度总控", "series-control": "系列总览", "asset-development": "资产开发" })[type] || "创作画布";
+}
+
+function contextAssets(project, creation) {
+  if (!project || !creation) return [];
+  const refs = new Set((creation.assetRefs || []).map(ref => ref.assetId));
+  return (project.assets || []).filter(asset => refs.has(asset.id) || asset.scope === "series" || asset.scope === "project" || (creation.worldId && asset.worldId === creation.worldId) || asset.creationId === creation.id);
+}
+
+function buildCanvasGraph(project, creation) {
+  if (!creation) return { nodes: [], edges: [] };
+  const nodes = [];
+  const edges = [];
+  const saved = creation.canvas?.positions || {};
+  const production = creation.plan || project;
+  const add = (node, fallback) => {
+    const position = saved[node.id] || fallback;
+    nodes.push({ width: 280, height: node.mediaUrl ? 228 : 168, ...node, x: position.x, y: position.y });
+    return node.id;
+  };
+  const connect = (source, target, label = "") => { if (source && target) edges.push({ id: `${source}-${target}`, source, target, label }); };
+  const world = project.worlds?.find(item => item.id === creation.worldId);
+  const assets = contextAssets(project, creation);
+
+  if (creation.type === "series-control") {
+    const root = add({ id: "series-root", kind: "系列总览", title: project.title, body: project.logline || "整部 IP 的系列圣经、公共资产与分卷 / 季度入口。" }, { x: 180, y: 520 });
+    (project.worlds || []).forEach((item, index) => {
+      const id = add({ id: `world-${item.id}`, kind: "分卷 / 季度", title: item.title, body: item.description || `${project.creations.filter(entry => entry.worldId === item.id).length} 个创作页` }, { x: 600, y: 180 + index * 230 });
+      connect(root, id, "进入分卷 / 季度");
+    });
+  } else if (creation.type === "world-control") {
+    const root = add({ id: "world-root", kind: "分卷 / 季度总控", title: world?.title || creation.title, body: world?.description || "分卷 / 季度圣经、角色场景母版与生产进度。" }, { x: 180, y: 500 });
+    project.creations.filter(item => item.worldId === creation.worldId && item.id !== creation.id).forEach((item, index) => {
+      const id = add({ id: `creation-${item.id}`, kind: creationTypeLabel(item.type), title: item.title, body: friendlyStatus(item.status) }, { x: 620 + Math.floor(index / 4) * 380, y: 140 + (index % 4) * 230 });
+      connect(root, id, "生产单元");
+    });
+  } else {
+    let previous = null;
+    if (production.script?.premise || production.logline) previous = add({ id: "story-brief", kind: "故事", title: creation.title, body: production.script?.premise || production.logline }, { x: 160, y: 420 });
+    if (production.characters?.length) {
+      const id = add({ id: "character-bible", kind: "角色母版", title: `${production.characters.length} 个角色锚点`, body: production.characters.slice(0, 4).map(item => `${item.name}：${item.visual}`).join("\n") }, { x: 540, y: 420 });
+      connect(previous, id, "锁定角色"); previous = id;
+    }
+    (production.shots || []).forEach((shot, index) => {
+      const media = [...(project.assets || [])].reverse().find(asset => asset.shotId === shot.id && asset.kind === "image");
+      const id = add({ id: `shot-${shot.id}`, kind: `SHOT ${String(shot.order || index + 1).padStart(2, "0")}`, title: shot.scene || `镜头 ${index + 1}`, body: shot.prompt || shot.subtitle || "等待镜头描述", meta: `${shot.framing || "镜头"} · ${shot.duration || 0}s`, mediaUrl: media?.mediaUrl, mediaKind: media?.kind }, { x: 920 + Math.floor(index / 3) * 370, y: 120 + (index % 3) * 300 });
+      connect(previous, id, index ? "连续镜头" : "进入分镜"); previous = id;
+    });
+    const shotAssetIds = new Set((project.assets || []).filter(asset => asset.shotId).map(asset => asset.id));
+    assets.filter(asset => !shotAssetIds.has(asset.id)).forEach((asset, index) => {
+      const id = add({ id: `asset-${asset.id}`, kind: assetKindLabel(asset.kind), title: asset.originalName || `${assetKindLabel(asset.kind)}素材`, body: `${asset.scope === "series" ? "系列公共" : asset.worldId ? "分卷 / 季度资产" : asset.creationId ? "当前创作" : "项目资产"} · v${asset.version || 1}`, mediaUrl: ["image", "video", "audio"].includes(asset.kind) ? asset.mediaUrl : null, mediaKind: asset.kind, assetId: asset.id }, { x: 920 + Math.floor((production.shots?.length || 0) / 3) * 370 + Math.floor(index / 3) * 370, y: 120 + (index % 3) * 300 });
+      if (!previous) previous = id; else connect(previous, id, "引用素材");
+      previous = id;
+    });
+    (creation.messages || []).filter(item => item.role === "user").slice(-5).forEach((message, index) => {
+      const id = add({ id: `message-${message.id}`, kind: "创作指令", title: `指令 ${index + 1}`, body: message.content }, { x: 160, y: 720 + index * 210 });
+      if (!previous) previous = id;
+    });
+    const output = (project.outputs || []).find(item => !item.creationId || item.creationId === creation.id);
+    if (output) {
+      const id = add({ id: `output-${output.id}`, kind: "成片", title: "最终视频", body: `${Math.round(output.duration || 0)} 秒 · 已锁定使用素材版本`, mediaUrl: output.mediaUrl, mediaKind: "video" }, { x: Math.max(1500, ...nodes.map(node => node.x + 380)), y: 420 });
+      connect(previous, id, "合成成片");
+    }
+  }
+  return { nodes, edges };
+}
+
+function renderCanvasNode(node) {
+  const media = node.mediaUrl ? (node.mediaKind === "video" ? el("video", { src: node.mediaUrl, muted: true, preload: "metadata" }) : node.mediaKind === "audio" ? el("audio", { src: node.mediaUrl, controls: true, preload: "metadata" }) : el("img", { src: node.mediaUrl, alt: node.title })) : null;
+  const article = el("article", { class: `canvas-node node-${node.mediaKind || "text"}`, "data-node-id": node.id, style: `left:${node.x}px;top:${node.y}px;width:${node.width}px;min-height:${node.height}px` },
+    el("header", {}, el("span", { text: node.kind }), node.meta ? el("small", { text: node.meta }) : null), media ? el("div", { class: "canvas-node-media" }, media) : null,
+    el("div", { class: "canvas-node-copy" }, el("strong", { text: node.title }), el("p", { text: node.body || "" }))
+  );
+  article.addEventListener("pointerdown", event => beginNodeDrag(event, node.id));
+  return article;
+}
 
 function renderWorkspace() {
   const project = activeProject();
-  if (!project) return;
-  const creation = project.creations?.find(item => item.id === activeCreationId) || project.creations?.[0];
+  const creation = activeCreation() || project?.creations?.[0];
+  if (!project || !creation) return;
+  activeCreationId = creation.id;
+  const world = project.worlds?.find(item => item.id === creation.worldId);
   $("#workspace-project-link").textContent = project.title;
-  $("#workspace-creation-title").textContent = creation?.title || "主创作页";
-  $("#workspace-title").textContent = creation?.title || project.title;
-  $("#workspace-logline").textContent = project.logline || "等待 Codex 写入正式故事与分镜。";
-  renderStages(project); renderBrief(project); renderShots(project); renderActivity(project); renderOutput(project);
+  $("#workspace-creation-title").textContent = creation.title;
+  $("#workspace-world-link").textContent = world?.title || "系列";
+  $("#workspace-world-separator").hidden = false;
+  $("#agent-project-context").textContent = project.title;
+  $("#agent-world-context").textContent = world?.title || "系列级";
+  $("#inspector-creation-title").textContent = creation.title + " · " + creationTypeLabel(creation.type);
+  const graph = buildCanvasGraph(project, creation);
+  canvasRuntime.nodeIds = graph.nodes.map(node => node.id);
+  let shouldInitialFit = false;
+  if (canvasRuntime.creationId !== creation.id) {
+    const viewport = creation.canvas?.viewport || { x: 120, y: 90, zoom: 0.78 };
+    canvasRuntime = { ...canvasRuntime, creationId: creation.id, x: viewport.x, y: viewport.y, zoom: viewport.zoom, dragging: null, nodeIds: canvasRuntime.nodeIds };
+    shouldInitialFit = !Object.keys(creation.canvas?.positions || {}).length && graph.nodes.length > 1;
+  }
+  const holder = $("#canvas-nodes");
+  holder.replaceChildren(...graph.nodes.map(renderCanvasNode));
+  $("#canvas-empty").hidden = graph.nodes.length > 0;
+  drawCanvasEdges(graph);
+  applyCanvasTransform();
+  renderAgentPanel(project, creation, world);
+  if (shouldInitialFit) requestAnimationFrame(fitCanvas);
+  const production = creation.plan || project;
+  $("#request-real-button").disabled = !production.shots?.length;
+  $("#render-button").disabled = !production.shots?.length || studioState.jobs.some(job => job.projectId === project.id && ["queued", "running"].includes(job.status));
+}
+
+function drawCanvasEdges(graph) {
+  const svg = $("#canvas-edges");
+  svg.setAttribute("viewBox", "0 0 3600 2200");
+  svg.replaceChildren();
+  const byId = new Map(graph.nodes.map(node => [node.id, node]));
+  for (const edge of graph.edges) {
+    const source = byId.get(edge.source); const target = byId.get(edge.target);
+    if (!source || !target) continue;
+    const x1 = source.x + source.width; const y1 = source.y + source.height / 2; const x2 = target.x; const y2 = target.y + target.height / 2;
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", `M ${x1} ${y1} C ${x1 + 90} ${y1}, ${x2 - 90} ${y2}, ${x2} ${y2}`);
+    path.setAttribute("data-edge-id", edge.id);
+    svg.append(path);
+  }
+  updateMinimap(graph.nodes);
+}
+
+function applyCanvasTransform() {
+  $("#canvas-world").style.transform = `translate(${canvasRuntime.x}px, ${canvasRuntime.y}px) scale(${canvasRuntime.zoom})`;
+  $("#canvas-zoom-label").textContent = `${Math.round(canvasRuntime.zoom * 100)}%`;
+  updateMinimapViewport();
+}
+
+function updateMinimap(nodes = null) {
+  const graphNodes = nodes || buildCanvasGraph(activeProject(), activeCreation()).nodes;
+  const holder = $("#minimap-nodes"); holder.replaceChildren();
+  for (const node of graphNodes) holder.append(el("i", { style: `left:${node.x / 24}px;top:${node.y / 24}px;width:${Math.max(7, node.width / 24)}px;height:${Math.max(5, node.height / 24)}px` }));
+  updateMinimapViewport();
+}
+
+function updateMinimapViewport() {
+  const stage = $("#canvas-stage"); const viewport = $("#minimap-viewport");
+  if (!stage || !viewport) return;
+  viewport.style.left = `${Math.max(0, -canvasRuntime.x / canvasRuntime.zoom / 24)}px`;
+  viewport.style.top = `${Math.max(0, -canvasRuntime.y / canvasRuntime.zoom / 24)}px`;
+  viewport.style.width = `${Math.min(148, stage.clientWidth / canvasRuntime.zoom / 24)}px`;
+  viewport.style.height = `${Math.min(92, stage.clientHeight / canvasRuntime.zoom / 24)}px`;
+}
+
+function zoomCanvas(delta, anchor = null) {
+  const stage = $("#canvas-stage"); const rect = stage.getBoundingClientRect();
+  const point = anchor || { x: rect.width / 2, y: rect.height / 2 };
+  const previous = canvasRuntime.zoom;
+  const next = Math.min(1.8, Math.max(0.25, previous * delta));
+  const worldX = (point.x - canvasRuntime.x) / previous; const worldY = (point.y - canvasRuntime.y) / previous;
+  canvasRuntime.zoom = next;
+  canvasRuntime.x = point.x - worldX * next; canvasRuntime.y = point.y - worldY * next;
+  applyCanvasTransform(); scheduleCanvasSave();
+}
+
+function fitCanvas() {
+  const nodes = buildCanvasGraph(activeProject(), activeCreation()).nodes;
+  const stage = $("#canvas-stage");
+  if (!nodes.length) { canvasRuntime.x = 120; canvasRuntime.y = 90; canvasRuntime.zoom = 0.78; applyCanvasTransform(); return; }
+  const minX = Math.min(...nodes.map(node => node.x)); const minY = Math.min(...nodes.map(node => node.y));
+  const maxX = Math.max(...nodes.map(node => node.x + node.width)); const maxY = Math.max(...nodes.map(node => node.y + node.height));
+  const zoom = Math.min(1, Math.max(0.28, Math.min((stage.clientWidth - 96) / (maxX - minX), (stage.clientHeight - 96) / (maxY - minY))));
+  canvasRuntime.zoom = zoom; canvasRuntime.x = 48 - minX * zoom; canvasRuntime.y = 48 - minY * zoom;
+  applyCanvasTransform(); scheduleCanvasSave();
+}
+
+function beginNodeDrag(event, nodeId) {
+  if (event.button !== 0) return;
+  event.stopPropagation();
+  const creation = activeCreation(); const graphNode = buildCanvasGraph(activeProject(), creation).nodes.find(item => item.id === nodeId);
+  canvasRuntime.dragging = { type: "node", nodeId, startX: event.clientX, startY: event.clientY, originX: graphNode?.x || 0, originY: graphNode?.y || 0 };
+  event.currentTarget.setPointerCapture(event.pointerId);
+}
+
+function scheduleCanvasSave() {
+  clearTimeout(canvasRuntime.saveTimer);
+  canvasRuntime.saveTimer = setTimeout(saveCanvasState, 350);
+}
+
+async function saveCanvasState() {
+  const creation = activeCreation(); if (!creation) return;
+  const positions = { ...(creation.canvas?.positions || {}) };
+  for (const node of $("#canvas-nodes").children) positions[node.dataset.nodeId] = { x: Math.round(parseFloat(node.style.left)), y: Math.round(parseFloat(node.style.top)) };
+  const canvas = { viewport: { x: Math.round(canvasRuntime.x), y: Math.round(canvasRuntime.y), zoom: canvasRuntime.zoom }, positions };
+  creation.canvas = canvas;
+  try { await api(`/api/projects/${activeProjectId}/creations/${creation.id}`, { method: "PATCH", body: JSON.stringify({ canvas }) }); }
+  catch (error) { toast(error.message, "error"); }
+}
+
+function renderAgentPanel(project, creation, world) {
+  const refList = $("#creation-reference-list"); refList.replaceChildren();
+  const refs = creation.assetRefs || []; const assetsById = new Map((project.assets || []).map(asset => [asset.id, asset]));
+  $("#reference-count").textContent = String(refs.length);
+  for (const ref of refs) {
+    const asset = assetsById.get(ref.assetId); if (!asset) continue;
+    refList.append(el("article", {}, el("div", {}, el("strong", { text: asset.originalName || asset.id }), el("small", { text: `v${ref.version || asset.version || 1} · ${ref.locked ? "已锁定" : "使用中"}` })), asset.scope !== "series" ? el("button", { type: "button", onclick: () => promoteCanvasAsset(asset.id) }, "提升为公共资产") : el("span", { text: "系列公共" })));
+  }
+  if (!refs.length) refList.append(el("p", { class: "muted", text: "尚未固定素材引用。把文件上传到画布后会按 assetId + 版本记录。" }));
+}
+
+async function promoteCanvasAsset(assetId) {
+  try { await api(`/api/projects/${activeProjectId}/assets/${assetId}/promote`, { method: "POST", body: JSON.stringify({ scope: "series" }) }); await refreshState({ quiet: true }); toast("已提升为系列公共资产，原 assetId 与创作引用保持不变。", "success"); }
+  catch (error) { toast(error.message, "error"); }
 }
 
 function renderStages(project) {
@@ -250,7 +680,6 @@ function renderSkills() {
   for (const skill of visible) {
     const toggle = el("input", { type: "checkbox", checked: skill.enabled, "aria-label": `${skill.enabled ? "停用" : "启用"}${skill.label}`, onchange: event => setSkillEnabled(skill, event.currentTarget.checked) });
     const button = el("button", { class: "skill-card-main", type: "button", onclick: () => openSkillDetail(skill.name) },
-      el("span", { class: "skill-card-icon" }, el("img", { src: "/assets/studio-pixel-icon.png", alt: "" })),
       el("span", { class: "skill-card-copy" }, el("strong", { text: skill.label }), el("small", { text: skill.description }))
     );
     grid.append(el("article", { class: `skill-card ${skill.enabled ? "" : "disabled"}` }, button, el("label", { class: "toggle-label compact" }, toggle, el("span", { class: "toggle-ui" }))));
@@ -322,37 +751,126 @@ function acceptSkillFile(file) {
   $("#skill-file-name").textContent = file.name; $("#skill-import-submit").disabled = false; $("#skill-import-error").textContent = "";
 }
 
-function openProjectDialog(mode, targetId = null) {
-  projectDialogMode = mode; mutationTargetId = targetId;
-  const project = studioState?.projects.find(item => item.id === targetId);
-  const meta = mode === "rename-project" ? ["重命名项目", "保存名称", project?.title || ""] : mode === "create-creation" ? ["新建创作页", "创建创作页", ""] : ["新建项目", "创建项目", ""];
-  $("#project-dialog-title").textContent = meta[0]; $("#project-submit").textContent = meta[1]; $("#project-name").value = meta[2]; $("#project-form-error").textContent = "";
+function openProjectDialog(mode, targetId = null, parentId = null) {
+  projectDialogMode = mode; mutationTargetId = targetId; mutationParentId = parentId;
+  const projectLookupId = mode === "rename-project" ? targetId : ["rename-creation", "rename-asset", "rename-folder", "create-creation"].includes(mode) ? (parentId || activeProjectId) : activeProjectId;
+  const project = studioState?.projects.find(item => item.id === projectLookupId);
+  const creation = project?.creations?.find(item => item.id === targetId);
+  const asset = project?.assets?.find(item => item.id === targetId);
+  const folder = project?.assetFolders?.find(item => item.id === targetId);
+  const meta = mode === "rename-project"
+    ? ["重命名项目", "保存名称", project?.title || "", "项目名称", "例如：品牌宣传片"]
+    : mode === "rename-creation"
+      ? ["重命名创作页", "保存名称", creation?.title || "", "创作页名称", "例如：15 秒产品开箱"]
+      : mode === "rename-asset"
+        ? ["重命名素材", "保存名称", asset?.originalName || "", "素材名称", "例如：角色母版.md"]
+      : mode === "rename-folder"
+        ? ["重命名文件夹", "保存名称", folder?.name || "", "文件夹名称", "例如：角色与场景"]
+      : mode === "create-creation"
+        ? ["新建创作页", "创建创作页", "", "创作页名称", "例如：KOC 口播第一版"]
+        : mode === "create-world"
+          ? ["新建分卷 / 季度", "创建分卷 / 季度", "", "分卷 / 季度名称", "例如：第一卷 · 九龙城寨"]
+        : mode === "create-folder"
+          ? ["新建文件夹", "创建文件夹", "", "文件夹名称", "例如：原作与设定"]
+          : ["新建项目", "创建项目", "", "项目名称", "例如：秋季新品宣传片"];
+  $("#project-dialog-title").textContent = meta[0]; $("#project-submit").textContent = meta[1]; $("#project-name").value = meta[2]; $("#project-name-label").textContent = meta[3]; $("#project-name").placeholder = meta[4]; $("#project-form-error").textContent = "";
+  $("#creation-meta-fields").hidden = mode !== "create-creation";
+  if (mode === "create-creation") {
+    const worldSelect = $("#creation-world");
+    worldSelect.replaceChildren(el("option", { value: "", text: "系列级 / 不属于具体分卷或季度" }), ...(project?.worlds || []).map(world => el("option", { value: world.id, text: world.title })));
+    worldSelect.value = project?.worlds?.some(world => world.id === activeWorldId) ? activeWorldId : "";
+    $("#creation-type").value = worldSelect.value ? "episode" : "series-control";
+  }
   $("#project-dialog").showModal(); setTimeout(() => $("#project-name").focus(), 30);
 }
 
-function openDeleteDialog(projectId) { mutationTargetId = projectId; $("#delete-project-name").textContent = studioState.projects.find(item => item.id === projectId)?.title || ""; $("#delete-dialog").showModal(); }
+function openDeleteDialog(type, projectId, creationId = null) {
+  const isChild = ["creation", "asset", "folder"].includes(type);
+  deleteTargetType = type; mutationParentId = isChild ? projectId : null; mutationTargetId = isChild ? creationId : projectId;
+  const project = studioState.projects.find(item => item.id === projectId);
+  const target = type === "creation" ? project?.creations?.find(item => item.id === creationId) : type === "asset" ? project?.assets?.find(item => item.id === creationId) : type === "folder" ? project?.assetFolders?.find(item => item.id === creationId) : project;
+  const labels = { creation: "创作页", asset: "素材", folder: "文件夹", project: "项目" }; const label = labels[type] || "项目";
+  $("#delete-dialog-title").textContent = `删除${label}？`;
+  const targetName = target?.title || target?.originalName || target?.name || "";
+  const explanation = type === "asset" ? "将从项目中移除并放入本机回收区；被锁定引用的素材不能删除。" : type === "folder" ? "只能删除不含子文件夹和素材的空文件夹。" : type === "creation" ? "创作页会从项目中移除，项目素材保持不变。" : "项目会从界面移除，并保留在本机回收目录。";
+  $("#delete-dialog-copy").replaceChildren(`${label}${explanation}确认删除“`, el("strong", { id: "delete-target-name", text: targetName }), "”吗？");
+  $("#delete-submit").textContent = `删除${label}`;
+  $("#delete-dialog").showModal();
+}
 
 async function submitProjectForm(event) {
   event.preventDefault(); const title = $("#project-name").value.trim();
   if (!title) { $("#project-form-error").textContent = "请输入名称。"; return; }
   try {
     if (projectDialogMode === "rename-project") await api(`/api/projects/${mutationTargetId}`, { method: "PATCH", body: JSON.stringify({ title }) });
-    else if (projectDialogMode === "create-creation") { const result = await api(`/api/projects/${activeProjectId}/creations`, { method: "POST", body: JSON.stringify({ title }) }); activeCreationId = result.creation.id; }
+    else if (projectDialogMode === "rename-creation") await api(`/api/projects/${mutationParentId}/creations/${mutationTargetId}`, { method: "PATCH", body: JSON.stringify({ title }) });
+    else if (projectDialogMode === "rename-asset") await api(`/api/projects/${mutationParentId}/assets/${mutationTargetId}`, { method: "PATCH", body: JSON.stringify({ originalName: title }) });
+    else if (projectDialogMode === "rename-folder") await api(`/api/projects/${mutationParentId}/asset-folders/${mutationTargetId}`, { method: "PATCH", body: JSON.stringify({ name: title }) });
+    else if (projectDialogMode === "create-creation") { const projectId = mutationParentId || activeProjectId; const result = await api(`/api/projects/${projectId}/creations`, { method: "POST", body: JSON.stringify({ title, worldId: $("#creation-world").value || null, type: $("#creation-type").value }) }); activeProjectId = projectId; activeCreationId = result.creation.id; activeWorldId = result.creation.worldId || "series"; }
+    else if (projectDialogMode === "create-world") { const projectId = mutationParentId || activeProjectId; const result = await api(`/api/projects/${projectId}/worlds`, { method: "POST", body: JSON.stringify({ title }) }); activeProjectId = projectId; activeWorldId = result.world.id; }
+    else if (projectDialogMode === "create-folder") await api(`/api/projects/${activeProjectId}/asset-folders`, { method: "POST", body: JSON.stringify({ name: title, parentId: mutationParentId || null }) });
     else { const result = await api("/api/projects", { method: "POST", body: JSON.stringify({ title }) }); activeProjectId = result.project.id; }
-    $("#project-dialog").close(); await refreshState(); go(projectDialogMode === "create-project" ? "project" : currentRoute());
+    $("#project-dialog").close(); await refreshState();
+    if (projectDialogMode === "create-project") go("project");
+    else if (projectDialogMode === "create-creation") go("workspace");
+    else if (projectDialogMode === "create-world") { go("project"); toast("分卷 / 季度已创建，并生成独立的标准素材目录。", "success"); }
+    else { go(currentRoute()); if (projectDialogMode === "create-folder") { activeProjectTab = "assets"; renderProjectOverview(); toast("文件夹已创建。", "success"); } }
   } catch (error) { $("#project-form-error").textContent = error.message; }
 }
 
-async function deleteProject(event) {
+async function deleteTarget(event) {
   event.preventDefault();
-  try { await api(`/api/projects/${mutationTargetId}`, { method: "DELETE" }); $("#delete-dialog").close(); activeProjectId = null; await refreshState(); go("project-library"); toast("项目已移入本机回收目录。", "success"); }
+  try {
+    if (deleteTargetType === "creation") {
+      await api(`/api/projects/${mutationParentId}/creations/${mutationTargetId}`, { method: "DELETE" });
+      if (activeCreationId === mutationTargetId) activeCreationId = null;
+      $("#delete-dialog").close(); await refreshState(); go("project"); toast("创作页已删除，项目素材保持不变。", "success");
+    } else if (deleteTargetType === "asset") {
+      await api(`/api/projects/${mutationParentId}/assets/${mutationTargetId}`, { method: "DELETE" }); $("#delete-dialog").close(); await refreshState({ quiet: true }); activeProjectTab = "assets"; renderProjectOverview(); toast("素材已移入本机回收区。", "success");
+    } else if (deleteTargetType === "folder") {
+      await api(`/api/projects/${mutationParentId}/asset-folders/${mutationTargetId}`, { method: "DELETE" }); $("#delete-dialog").close(); await refreshState({ quiet: true }); activeProjectTab = "assets"; renderProjectOverview(); toast("空文件夹已删除。", "success");
+    } else {
+      await api(`/api/projects/${mutationTargetId}`, { method: "DELETE" }); $("#delete-dialog").close(); activeProjectId = null; await refreshState(); go("project-library"); toast("项目已移入本机回收目录。", "success");
+    }
+  }
   catch (error) { toast(error.message, "error"); }
 }
 
-async function importAssets(files) {
+async function importAssets(files, targetFolderId = activeAssetFolderId) {
   const project = activeProject(); if (!project || !files.length) return;
-  try { for (const file of files) { const form = new FormData(); form.append("projectId", project.id); form.append("file", file); await api("/api/assets/import", { method: "POST", body: form }); } await refreshState(); toast(`已导入 ${files.length} 个素材。`, "success"); }
+  try { for (const file of files) { const form = new FormData(); form.append("projectId", project.id); form.append("folderId", targetFolderId || ""); form.append("file", file); await api("/api/assets/import", { method: "POST", body: form }); } $("#asset-file").value = ""; await refreshState({ quiet: true }); activeProjectTab = "assets"; renderProjectOverview(); toast(`已导入 ${files.length} 个素材。`, "success"); }
   catch (error) { toast(error.message, "error"); }
+}
+
+async function importCanvasAssets(files) {
+  const project = activeProject(); const creation = activeCreation(); if (!project || !creation || !files.length) return;
+  try {
+    for (const file of files) {
+      const form = new FormData(); form.append("projectId", project.id); form.append("creationId", creation.id); form.append("worldId", creation.worldId || ""); form.append("file", file);
+      await api("/api/assets/import", { method: "POST", body: form });
+    }
+    $("#canvas-file").value = ""; await refreshState({ quiet: true }); toast(`已把 ${files.length} 个文件加入当前画布，并建立稳定版本引用。`, "success");
+  } catch (error) { toast(error.message, "error"); }
+}
+
+async function saveEditedAsset(event) {
+  event.preventDefault(); if (!activeEditorAssetId) return;
+  const submit = $("#asset-editor-submit"); submit.disabled = true; submit.textContent = "保存中…"; $("#asset-editor-error").textContent = "";
+  try {
+    await api(`/api/projects/${activeProjectId}/assets/${activeEditorAssetId}/content`, { method: "PUT", body: JSON.stringify({ content: $("#asset-editor-content").value }) });
+    $("#asset-editor-dialog").close(); await refreshState({ quiet: true }); activeProjectTab = "assets"; renderProjectOverview(); toast("已保存为新版本，旧版本与既有引用保持不变。", "success");
+  } catch (error) { $("#asset-editor-error").textContent = error.message; }
+  finally { submit.disabled = false; submit.textContent = "保存为新版本"; }
+}
+
+async function submitAssetMove(event) {
+  event.preventDefault(); if (!assetMoveTarget) return;
+  const folderId = $("#asset-move-target").value || null;
+  try {
+    if (assetMoveTarget.type === "asset") await api(`/api/projects/${activeProjectId}/assets/${assetMoveTarget.id}`, { method: "PATCH", body: JSON.stringify({ folderId }) });
+    else await api(`/api/projects/${activeProjectId}/asset-folders/${assetMoveTarget.id}`, { method: "PATCH", body: JSON.stringify({ parentId: folderId }) });
+    $("#asset-move-dialog").close(); assetMoveTarget = null; await refreshState({ quiet: true }); activeProjectTab = "assets"; renderProjectOverview(); toast("已移动到目标文件夹。", "success");
+  } catch (error) { $("#asset-move-error").textContent = error.message; }
 }
 
 async function decideApproval(id, decision) { try { await api(`/api/approvals/${id}/decision`, { method: "POST", body: JSON.stringify({ decision }) }); await refreshState(); } catch (error) { toast(error.message, "error"); } }
@@ -362,23 +880,39 @@ async function resumeJob(id) { try { await api(`/api/jobs/${id}/resume`, { metho
 function friendlyStatus(value) { return ({ draft: "草稿", ready: "分镜就绪", rendered: "已成片", planned: "待制作", pending: "待审批", approved: "已批准", rejected: "已拒绝", queued: "排队中", running: "执行中", waiting: "等待续跑", succeeded: "已完成", failed: "失败", "video-ready": "视频就绪", "video-running": "生成中" })[value] || value || "待制作"; }
 function friendlyStage(stage) { return ({ queued: "等待开始", images: "准备图片素材", "codex-images": "等待 Codex 图片回填", "asset-bridge": "正在建立受控 HTTPS 图片桥", videos: "生成 Seedance 视频", "videos-ready": "视频镜头已就绪", clips: "标准化镜头", render: "合成声音与字幕", complete: "成片完成", failed: "任务停止" })[stage] || String(stage || "准备中").replace(/^video-(\d+)-/, "镜头 $1："); }
 function formatDate(value) { if (!value) return ""; return new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value)); }
+function formatTime(value) { if (!value) return ""; return new Intl.DateTimeFormat("zh-CN", { hour: "2-digit", minute: "2-digit" }).format(new Date(value)); }
 
 $("#project-form").addEventListener("submit", submitProjectForm);
-$("#delete-form").addEventListener("submit", deleteProject);
+$("#delete-form").addEventListener("submit", deleteTarget);
 $$('[data-close-dialog]').forEach(button => button.addEventListener("click", () => $(`#${button.dataset.closeDialog}`).close()));
 $$('[data-action="create-project"]').forEach(button => button.addEventListener("click", () => openProjectDialog("create-project")));
 $$('[data-route]').forEach(button => button.addEventListener("click", () => go(button.dataset.route)));
 $("#workspace-project-link").addEventListener("click", () => go("project"));
+$("#workspace-world-link").addEventListener("click", () => { activeWorldId = activeCreation()?.worldId || "series"; go("project"); });
 $("#new-creation-button").addEventListener("click", () => openProjectDialog("create-creation"));
+$("#new-world-button").addEventListener("click", () => openProjectDialog("create-world", null, activeProjectId));
 $("#creations-tab").addEventListener("click", () => { activeProjectTab = "creations"; renderProjectOverview(); });
 $("#assets-tab").addEventListener("click", () => { activeProjectTab = "assets"; renderProjectOverview(); });
+$("#new-asset-folder-button").addEventListener("click", () => openProjectDialog("create-folder", null, activeAssetFolderId));
 $("#asset-file").addEventListener("change", event => importAssets([...event.target.files]));
+$("#asset-grid").addEventListener("dragover", event => { event.preventDefault(); event.currentTarget.classList.add("drop-target"); });
+$("#asset-grid").addEventListener("dragleave", event => { if (!event.currentTarget.contains(event.relatedTarget)) event.currentTarget.classList.remove("drop-target"); });
+$("#asset-grid").addEventListener("drop", event => { event.preventDefault(); event.currentTarget.classList.remove("drop-target"); const assetId = event.dataTransfer.getData("application/x-opendrama-asset"); if (assetId) moveAssetToFolder(assetId, activeAssetFolderId); else importAssets([...event.dataTransfer.files], activeAssetFolderId); });
+$("#canvas-file").addEventListener("change", event => importCanvasAssets([...event.target.files]));
 $("#asset-search").addEventListener("input", () => renderAssets(activeProject()));
+$("#asset-list-button").addEventListener("click", () => { assetViewMode = "list"; renderAssets(activeProject()); });
+$("#asset-grid-button").addEventListener("click", () => { assetViewMode = "grid"; renderAssets(activeProject()); });
+$("#asset-refresh-button").addEventListener("click", () => refreshState({ quiet: true }));
+$("#asset-preview-edit").addEventListener("click", () => openAssetEditor(activePreviewAssetId));
+$("#asset-preview-reveal").addEventListener("click", () => { if (activePreviewAssetId) api(`/api/projects/${activeProjectId}/assets/${activePreviewAssetId}/reveal`, { method: "POST", body: "{}" }).catch(error => toast(error.message, "error")); });
+$("#asset-editor-form").addEventListener("submit", saveEditedAsset);
+$("#asset-move-form").addEventListener("submit", submitAssetMove);
 $("#project-search").addEventListener("input", event => { projectSearch = event.target.value; renderLibrary(); });
 $("#library-sort-button").addEventListener("click", () => { $("#library-sort-menu").hidden = !$("#library-sort-menu").hidden; });
 $("#sidebar-sort-button").addEventListener("click", () => { $("#sidebar-sort-menu").hidden = !$("#sidebar-sort-menu").hidden; });
 $$('[data-sort]').forEach(button => button.addEventListener("click", () => { projectSort = button.dataset.sort; $("#library-sort-label").textContent = sortLabels[projectSort]; $("#library-sort-menu").hidden = true; $("#sidebar-sort-menu").hidden = true; renderLibrary(); }));
 $("#settings-button").addEventListener("click", () => $("#settings-dialog").showModal());
+$("#start-settings-button").addEventListener("click", () => $("#settings-dialog").showModal());
 $("#import-skill-button").addEventListener("click", () => $("#skill-import-dialog").showModal());
 $("#skill-import-form").addEventListener("submit", importSkill);
 $("#skill-file").addEventListener("change", event => { const file = event.target.files[0]; $("#skill-file-name").textContent = file?.name || "尚未选择文件"; $("#skill-import-submit").disabled = !file; $("#skill-import-error").textContent = ""; });
@@ -391,9 +925,60 @@ $("#skill-detail-toggle").addEventListener("change", event => { if (activeSkillD
 $("#secret-toggle").addEventListener("click", event => { const input = $("#ark-api-key"); input.type = input.type === "password" ? "text" : "password"; event.currentTarget.textContent = input.type === "password" ? "显示" : "隐藏"; });
 $("#credential-form").addEventListener("submit", async event => { event.preventDefault(); const apiKey = $("#ark-api-key").value.trim(); if (!apiKey) { $("#ark-key-error").textContent = "请输入 API Key。"; return; } try { await api("/api/secrets/ark", { method: "PUT", body: JSON.stringify({ apiKey }) }); $("#ark-api-key").value = ""; $("#settings-dialog").close(); await refreshState(); toast("API Key 已安全保存。", "success"); } catch (error) { $("#ark-key-error").textContent = error.message; } });
 $("#clear-key-button").addEventListener("click", async () => { try { await api("/api/secrets/ark", { method: "DELETE" }); await refreshState(); toast("已清除保存的 API Key。", "success"); } catch (error) { toast(error.message, "error"); } });
-$("#request-real-button").addEventListener("click", async () => { try { await api(`/api/projects/${activeProjectId}/approvals`, { method: "POST", body: JSON.stringify({}) }); await refreshState(); toast("真实模型批次已创建，等待批准。", "success"); } catch (error) { toast(error.message, "error"); } });
-$("#render-button").addEventListener("click", async () => { try { await api(`/api/projects/${activeProjectId}/render`, { method: "POST", body: "{}" }); await refreshState(); toast("本地剪辑已开始。", "success"); } catch (error) { toast(error.message, "error"); } });
-window.addEventListener("hashchange", applyRoute);
-document.addEventListener("click", event => { if (!event.target.closest(".project-card")) $$('[data-project-menu]').forEach(menu => { menu.hidden = true; }); if (!event.target.closest(".sort-control")) $("#library-sort-menu").hidden = true; });
+$("#request-real-button").addEventListener("click", async () => { try { await api(`/api/projects/${activeProjectId}/approvals`, { method: "POST", body: JSON.stringify({ creationId: activeCreationId }) }); await refreshState(); toast("当前创作页的真实模型批次已创建，等待批准。", "success"); } catch (error) { toast(error.message, "error"); } });
+$("#render-button").addEventListener("click", async () => { try { await api(`/api/projects/${activeProjectId}/render`, { method: "POST", body: JSON.stringify({ creationId: activeCreationId }) }); await refreshState(); toast("本地剪辑已开始，当前创作引用将在成片后锁定。", "success"); } catch (error) { toast(error.message, "error"); } });
+$("#canvas-zoom-in").addEventListener("click", () => zoomCanvas(1.15));
+$("#canvas-zoom-out").addEventListener("click", () => zoomCanvas(1 / 1.15));
+$("#canvas-fit").addEventListener("click", fitCanvas);
+$("#canvas-fit-bottom").addEventListener("click", fitCanvas);
+$("#canvas-add-button").addEventListener("click", () => $("#canvas-file").click());
+$("#canvas-minimap-toggle").addEventListener("click", event => { event.currentTarget.classList.toggle("active"); $("#canvas-minimap").hidden = !event.currentTarget.classList.contains("active"); });
+$("#inspector-panel-toggle").addEventListener("click", () => $("#workspace-view").classList.toggle("inspector-collapsed"));
+const inspectorWidth = Number(localStorage.getItem("opendramaflow.inspectorWidth") || 308);
+$(".canvas-shell").style.setProperty("--inspector-width", `${Math.min(520, Math.max(250, inspectorWidth))}px`);
+$("#canvas-inspector-resizer").addEventListener("pointerdown", event => {
+  if (event.button !== 0 || $("#workspace-view").classList.contains("inspector-collapsed")) return;
+  canvasRuntime.inspectorResize = { startWidth: $(".inspector-panel").getBoundingClientRect().width, startX: event.clientX };
+  event.currentTarget.setPointerCapture(event.pointerId); event.currentTarget.classList.add("dragging");
+});
+$("#canvas-inspector-resizer").addEventListener("pointermove", event => {
+  const resize = canvasRuntime.inspectorResize; if (!resize) return;
+  const width = Math.min(520, Math.max(250, resize.startWidth + resize.startX - event.clientX));
+  $(".canvas-shell").style.setProperty("--inspector-width", `${width}px`); updateMinimapViewport();
+});
+$("#canvas-inspector-resizer").addEventListener("pointerup", event => {
+  if (!canvasRuntime.inspectorResize) return; canvasRuntime.inspectorResize = null; event.currentTarget.classList.remove("dragging");
+  localStorage.setItem("opendramaflow.inspectorWidth", String(Math.round($(".inspector-panel").getBoundingClientRect().width)));
+});
+$("#canvas-stage").addEventListener("pointerdown", event => {
+  const leftBlank = event.button === 0 && !event.target.closest(".canvas-node");
+  const middlePan = event.button === 1;
+  if ((!leftBlank && !middlePan) || event.target.closest(".canvas-toolbar") || event.target.closest(".canvas-minimap")) return;
+  event.preventDefault();
+  canvasRuntime.dragging = { type: "pan", startX: event.clientX, startY: event.clientY, originX: canvasRuntime.x, originY: canvasRuntime.y };
+  event.currentTarget.setPointerCapture(event.pointerId);
+  event.currentTarget.classList.add("panning");
+});
+$("#canvas-stage").addEventListener("pointermove", event => {
+  const drag = canvasRuntime.dragging; if (!drag) return;
+  if (drag.type === "pan") { canvasRuntime.x = drag.originX + event.clientX - drag.startX; canvasRuntime.y = drag.originY + event.clientY - drag.startY; applyCanvasTransform(); }
+  if (drag.type === "node") {
+    const node = $(`[data-node-id="${CSS.escape(drag.nodeId)}"]`); if (!node) return;
+    const x = drag.originX + (event.clientX - drag.startX) / canvasRuntime.zoom; const y = drag.originY + (event.clientY - drag.startY) / canvasRuntime.zoom;
+    node.style.left = `${Math.round(x)}px`; node.style.top = `${Math.round(y)}px`;
+    activeCreation().canvas ||= { viewport: {}, positions: {} }; activeCreation().canvas.positions ||= {}; activeCreation().canvas.positions[drag.nodeId] = { x: Math.round(x), y: Math.round(y) };
+    drawCanvasEdges(buildCanvasGraph(activeProject(), activeCreation()));
+  }
+});
+$("#canvas-stage").addEventListener("pointerup", event => { if (!canvasRuntime.dragging) return; canvasRuntime.dragging = null; event.currentTarget.classList.remove("panning"); scheduleCanvasSave(); });
+$("#canvas-stage").addEventListener("pointercancel", event => { canvasRuntime.dragging = null; event.currentTarget.classList.remove("panning"); });
+$("#canvas-stage").addEventListener("auxclick", event => { if (event.button === 1) event.preventDefault(); });
+$("#canvas-stage").addEventListener("wheel", event => { event.preventDefault(); const rect = event.currentTarget.getBoundingClientRect(); if (event.ctrlKey) zoomCanvas(event.deltaY < 0 ? 1.1 : 1 / 1.1, { x: event.clientX - rect.left, y: event.clientY - rect.top }); else { canvasRuntime.x -= event.deltaX; canvasRuntime.y -= event.deltaY; applyCanvasTransform(); scheduleCanvasSave(); } }, { passive: false });
+$("#canvas-stage").addEventListener("dragover", event => { event.preventDefault(); event.currentTarget.classList.add("file-dragging"); });
+$("#canvas-stage").addEventListener("dragleave", event => event.currentTarget.classList.remove("file-dragging"));
+$("#canvas-stage").addEventListener("drop", event => { event.preventDefault(); event.currentTarget.classList.remove("file-dragging"); importCanvasAssets([...event.dataTransfer.files]); });
+window.addEventListener("hashchange", () => { applyRoute(); if (currentRoute() === "workspace") renderWorkspace(); });
+document.addEventListener("click", event => { if (!event.target.closest(".sidebar-creation-row")) $$('[data-creation-menu]').forEach(menu => { menu.hidden = true; }); if (!event.target.closest(".sort-control")) $("#library-sort-menu").hidden = true; if (!event.target.closest(".sidebar-project-section")) $("#sidebar-sort-menu").hidden = true; if (!event.target.closest("#asset-context-menu") && !event.target.closest(".asset-more-button")) closeAssetContextMenu(); });
+window.addEventListener("blur", closeAssetContextMenu);
 
 refreshState();

@@ -106,7 +106,7 @@ if (-not $SkipLaunch) {
 [ordered]@{
   installed = $true
   plugin = "ai-drama-studio@ai-drama-local"
-  skills = 49
+  skills = 45
   cloudflared = $cloudflaredPath
   workbench = if ($SkipLaunch) { "not-started" } else { "http://127.0.0.1:4317" }
   nextStep = "Restart Codex Desktop, then say: 打开 OpenDramaFlow"

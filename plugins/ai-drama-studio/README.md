@@ -17,7 +17,7 @@
 - 真实模型调用前的批次审批与硬性次数上限
 - FFmpeg 只合成已生成或已导入的真实素材
 - Codex MCP 工具和 `ai-drama-producer` Skill
-- 48 个 MiniMax Design 创作能力的 Codex 原生适配 Skill，覆盖漫剧、广告、MV、动画、配音、拆片、提示词、UI 动效和 Skill 审查等工作
+- 44 个 MiniMax Design 创作能力的 Codex 原生适配 Skill，覆盖漫剧、广告、MV、动画、拆片、提示词、UI 动效和 Skill 审查等工作
 - 自动 Skill 路由：Codex 按 Skill 描述隐式发现能力，同时由 `drama_route_skills` 根据用户原始需求读取最相关的专用制作规范，无需用户手动安装、勾选或选择
 
 这些 Skill 是面向本项目能力边界的功能复刻与优化，不是对 MiniMax 私有提示词或私有工具调用的逐字复制。图片统一适配 Codex Image Gen / Seedream，视频统一适配 Seedance 2.5，确定性剪辑交给 FFmpeg；当前没有接入的配音克隆、专业 NLE 工程和 3D 场景工具不会伪造成功结果。

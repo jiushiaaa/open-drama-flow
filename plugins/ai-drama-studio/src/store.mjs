@@ -8,7 +8,7 @@ let writeChain = Promise.resolve();
 function freshState() {
   const now = new Date().toISOString();
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     updatedAt: now,
     settings: { ...defaultSettings },
     projects: [],
@@ -38,15 +38,45 @@ async function atomicWrite(state) {
 export async function readState() {
   await ensureState();
   const state = JSON.parse(await fs.readFile(statePath, "utf8"));
-  state.schemaVersion = 2;
+  state.schemaVersion = 3;
   for (const project of state.projects || []) {
+    project.pinned = Boolean(project.pinned);
+    if (!Array.isArray(project.worlds)) project.worlds = [];
+    for (const world of project.worlds) world.pinned = Boolean(world.pinned);
+    if (!Array.isArray(project.assetFolders)) project.assetFolders = [];
+    for (const folder of project.assetFolders) {
+      folder.parentId ||= null;
+      folder.scope ||= folder.creationId ? "creation" : folder.worldId ? "world" : "project";
+      folder.worldId ||= null;
+      folder.creationId ||= null;
+    }
+    for (const asset of project.assets || []) {
+      asset.folderId ||= null;
+      asset.familyId ||= asset.id;
+      asset.version = Math.max(1, Number(asset.version || 1));
+      asset.tags = Array.isArray(asset.tags) ? asset.tags : [];
+      asset.scope ||= asset.creationId ? "creation" : asset.worldId ? "world" : "project";
+      asset.worldId ||= null;
+      asset.creationId ||= null;
+    }
     if (!Array.isArray(project.creations)) project.creations = [];
+    for (const creation of project.creations) {
+      creation.pinned = Boolean(creation.pinned);
+      creation.worldId ||= null;
+      creation.type ||= "episode";
+      creation.assetRefs = Array.isArray(creation.assetRefs) ? creation.assetRefs : [];
+      creation.messages = Array.isArray(creation.messages) ? creation.messages : [];
+      creation.canvas ||= {};
+      creation.canvas.viewport ||= { x: 120, y: 90, zoom: 0.78 };
+      creation.canvas.positions ||= {};
+    }
     const hasProduction = Boolean(project.shots?.length || project.characters?.length || project.script?.scenes?.length || project.outputs?.length);
     if (hasProduction && !project.creations.length) {
       project.creations.push({
         id: `creation-${project.id}-main`,
         title: "主创作页",
         status: project.shots?.length ? "ready" : "draft",
+        pinned: false, worldId: null, type: "episode", assetRefs: [], messages: [], canvas: { viewport: { x: 120, y: 90, zoom: 0.78 }, positions: {} },
         createdAt: project.createdAt,
         updatedAt: project.updatedAt
       });

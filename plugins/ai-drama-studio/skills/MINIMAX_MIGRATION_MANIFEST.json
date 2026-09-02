@@ -1,0 +1,1847 @@
+{
+  "schemaVersion": 1,
+  "sourceProduct": "MiniMax Design",
+  "targetRuntime": "OpenDramaFlow / AI Drama Studio",
+  "generatedBy": "scripts/migrate-minimax-skills.mjs",
+  "skillCount": 44,
+  "skills": [
+    {
+      "name": "minimax-3d-animation-short-generator",
+      "slug": "3d-animation-short-generator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "17bf47165d64a7f3b3a7bb551eeb6b92906bd1e8c78cf26429393b05567ccc45",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "c3710be6f62bc54867acaefda8bbdf37964f66b625ef06abf22187d71d9e710a",
+          "targetPath": "meta.yaml",
+          "targetSha256": "9e40cdca06d4246a7ca20f5cef274fe307e234734d4accfcfaa13e7f89425b08",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/fallback-policy.md",
+          "sourceSha256": "08898baeaaad27a4c5661b3f23598f5f00a318aab34dee31b664e5f8f0117c65",
+          "targetPath": "references/fallback-policy.md",
+          "targetSha256": "d7e190d4cd7fdbe4784540dc9fd38c3904ca48f73654373df4c3de70e031b00e",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/model-selection.md",
+          "sourceSha256": "cadadf8ef3bbf3fb3fb42935b5e252b9600b2d43f1d03a2adea903a023913d2b",
+          "targetPath": "references/model-selection.md",
+          "targetSha256": "8e4cd601c8478003c2f39c61082dcc73f93edb5dab4c8a8d82607ed72b8d7a21",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/qc-checklist.md",
+          "sourceSha256": "408daf454e0fbbcd2e3f1b305910131df5591f00e1863e8fba95c664779b9ff0",
+          "targetPath": "references/qc-checklist.md",
+          "targetSha256": "bcd14243da677df036d18a70541e3c976edfac335f7f17f06ca90fcf358dd7ea",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/shot-table-spec.md",
+          "sourceSha256": "f88eb2aaaba36b3f7b25234b43fc26b6b9621c86adc99dc7882822cd9c245b58",
+          "targetPath": "references/shot-table-spec.md",
+          "targetSha256": "f88eb2aaaba36b3f7b25234b43fc26b6b9621c86adc99dc7882822cd9c245b58",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/storyboard-guidelines.md",
+          "sourceSha256": "966efe582588ec404c8e2ce370eaa06d73a3ec899f8d5f80ba5f876f421df36c",
+          "targetPath": "references/storyboard-guidelines.md",
+          "targetSha256": "966efe582588ec404c8e2ce370eaa06d73a3ec899f8d5f80ba5f876f421df36c",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "e0c88750cd45876fc5380ece6c1cf5efb97a6bcbc35d907a37e9fef300d66f80",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "3c06234b90351e7de1f83b23e7d6295d1af5e464e760d09583368fec6decbc73",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-backrooms-dreamcore",
+      "slug": "backrooms-dreamcore",
+      "origin": "user",
+      "author": "Kido G",
+      "entrypointSha256": "9ccc252784777abfe0419f6cd4bf9a40c46b808a7a49e81f8a39144a2dc8377d",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "f668415addd48b47e095035f92f69e449035328268f53146140ec9dac754aac8",
+          "targetPath": "meta.yaml",
+          "targetSha256": "f668415addd48b47e095035f92f69e449035328268f53146140ec9dac754aac8",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "70d335161e85a9781cd643e54a2511e3957eff29f8a450d51ad9b6b149d2e847",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "329644595602237be1f35f65ee51738f6743477ff65a2a459e7d1c9e80f6a0b0",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-brand-promo-video-generator",
+      "slug": "brand-promo-video-generator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "f3d0109e10e6bb329d541e84e21d0c0bfbfb17d64e9501c475cc8be321432e44",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "5469b45f94b7554b807476fb303949424dca413535d95f14cd9cca9ce847d2f2",
+          "targetPath": "meta.yaml",
+          "targetSha256": "5469b45f94b7554b807476fb303949424dca413535d95f14cd9cca9ce847d2f2",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "0514ede3308e91950fb50c987abe8b624942a066908660f6a20597d60650da83",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "2441fc8762920e722b361c89b8cb994d0e1371f321b5e96f30fb9cd983cf8a3f",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-brand-stream-mg",
+      "slug": "brand-stream-mg",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "cad98bcd5bc971aaccf323f4e558d3593a1030f2fb0fbe8b29db078aa1ab8637",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "6d3bbc87fa3ead1807ec03dffa9678928ba989752ea464884c42ae668a120055",
+          "targetPath": "meta.yaml",
+          "targetSha256": "b49187bd80af957e92d3f92adeba77336039a8f7241f557aa2dc5416bd65d3cb",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "9bc2e2651390ec1fe136d50eb81acf24c2f24c5579ad80e1854e38e047e14e0d",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "4099739593d6d015126106835039ac467aa8716216573724cdfe9dfa3a909137",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-browser-game-demo-maker",
+      "slug": "browser-game-demo-maker",
+      "origin": "user",
+      "author": "Victor M",
+      "entrypointSha256": "2d91520f6a985b02e217cfead23591fd1b00d59986c7d4f64da69be630b6ff12",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "4ec82a11e90bc8c64c6493564eeeeb70471c7aef5ab30319e2fd5efc2612f9e8",
+          "targetPath": "meta.yaml",
+          "targetSha256": "4ec82a11e90bc8c64c6493564eeeeb70471c7aef5ab30319e2fd5efc2612f9e8",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/image-prompt.txt",
+          "sourceSha256": "b94e94d66ede9221eb9d6b3026b13db63cf1fccdce7e01ccb9b3deb6d88a0f5b",
+          "targetPath": "references/image-prompt.txt",
+          "targetSha256": "b94e94d66ede9221eb9d6b3026b13db63cf1fccdce7e01ccb9b3deb6d88a0f5b",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/user-prompt.txt",
+          "sourceSha256": "baccdc536ff34a9c252e2a2c11890454f84438ac89add8aa9c7efdddd2398f3a",
+          "targetPath": "references/user-prompt.txt",
+          "targetSha256": "13542bca54980346e024324a465df28c8f11564dec35f95215df1412855bf9f0",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/video-prompt.txt",
+          "sourceSha256": "f4a67b4a7688bb931f5855435c3c3b6624045f9d37d1f1dadf6314b3e0fe490f",
+          "targetPath": "references/video-prompt.txt",
+          "targetSha256": "584f328f9c3dc683b22bd4840613aef228914d8bf3ab75623e1c48f14c7ce702",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "b0c55cbc2b1f814ddc986024abaf97c4253e6498bb7926f9d10a42ecf64c9aa7",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "6ea822d1fdd326acf80a39eb87e35820ff68c1f5623e3687c9e7d3a15838f6a4",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-character-scene-storyboard",
+      "slug": "character-scene-storyboard",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "50767d2683c13c88e11c72f7843088aa0f8fe472cf1787ea27ca1e4931c4ec55",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "7961f3958fa3794972c6b44ad821f86b5f4b3f0fffba048e886b385fcb482a21",
+          "targetPath": "meta.yaml",
+          "targetSha256": "7961f3958fa3794972c6b44ad821f86b5f4b3f0fffba048e886b385fcb482a21",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/brief-template.md",
+          "sourceSha256": "ecb2b29a6429653b4e207cd5bd969bf2b96573414f120ce7dbfd0bd72f49aa91",
+          "targetPath": "references/brief-template.md",
+          "targetSha256": "ecb2b29a6429653b4e207cd5bd969bf2b96573414f120ce7dbfd0bd72f49aa91",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/prompt-template.md",
+          "sourceSha256": "6a6876b7e337c1c8fd7c334251cddae5a0317b773420f4de555e8bd052b91282",
+          "targetPath": "references/prompt-template.md",
+          "targetSha256": "6a6876b7e337c1c8fd7c334251cddae5a0317b773420f4de555e8bd052b91282",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/style-dictionary.md",
+          "sourceSha256": "9cd2f6a1c2ee8c26ca672ba52d7c3f490aab9079fba39812afe4ec1f326638af",
+          "targetPath": "references/style-dictionary.md",
+          "targetSha256": "9cd2f6a1c2ee8c26ca672ba52d7c3f490aab9079fba39812afe4ec1f326638af",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "5f50776e7722287889263fefebe0143859cc40ae59b614287de4d4610d2393a3",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "1bf8935cd8cdab657882719113b4e13257626890000af6be8cdf6b0dd7e4397d",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-co-op-game-intro-generator",
+      "slug": "co-op-game-intro-generator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "8a1127f485f0aa4618e8c4998eed098427a5e4562e29fc8954540e5d0166a426",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "987e6d5a220cc4371e9b3a9579f10940d47e39c5ee7033ad6d2d856198675459",
+          "targetPath": "meta.yaml",
+          "targetSha256": "ce2573bb4781d16484d835497dcd91fd3440064a8a1ce26226898d7ec5a0b2eb",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/h3-confirmation-image-template.md",
+          "sourceSha256": "344325132841a673fb2ccc5e12ada2c95c2cba19dd2b658678467219c9f66bbd",
+          "targetPath": "references/h3-confirmation-image-template.md",
+          "targetSha256": "8015da71ec6797aa60e140c0baf1edcbf71047b9c726654f78a9d9a2b11a0455",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/h3-video-prompt-template.md",
+          "sourceSha256": "7fac20c236de585d2f76e4fa01f9e74ced0a88a6d76d2b14c75ceac99607b9c2",
+          "targetPath": "references/h3-video-prompt-template.md",
+          "targetSha256": "49571ba1005f40df08dd04a0299954ec194a7f1b3a36047fccbbcb69e6305d59",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "e9f38e8ec57d76a0a95023943f9555f6054ec578db7fb74e1d9e070c90c094e3",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "9fc5029f55211974411c0d334927b2b9720c5d8f9cd2276aa67f8e8f03af1129",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-digital-product-promo-generator",
+      "slug": "digital-product-promo-generator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "a06cd8a3f8537204c21e7e6c4063341c9af4a7cbf3ee0a64959c0c41b39cc289",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "57e4c068d7981e2775dba8e94c9cc8d9a7687ade7b6d1b62408ecbb5d47291b5",
+          "targetPath": "meta.yaml",
+          "targetSha256": "5a8fea2a87c2e4300b269eb6e2d46cd976527d7786b365a7b0ce6c9bb3f9ac58",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "eee25026f9fcd470939e2367c585441e42a511e71eba4e355f3754951a9fa760",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "c59a5c6414b80031e216e8d89db6491f3b5ab8fac0758a9c1b65b93e5fd52023",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-dot-matrix-brand-wordmark-motion",
+      "slug": "dot-matrix-brand-wordmark-motion",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "0d15b9e0b6aca135af9db5a449b88ec35760955806bc46ea353f8b9c7e45600c",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "428c96b31c1f58a3d9c132a2f4c958a5ac5ea0ce052caf4af1def16d11c0fb1e",
+          "targetPath": "meta.yaml",
+          "targetSha256": "ce313d06ef0f8f84db6b09097e7c641418700e0fdcd5c4797c3c97fdd4cf4efa",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/chinese-prompts.md",
+          "sourceSha256": "20ff5f2cb812cf47fa6c0db3b922f0374bdf855100d7f40d28390d74b961ff3c",
+          "targetPath": "references/chinese-prompts.md",
+          "targetSha256": "20ff5f2cb812cf47fa6c0db3b922f0374bdf855100d7f40d28390d74b961ff3c",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "efdf731efe04b5e53238d8eb67869834a44855fd11ce18b6236cd94206db1053",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "d090dd45aeead68ca7d785318c45fdd633d584a5b8a8d4ff403645aade902662",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-film-reference-prompt-writer",
+      "slug": "film-reference-prompt-writer",
+      "origin": "user",
+      "author": "鲤鱼与鱼Ai",
+      "entrypointSha256": "0cdeda8488c81e8450dba8cd6de97cc1f5b1cd515ee769b1e575a1824d5ceabf",
+      "files": [
+        {
+          "sourcePath": ".gitkeep",
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "targetPath": ".gitkeep",
+          "targetSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "agents/.gitkeep",
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "targetPath": "agents/.gitkeep",
+          "targetSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "agents/openai.yaml",
+          "sourceSha256": "ff1a352c22c865e0b01ae0dd0d4aa3f3c3b1bc0844b450a16382db6acf4d09d2",
+          "targetPath": "agents/openai.yaml",
+          "targetSha256": "ff1a352c22c865e0b01ae0dd0d4aa3f3c3b1bc0844b450a16382db6acf4d09d2",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "78b24bf5ec89a309eadb2852d0ac585d62519bc367826ca82a64f260be9b4fe4",
+          "targetPath": "meta.yaml",
+          "targetSha256": "78b24bf5ec89a309eadb2852d0ac585d62519bc367826ca82a64f260be9b4fe4",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/.gitkeep",
+          "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "targetPath": "references/.gitkeep",
+          "targetSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/camera-movement.md",
+          "sourceSha256": "3641281602f8c4721c510f646275a5ff4dbae47e7398cd0c2dabba0496f8ee0a",
+          "targetPath": "references/camera-movement.md",
+          "targetSha256": "3641281602f8c4721c510f646275a5ff4dbae47e7398cd0c2dabba0496f8ee0a",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/prompt-and-output.md",
+          "sourceSha256": "9840c91e7b85becc9f9dc671b2ed0eea85f674e6df8a3543aeb4208a29996a33",
+          "targetPath": "references/prompt-and-output.md",
+          "targetSha256": "9840c91e7b85becc9f9dc671b2ed0eea85f674e6df8a3543aeb4208a29996a33",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/visual-analysis.md",
+          "sourceSha256": "0bf8fe42a01711fc96861537368588159f56504c912c210821794d4f4e6806de",
+          "targetPath": "references/visual-analysis.md",
+          "targetSha256": "0bf8fe42a01711fc96861537368588159f56504c912c210821794d4f4e6806de",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "b1f77425bc49e67850389783c2e86fd11d5e8defa9d1109bfe8f57d682bc33b0",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "80ec4d2d0db597bed05f442c03dbe9460059dde33504da5dbfc2da4a772ba576",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-film-shot",
+      "slug": "film-shot",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "c6ab6ea061ee4762ce8492f8156bd829fb18fb8e111b902350e730dd67092d49",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "4f447f42eef79b20df8618bd638adab2abdbf089d05b92706d8d1d506ab52823",
+          "targetPath": "meta.yaml",
+          "targetSha256": "4f447f42eef79b20df8618bd638adab2abdbf089d05b92706d8d1d506ab52823",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/character-sheet-formats.md",
+          "sourceSha256": "d397640afbd4e15d2bce8cb79b7e9ee895b0c434a128ea7195fcd243a44d59b9",
+          "targetPath": "references/character-sheet-formats.md",
+          "targetSha256": "d397640afbd4e15d2bce8cb79b7e9ee895b0c434a128ea7195fcd243a44d59b9",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/shot-language.md",
+          "sourceSha256": "f18a4c2f5382d6e512631f5b8768e170066cab06d3f1eb682f26b95931cdc871",
+          "targetPath": "references/shot-language.md",
+          "targetSha256": "f18a4c2f5382d6e512631f5b8768e170066cab06d3f1eb682f26b95931cdc871",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/visual-styles.md",
+          "sourceSha256": "47b5b880ee89b67cc36851bf9c0b95944a83e66e89c3f563d7fbf35b0c815172",
+          "targetPath": "references/visual-styles.md",
+          "targetSha256": "47b5b880ee89b67cc36851bf9c0b95944a83e66e89c3f563d7fbf35b0c815172",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "f6c5771e134a60885593c9eea1c33268a5aaa0530583bf0994ca6277a335c2d3",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "637347060d50de131abb8db0762784d4fc600386158e5c87bc0f32d42da30a88",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-fpv-tour-video-generator",
+      "slug": "fpv-tour-video-generator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "0b2c2ff31f38bb01887ba80a7ab152a96bdf27fdebacc6f6fbb2ca1a38ded222",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "bb949c50c6f51f37952d8df5c0cf75190026d7bbb84a5254119a9bcf7f9c289e",
+          "targetPath": "meta.yaml",
+          "targetSha256": "bb949c50c6f51f37952d8df5c0cf75190026d7bbb84a5254119a9bcf7f9c289e",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "2d4c85f9b8d3a1591669a13a43a8aaa5bab7714c786d5216faa1df5618fe7090",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "ea48a8395cf8e145a9d949cfba11f900f3f52192d84fb4079f96f89b253527d9",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-h3-prompt-expert",
+      "slug": "h3-prompt-expert",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "a35262b936f1978660d6ea96eeed05daec330f7a286e6a30aecc643757d8ece2",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "593e801b3ca08e5b9c4b90fd13c924cf47fd785e1391098cd7baa0e8e0b4b070",
+          "targetPath": "meta.yaml",
+          "targetSha256": "7134ec27c09e82e22f0b036ff556520a09146b318df7e1c565bf216cc642c114",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/audio-dialogue.md",
+          "sourceSha256": "00c1eadc1d7d4351952525ebc28df2d8ec342e5e38a55724bd1b8d4733d0e2b3",
+          "targetPath": "references/audio-dialogue.md",
+          "targetSha256": "00c1eadc1d7d4351952525ebc28df2d8ec342e5e38a55724bd1b8d4733d0e2b3",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/clarification-routing.md",
+          "sourceSha256": "77e0f7f1ee871e90e940e85ca7c7b79e0077c3ffebc828dd1a96834fe12177c3",
+          "targetPath": "references/clarification-routing.md",
+          "targetSha256": "3092f7ff9f864f8763be8c6b5a2eb27b7ea31108b66711f4c43035e7a9ca68e3",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/core-workflow.md",
+          "sourceSha256": "71d8528153aeee0f3ac773fb9f92cb99864d608cb70215771424bf5f03b08358",
+          "targetPath": "references/core-workflow.md",
+          "targetSha256": "8ef0a07e88b3f277c22a4af63853711b7c2e03d9c20a15451c3760a59622ed92",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/editing-preservation.md",
+          "sourceSha256": "c19a76209c42200fcf97bf3b4af84f9d53dd04f84695191947b689e04de483c0",
+          "targetPath": "references/editing-preservation.md",
+          "targetSha256": "c19a76209c42200fcf97bf3b4af84f9d53dd04f84695191947b689e04de483c0",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/modes-all-purpose-reference.md",
+          "sourceSha256": "c0ee4ad9a820f7968633548903c146225b70ced99c0ed09b36f515075b7b2bb7",
+          "targetPath": "references/modes-all-purpose-reference.md",
+          "targetSha256": "aa0b73cded1db295f711062d7f99291013f38d9da805362d5b0e1fc06ef8305b",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/modes-fl2va.md",
+          "sourceSha256": "8adb3fd6488e8d9110c9f52631eab9c4af36e5d320df82a727f79c74e34defaa",
+          "targetPath": "references/modes-fl2va.md",
+          "targetSha256": "8adb3fd6488e8d9110c9f52631eab9c4af36e5d320df82a727f79c74e34defaa",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/modes-i2va.md",
+          "sourceSha256": "444c5e81028f1344a319f1fff48baf65b063507d3ab152a93bf5370e499832a5",
+          "targetPath": "references/modes-i2va.md",
+          "targetSha256": "444c5e81028f1344a319f1fff48baf65b063507d3ab152a93bf5370e499832a5",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/modes-l2va.md",
+          "sourceSha256": "5b47f644d5d709c2d1cdb61aaa7ac900e4d058e0dc51386a7d926241df3e1d7f",
+          "targetPath": "references/modes-l2va.md",
+          "targetSha256": "5b47f644d5d709c2d1cdb61aaa7ac900e4d058e0dc51386a7d926241df3e1d7f",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/modes-t2va.md",
+          "sourceSha256": "fe25b4827b0168c3a8a88577e03bca6b1f789a88706ddeb1c9d0c3da009faee9",
+          "targetPath": "references/modes-t2va.md",
+          "targetSha256": "fe25b4827b0168c3a8a88577e03bca6b1f789a88706ddeb1c9d0c3da009faee9",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/pattern-grammars.md",
+          "sourceSha256": "e7bb6fc1c9acd05092775e8587fc66b833932e1519c878784367cc1cdaa31c59",
+          "targetPath": "references/pattern-grammars.md",
+          "targetSha256": "e7bb6fc1c9acd05092775e8587fc66b833932e1519c878784367cc1cdaa31c59",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/text-ui-layout.md",
+          "sourceSha256": "42195a97e5277bf6fc9adb5013417f3d30c41f38e0b74892d6bb3607e2570592",
+          "targetPath": "references/text-ui-layout.md",
+          "targetSha256": "4aba55ef05151418ffad5916665b1d5215d40d235ea15bf17d924a522c776f8f",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "22d0d13c445aa53835f7565e5bb84b734d66f7eb6cb74afbe58050fb6b4f2e54",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "75e0542799e00a8af1a3627e5b07cd21096b8851ee1ba63e9a6786165c96e632",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-handdrawn-live-video-generator",
+      "slug": "handdrawn-live-video-generator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "597f632e1757bd6abce80ab98276ca279c96c6ae94b50040890a2c08b7e680b7",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "2f6321e57c2b8c3202429a0bbb4e5a0ec717d8db659d2d0fdb493d63879af60f",
+          "targetPath": "meta.yaml",
+          "targetSha256": "e9db2c7cef94081874b11d2dc5b45381a179645ad1f8f1e00f622298fa3f0648",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "cd167a30c224caffb64eab3521e6c2fb80e7e4adfdf2b161fcd2986472b9eb2c",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "73ffe830bb1406e8dc308eae2c1de1e25f0b492b684053cd3b58face1efce681",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-image-remix",
+      "slug": "image-remix",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "d76c67a8f2d895e939763e6125f23daed44daad4aa7595d1b0c7ca189fbe7e08",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "c4e2e30e06df0db6340b9db6e63660cf2a5c07626bc4293ae158086063851ca3",
+          "targetPath": "meta.yaml",
+          "targetSha256": "c4e2e30e06df0db6340b9db6e63660cf2a5c07626bc4293ae158086063851ca3",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/analysis-example.md",
+          "sourceSha256": "04a38acac55d23138df7f75368facd2fcaeee801ef83c0a3b1a140b451dca69d",
+          "targetPath": "references/analysis-example.md",
+          "targetSha256": "04a38acac55d23138df7f75368facd2fcaeee801ef83c0a3b1a140b451dca69d",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/model-fingerprints.md",
+          "sourceSha256": "06cb254f6ac152f1c481dd1825cfe37f6f96a5d53a3e3566c8bd8a90ac7d7085",
+          "targetPath": "references/model-fingerprints.md",
+          "targetSha256": "06cb254f6ac152f1c481dd1825cfe37f6f96a5d53a3e3566c8bd8a90ac7d7085",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "afed32dc8cb588f9844da881c5700671023bfe4266437ec5141e8e8e00c6fd98",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "2071eb061784a39f523bb8c4f38d953a6a6016177a8a856651ccae8b4da886bc",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-ip-toy-grid-motion",
+      "slug": "ip-toy-grid-motion",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "8be6b72a2839fee94dd79573c346a30342ef854b3343727e3ee5e6c2ca42778d",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "35362302bfc2c562f4785ce41832a36f5d047fc1035246554c422bfcee933b77",
+          "targetPath": "meta.yaml",
+          "targetSha256": "32214494a6340e6aaeba5e217d59eacbbce513398af89c81c77bce0fb4035746",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/motion-six-grid-prompt-template.cn.md",
+          "sourceSha256": "e342c161bcede42e8b1087104302638a514f0f1fdbb7c557d7c6d3b6d2f9546b",
+          "targetPath": "references/motion-six-grid-prompt-template.cn.md",
+          "targetSha256": "e342c161bcede42e8b1087104302638a514f0f1fdbb7c557d7c6d3b6d2f9546b",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/prompt-fidelity-rules.cn.md",
+          "sourceSha256": "9ad15f0c93239db476a59197cf76d5c6a056806ab502899acac12557acbdf86c",
+          "targetPath": "references/prompt-fidelity-rules.cn.md",
+          "targetSha256": "e56c1195369bc3128c2866ae02a23f99d0d6fcc00f92d7d2e0935ece1cc3d3cc",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/static-six-grid-prompt-template.cn.md",
+          "sourceSha256": "8b8067243d7940293041e8d880c0bb105772cdf0caacfd472806e4840f430558",
+          "targetPath": "references/static-six-grid-prompt-template.cn.md",
+          "targetSha256": "8b8067243d7940293041e8d880c0bb105772cdf0caacfd472806e4840f430558",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "a6d4d2e0fd9b9788ce59860f393d67a1c4e844f6f989eba8eca6e0694d9e43e0",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "f61883b3b2178affcaebdb53dd185ec6efb333fca362ea14668f6121dc06f081",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-line-doodle-explainer-generator",
+      "slug": "line-doodle-explainer-generator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "d70467244eca4752ccb3edd2fe1569e28180daaf270dd4ecffc852162cf74052",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "8bc1bdceb702de846a3f934fc9f604aa36e134ab8b55affb22924a5e2e53a98f",
+          "targetPath": "meta.yaml",
+          "targetSha256": "8bc1bdceb702de846a3f934fc9f604aa36e134ab8b55affb22924a5e2e53a98f",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/interaction-cards.cn.md",
+          "sourceSha256": "974b35ac35d4e7dde6f98c20ab49299951c4ef2230974912f669ab918cbeaeb7",
+          "targetPath": "references/interaction-cards.cn.md",
+          "targetSha256": "974b35ac35d4e7dde6f98c20ab49299951c4ef2230974912f669ab918cbeaeb7",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/interaction-cards.md",
+          "sourceSha256": "dc722247cae1b9fcefaaf7a6164210e91286e8fe3d7bfd260ad2e15117a9caef",
+          "targetPath": "references/interaction-cards.md",
+          "targetSha256": "dc722247cae1b9fcefaaf7a6164210e91286e8fe3d7bfd260ad2e15117a9caef",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/output-format.cn.md",
+          "sourceSha256": "c5d233e95b43aab4aa78a7f943992cca418f5a2079af29d3bfb671b0ad866392",
+          "targetPath": "references/output-format.cn.md",
+          "targetSha256": "c5d233e95b43aab4aa78a7f943992cca418f5a2079af29d3bfb671b0ad866392",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/output-format.md",
+          "sourceSha256": "365331cedc17a0ef87a6b95e29930ebc98fcbc932298386d186c58bccf0d4b92",
+          "targetPath": "references/output-format.md",
+          "targetSha256": "365331cedc17a0ef87a6b95e29930ebc98fcbc932298386d186c58bccf0d4b92",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "07c279581e976138a2c34a3b211fa85b3caa73af9467b8040273a1e458b17ac5",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "99984a8d2b3f23cc8f557cbe89c01d34b28e23b5bcc57f71257c0fc672c97cc3",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-lip-product-ad-generator",
+      "slug": "lip-product-ad-generator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "d0b0ccfec55b64ffe8706c93cad16c6d494dadf801949bd23cf930c69320b567",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "498f7f5f9082a204b91a0094658a39c7b7ad6b651a62b7a9930f5f6d81317678",
+          "targetPath": "meta.yaml",
+          "targetSha256": "a108f29d8ba760f8ce7f7a3faa979b4dd2398462fc1462196cde74d7903179a4",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "d6d7b899b1c35cd03e536c011c1daf2c2cfc351365f670b1bbfdae2201ff0f59",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "f187a3544a453103bd5d0b7d61afc7473d25acad762066394963fd4584d8323b",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-live-sketch-motion",
+      "slug": "live-sketch-motion",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "3ba2f8d4c7aeeba78687106c5431407a1b4c1ee5ae350916246302ab1f229b00",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "34beb02b5262d644c391de2bc37c81489f7d192c5f0058e1e4d3b22c20da619d",
+          "targetPath": "meta.yaml",
+          "targetSha256": "d0b4176d4fdd6f910a986254be06ab827333c5e77c6f39d4456f65339aadb13b",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "269d072e6446c12f595f163d04db46b1144ff06814f69e1664488a7af472a9fc",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "95780c25d5c6a8a60ff3a71d3363b87aae9ac49358721045ccaa55cb8ddaca25",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-micro-expression-video-generator",
+      "slug": "micro-expression-video-generator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "ad868b60a446fee0496f6e2c8d43c2e61f56596ca06937404213d402502eea30",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "dd8a5d9748371df5ae6c2ae12ed56720c57032bf0964ff378fbc5583899a00f3",
+          "targetPath": "meta.yaml",
+          "targetSha256": "941b2ed633be4b943b0a54233ed0d7670ed140fb06f0363c97141f7806a4cf50",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/climax-reset-patterns.md",
+          "sourceSha256": "7a5f1741878d5cd25e9f8a493c36e371f774bbf5b3fe365c1382aa39610454d7",
+          "targetPath": "references/climax-reset-patterns.md",
+          "targetSha256": "7a5f1741878d5cd25e9f8a493c36e371f774bbf5b3fe365c1382aa39610454d7",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/emotion-route-library.md",
+          "sourceSha256": "0c26d39c52532549bffe19593e20573bc14c3e35f53c3be8e34855621c8dc453",
+          "targetPath": "references/emotion-route-library.md",
+          "targetSha256": "0c26d39c52532549bffe19593e20573bc14c3e35f53c3be8e34855621c8dc453",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/muscle-dispatch-library.md",
+          "sourceSha256": "88247a493ec6ff75e4979c6f8ee66a17266d3a3c88413c0dc169869eb895800c",
+          "targetPath": "references/muscle-dispatch-library.md",
+          "targetSha256": "88247a493ec6ff75e4979c6f8ee66a17266d3a3c88413c0dc169869eb895800c",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/performance-prototype-library.md",
+          "sourceSha256": "ff33696c410987600d895b2e1567c5bbea701cd897fcd971fb0162481d405981",
+          "targetPath": "references/performance-prototype-library.md",
+          "targetSha256": "ff33696c410987600d895b2e1567c5bbea701cd897fcd971fb0162481d405981",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/source-notes.md",
+          "sourceSha256": "53a518c8b45a6a1b62c8b11a7aecc2e062f2e5b918fe81724c256b1512343abc",
+          "targetPath": "references/source-notes.md",
+          "targetSha256": "53a518c8b45a6a1b62c8b11a7aecc2e062f2e5b918fe81724c256b1512343abc",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/tempo-density-guide.md",
+          "sourceSha256": "46b0f0da26907612520e55100371e878fa1bfe270c92cfe16bfde336bb8a283e",
+          "targetPath": "references/tempo-density-guide.md",
+          "targetSha256": "46b0f0da26907612520e55100371e878fa1bfe270c92cfe16bfde336bb8a283e",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/video-prompt-guardrails.md",
+          "sourceSha256": "04d05fa45acc60642e29cdbda4f0827d78833d310eb65f273f8001169d450916",
+          "targetPath": "references/video-prompt-guardrails.md",
+          "targetSha256": "04d05fa45acc60642e29cdbda4f0827d78833d310eb65f273f8001169d450916",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "6a15a434d3b35687743572bfdb2e77116ee4345c0fa6181605522a52c21aa899",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "3f890ee46445fe8ab84505a4108c74ab304f1413069d2283e622dbb682371d9d",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-minimalist-product-ad-generator",
+      "slug": "minimalist-product-ad-generator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "ecd1dad44a8ccdab633890af5e1f35a4f479e2b9d21299b4d3bc99ab5ebb5f4b",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "0f3b4351c256bbf26ff0bb0976089d8dd87f7bb50b5d5cb3c9562eac269c51f0",
+          "targetPath": "meta.yaml",
+          "targetSha256": "a03d3951acd2e72aa1ef3f192e1528857cc3060ae0458aab372df3423a0f92da",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "2d5b9ac3be3b5831936cfab56a89d5c3f1bb49a95b0b0e52e2b048cd40ab7b37",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "2dc45689b62e4b2bf50099d4258a4c1e8f50d6ed8e52ed5760b2370fb436e1cd",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-music-video-subtitle-generator",
+      "slug": "music-video-subtitle-generator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "6f17a08ce1a3bbf3be3487db0ced9365a308c4f17e071646b86088fa68f77e22",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "07b4e7f2c457ee2c5c9bba739464b802db65f3a787bf89579dd58175f1d3ccf7",
+          "targetPath": "meta.yaml",
+          "targetSha256": "d57d6d4922b646b7c9245c06a78b483a8056f6a3f506506d4ad664ff2e16f266",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "de0ae27c255129145c6b9c331982c10f3e4bed23858ec40551c7d72d9d9e620f",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "905cb521a05e4e0d1b96f89d51941a6b476ea6863d9a17ad037c5dc0b7e3bd0b",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-paper-collage-explainer-generator",
+      "slug": "paper-collage-explainer-generator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "751f5d627fa00ccd0ded615ffec1c574027f7f1a8d030e5cc15e28e8d280c6ff",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "ed01165661f7d398eb1b40487ad24bb37ffc79134cf7df64d382e4357bb3b1de",
+          "targetPath": "meta.yaml",
+          "targetSha256": "ed01165661f7d398eb1b40487ad24bb37ffc79134cf7df64d382e4357bb3b1de",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "55feafadc8bcfab355271f7573f50aa6c53452425c17579ada53caf8784f061e",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "d2b914824db75ceb56ced0e49948b43ce6c36ca8cd4523e7031f2889397bf452",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-papercraft-stop-motion-explainer",
+      "slug": "papercraft-stop-motion-explainer",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "5bdc4fd8aeed1c2c79687ddd8a70686ef6a748966385c05974e1eeacda6f439c",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "3460a97f3b00da56aeecc17973e70c0ba0a148d101a981def47dc5216fde3b39",
+          "targetPath": "meta.yaml",
+          "targetSha256": "3460a97f3b00da56aeecc17973e70c0ba0a148d101a981def47dc5216fde3b39",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "94dfb06a487aef8a3d74c5ec7f645fdbd79648dee06934889d823f2624171237",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "a418f3533c99cd911387ff01c5ac7bce01dafd732cd36ac251fdeb42f62db3f2",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-poster-motion-generator",
+      "slug": "poster-motion-generator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "2343dbdfbd5115e6ead37e7e63b1a284d035463ba745a6e1ca1bd11f3aa2b0a8",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "23d7eff2d3363464c2a71cbacf9cade1db28d2f0a73090ef98a07f077af0d0e9",
+          "targetPath": "meta.yaml",
+          "targetSha256": "5bc0c69254306a093561a84ddf89bfbb750269d4813a4f56af8bae51b7ae2c5e",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/v08-motion-reference.cn.md",
+          "sourceSha256": "c74a578cf57f1dad575fc54fc6051acb72f9499c70ef61d45303a72a2b101150",
+          "targetPath": "references/v08-motion-reference.cn.md",
+          "targetSha256": "5a65d53afd5502c75c48983eb1a05c3c5512ecdaefa8ec2ff26cfd56d02ba86d",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/v08-motion-reference.md",
+          "sourceSha256": "ef30a8fd04226329d9f8834e9e914d8209e2dc52dac7474f6ca33accacad4df3",
+          "targetPath": "references/v08-motion-reference.md",
+          "targetSha256": "41a2c3f28bab41c257ccdb671dbf6a1e87bd83a1bebf7a3149d7a17c737c034f",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "f9666d1bf6ae1b300902b51ee52d92f96cb2a133d22f87a4b6c3678b6d3dc039",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "c51890cc1986aa71db4c2f512beb64082be6493a014a73807de668fd180c9c42",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-pov-short-film-generator",
+      "slug": "pov-short-film-generator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "3c6d8c2fccd9b43427ca0a72fcf5cdacc1cf9bcb35bdb1578f7b3a4577f8d8d5",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "8dc192505d297f88fc11ac2928d83b504e49a8f7c6d6a1690b1209d83fb48d49",
+          "targetPath": "meta.yaml",
+          "targetSha256": "8dc192505d297f88fc11ac2928d83b504e49a8f7c6d6a1690b1209d83fb48d49",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "cc918cc93334245d42b28f3d5da94b4fa0a292c6162cb37ec69904de94a9f5bf",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "dfd995b1f8e4d4e02623c8079a7e4db6d8b2394b9d25b5c139cb00bed18abcce",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-promo-video",
+      "slug": "promo-video",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "3cf0aa3ee7036faeaef9b80ed64451883a6bf2e3cb688fc326cac27817498d49",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "12ac3f23b28f07e38e312ea9a6f04179d2b079ef3d275c644551bd71cf78193b",
+          "targetPath": "meta.yaml",
+          "targetSha256": "12ac3f23b28f07e38e312ea9a6f04179d2b079ef3d275c644551bd71cf78193b",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "2b7b45278326e1311046431b4487a4e345fd4477210de8ea6e22d332fd2c6ca7",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "848f3e8ae7c44cea7c1f6765a3a3f06cf9ec717d71521a033a24df84683cf493",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-silkscreen-decorative-illustration-short",
+      "slug": "silkscreen-decorative-illustration-short",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "c35fffc1b2216b03963d96624cb56dd6db6bc2067eddde20b215515cd94f780e",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "97b7adad76454c294a093cbcc38db3c41c3e14872a68c4d6b7c2b0b2336baf1b",
+          "targetPath": "meta.yaml",
+          "targetSha256": "2cb1ea9b7f9a03ff264fc52f3cf27a2a51703fc4cf7d8a5b709dd385e891ec00",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "6d014a6eec54a931ea9ba9b998dc2d901241221f7159a57ab42972f94c0ed317",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "29b3bf9a4f8cd7e3ae58a3cf198c62242f879f383d1e0f50b484ed565a57c2c1",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-skill-creator",
+      "slug": "skill-creator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "d93a286714b0773aeeaab753da5cdc1dc4cf6fb972acc062684c5605a614c059",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "b5f5fc38969934203212483364bf81e7b53d37ec729c846d547719ba5d3032ab",
+          "targetPath": "meta.yaml",
+          "targetSha256": "b5f5fc38969934203212483364bf81e7b53d37ec729c846d547719ba5d3032ab",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/NAMING.cn.md",
+          "sourceSha256": "bfee2a137fa074c4dda739c30d42900d4d0d233c696ae8d8dbe6bef085c096d8",
+          "targetPath": "references/NAMING.cn.md",
+          "targetSha256": "bfee2a137fa074c4dda739c30d42900d4d0d233c696ae8d8dbe6bef085c096d8",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/NAMING.md",
+          "sourceSha256": "d14c9132779a0d9b30aa6412b9a8fe031614edc6229fdca5ad9baf53c08f9732",
+          "targetPath": "references/NAMING.md",
+          "targetSha256": "d14c9132779a0d9b30aa6412b9a8fe031614edc6229fdca5ad9baf53c08f9732",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/SKILL-TEMPLATE.md",
+          "sourceSha256": "caa7ea534a34e91ac0c0eb6f90ced00213e3c6c3eef87840410c1afbef66a383",
+          "targetPath": "references/SKILL-TEMPLATE.md",
+          "targetSha256": "6af06791965f7016ff37e489e318016f53d3a0a07e4016dec01b3d114199a48f",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "a75e87c7e352afd04478e1b98503e2cd49bce3a5a14a3f494a0f14cbf69a7e1a",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "3337e2629841f0bea8dbfe39f31035e5423198cb683ea486208de3f26eccca84",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-skill-reviewer",
+      "slug": "skill-reviewer",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "45b64efd1f39a4560068117809a965271111d7ae3841d96662619ccb16ff8427",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "591020331e0f031674ceb59fb5efd31a1923e5e484fe8bae9915a81efe035960",
+          "targetPath": "meta.yaml",
+          "targetSha256": "591020331e0f031674ceb59fb5efd31a1923e5e484fe8bae9915a81efe035960",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "599b94aa9b20705138eb9b4a6ee21268b44e67acf64c445e0d76797ad36b4615",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "3033cce9790e808a092fd88f5c816dd698caba29f707dfd781ba3c5434e1c728",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-suspense-title-sequence-generator",
+      "slug": "suspense-title-sequence-generator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "50da665b09cdcc9f997b2aefc92afa9b99033d8f529b9b35d0015c8c94e5f955",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "eae31ab4b483014c589a830eb2d375356c9b912f4c518351ebd4f223f6c28bee",
+          "targetPath": "meta.yaml",
+          "targetSha256": "eae31ab4b483014c589a830eb2d375356c9b912f4c518351ebd4f223f6c28bee",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "d8aeee7de26d4ede8047648fdf9871bd8e624271e5aed8a23a85e0ce2497d98d",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "044d11f51a26d48e89dbff65ea5736906df39e80cabe0f6727191b0c83a12123",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-transcript-broll-planner",
+      "slug": "transcript-broll-planner",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "8d6fa3c2923e4c6ca1d8d844f991d79c9eb70a2e1d7d4fefb429e551beec9d9e",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "5fe90dd459df0e049c5fd8961ba3965510573c25652e5a679216bf07d23891d3",
+          "targetPath": "meta.yaml",
+          "targetSha256": "5fe90dd459df0e049c5fd8961ba3965510573c25652e5a679216bf07d23891d3",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "146122adc92999b5029c2a47959ff4858deb046c99c44c83bef1fb2e6bce5cd3",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "2b69beabd69ade90e8c35562feb0e9b4ae003df75a9c488e9a04b4c72335744e",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-video-prompting",
+      "slug": "video-prompting",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "cd3fb28cf9e5b084637b434c0f3bc39846f96ce2af667a3562bc36a5610c5ba9",
+      "files": [
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "dfa950607ee017c20a28ffa3a0ecb75eeb4dee4f70bc0ba287aea146cefe8b96",
+          "targetPath": "meta.yaml",
+          "targetSha256": "dfa950607ee017c20a28ffa3a0ecb75eeb4dee4f70bc0ba287aea146cefe8b96",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/models/image-models/prompting.md",
+          "sourceSha256": "0f624efde9a70f8437961e5d9961a2a787b25aff795e5265a944f72c9e354657",
+          "targetPath": "references/models/image-models/prompting.md",
+          "targetSha256": "0f624efde9a70f8437961e5d9961a2a787b25aff795e5265a944f72c9e354657",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/models/kling/prompting.md",
+          "sourceSha256": "692908cf1458a0593ac46316babfe08677bde93601e5b26d20569ea152561cf8",
+          "targetPath": "references/models/kling/prompting.md",
+          "targetSha256": "692908cf1458a0593ac46316babfe08677bde93601e5b26d20569ea152561cf8",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/models/official-hilo/prompting.md",
+          "sourceSha256": "341870187c2ea950007d9882899ea08cd4bc2cae4b7c1b6379c6af01b58d55ae",
+          "targetPath": "references/models/official-hilo/prompting.md",
+          "targetSha256": "341870187c2ea950007d9882899ea08cd4bc2cae4b7c1b6379c6af01b58d55ae",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/models/veo3/prompting.md",
+          "sourceSha256": "31091d59021dabab7191c7189610a985c0d674a834f587669b09afd0e16090cc",
+          "targetPath": "references/models/veo3/prompting.md",
+          "targetSha256": "31091d59021dabab7191c7189610a985c0d674a834f587669b09afd0e16090cc",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/models/wan/prompting.md",
+          "sourceSha256": "afc86d7528529c5c0ad84f0dbf2aa0626f9cd4cf72b65efbcd7fad8f86317fa0",
+          "targetPath": "references/models/wan/prompting.md",
+          "targetSha256": "afc86d7528529c5c0ad84f0dbf2aa0626f9cd4cf72b65efbcd7fad8f86317fa0",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/workflows/character-sheets.md",
+          "sourceSha256": "e4cdeba3ae37ff6789b2a00f363c24aaef7dc061f7d09daa8894722f456684cd",
+          "targetPath": "references/workflows/character-sheets.md",
+          "targetSha256": "e4cdeba3ae37ff6789b2a00f363c24aaef7dc061f7d09daa8894722f456684cd",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "2dba39880a69b0d87bb74685d2d540d9fa9adc823e4843d997a3b6131acc8089",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "a8f8b2a8c640c0f216b44a8f2e188f535d61a1ab7fd0981f661ebbd01afc68fe",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-vox-style-video-generator",
+      "slug": "vox-style-video-generator",
+      "origin": "user",
+      "author": "MiniMax Design",
+      "entrypointSha256": "e3c835702064ab45bd95b98bcccd8039580a60974c70f7fce5e35ac2213ba88e",
+      "files": [
+        {
+          "sourcePath": "LICENSE",
+          "sourceSha256": "0fcdd8bb116755037edd1f07f49ae2ebeeff49a14c7c8b5bc10aa8bce7b7a8fa",
+          "targetPath": "LICENSE",
+          "targetSha256": "0fcdd8bb116755037edd1f07f49ae2ebeeff49a14c7c8b5bc10aa8bce7b7a8fa",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "meta.yaml",
+          "sourceSha256": "b8712602af05e32b0a5b56667a8355a69a06ebae78fae1b8dcd5fb4ca795400d",
+          "targetPath": "meta.yaml",
+          "targetSha256": "5df5720c8330e815087647a885cb6f53c6049e27ceaafe4d4b026c19f83ccbe0",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "README.md",
+          "sourceSha256": "45c0e786431593661d98722f3cbf63da556431534f308edfa06de3e329459ca6",
+          "targetPath": "README.md",
+          "targetSha256": "45c0e786431593661d98722f3cbf63da556431534f308edfa06de3e329459ca6",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/atlas-cloud-api.md",
+          "sourceSha256": "c3592c3a86fcd47fed6e097243ef5d7e8ad839bd01d7d5a7082f306e292d2b5a",
+          "targetPath": "references/atlas-cloud-api.md",
+          "targetSha256": "c3592c3a86fcd47fed6e097243ef5d7e8ad839bd01d7d5a7082f306e292d2b5a",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/ffmpeg-assembly.md",
+          "sourceSha256": "b35a56b8e77309445bb4ffbe2dc6e74a8b2344e9a68b5dc48323ad48269adccd",
+          "targetPath": "references/ffmpeg-assembly.md",
+          "targetSha256": "b35a56b8e77309445bb4ffbe2dc6e74a8b2344e9a68b5dc48323ad48269adccd",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/vox-style-guide.md",
+          "sourceSha256": "67c4104a8a2869ee851e12d9b4d0fe2a41faa8df7a7c48271b97a27f8c26d6ad",
+          "targetPath": "references/vox-style-guide.md",
+          "targetSha256": "67c4104a8a2869ee851e12d9b4d0fe2a41faa8df7a7c48271b97a27f8c26d6ad",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "23a809188fd116fb3d36154f587e7aed7646de171f416f44fb1ce3ebb992caff",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "4084c3bb5b75538acac1c2d279835637b95190c75dd919456c2b92d729bcc35b",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-anime-game-pv",
+      "slug": "anime-game-pv",
+      "origin": "core",
+      "author": "MiniMax Design",
+      "entrypointSha256": "02bbbd7d8e3f7d633aa1de0ecfb5280c3505cb70b4a3de4e62cfc392271b9352",
+      "files": [
+        {
+          "sourcePath": "references/audio-direction.md",
+          "sourceSha256": "71b2eaa2f6e92c31e477a84785ab177c6b3f70912d2cf2d7d301706bc1eb3a20",
+          "targetPath": "references/audio-direction.md",
+          "targetSha256": "e2448de4bb85e0e82156253c40d6aad8d35cb3e48cd4ab6cbb9acb695995392c",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/prompt-rules.md",
+          "sourceSha256": "84378b12118dd7ac704d0a75b674d007bcf7176992e7efd37569b067f42ee735",
+          "targetPath": "references/prompt-rules.md",
+          "targetSha256": "450b02d3d2650dbade08ff36145ee5afb236759867d244876b9398f1a9f53945",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/visual-inputs.md",
+          "sourceSha256": "93f176dc036d030d9e32efe33872bbf87a1af9b052cb8f8620215795a68af683",
+          "targetPath": "references/visual-inputs.md",
+          "targetSha256": "399cdfdf21e12fa1672b30014f59c3416e5d80c87e5a47d966bcbeb6f20d088a",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "395bc9b5cf4855bb8313b16b0764ece304912b9342ce75bf88905667be1d74bd",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "b3977b86261fdc68d2c0ee68b89f3a734bf5f0f5d91ae56c260a5e7510976487",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-brand-ad",
+      "slug": "brand-ad",
+      "origin": "core",
+      "author": "MiniMax Design",
+      "entrypointSha256": "3fb1bdabfad905005dfda7ed36c37ddb19ddd482b37bcc68d9ccfdf147531cc2",
+      "files": [
+        {
+          "sourcePath": "references/future-system-montage.md",
+          "sourceSha256": "6bd2343272606cb369e56ec0d6fed2575ce474ac724fcc665b2a105252c14bad",
+          "targetPath": "references/future-system-montage.md",
+          "targetSha256": "7983d7535c5b776521b6de76bd1a99af629a8182c66aafafdb9883199f088b35",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/product-h3-compile.md",
+          "sourceSha256": "ed258e1e14090d79d0b3b5c95f718884b50562f245a5f84ad5c2300200ff603c",
+          "targetPath": "references/product-h3-compile.md",
+          "targetSha256": "854b3beaa537c926919ebd1a868dc992a7dd11b43c7009691fea90203d2e96ea",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/product-motion.md",
+          "sourceSha256": "51948e9a5ae31d3da4e7e5c121249a4c968480fbf8984277f0a6cbc4ae510c43",
+          "targetPath": "references/product-motion.md",
+          "targetSha256": "073c34662b7d5a5e00dcd941d472ccce4dba47a33895512e8b58a204a826de6c",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/product-visual-techniques.md",
+          "sourceSha256": "4e988a8e0a5132e0a8fe07e68d0badbacd22911359bcd84e110bf2e65a19771e",
+          "targetPath": "references/product-visual-techniques.md",
+          "targetSha256": "4e988a8e0a5132e0a8fe07e68d0badbacd22911359bcd84e110bf2e65a19771e",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/style-research.md",
+          "sourceSha256": "d07cc655ba2774d1841a61c538e73d3633eb41bb6d2debcb261d710f2bb08f78",
+          "targetPath": "references/style-research.md",
+          "targetSha256": "be008f94773dfbb9db919945dd7fcb407bb3ad6654f2d8f1722bb121b3bbed90",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "62cac8d23723a7adb4ed5c8ed5250094507f35011295d859c7a1ebda11643799",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "0acf32321f36e0f0975075a1e8f237fb275025f90985692b53880f5cfc0af7f2",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-cinematic-title-sequence",
+      "slug": "cinematic-title-sequence",
+      "origin": "core",
+      "author": "MiniMax Design",
+      "entrypointSha256": "a02ecedb1621230c4d59c41f927647b476118c11a6b801b3fff2a9845d3e791a",
+      "files": [
+        {
+          "sourcePath": "references/case-calibration-matrix.md",
+          "sourceSha256": "3c0a4d4b0cb7cabf91c3df4eb123a25e4a611458cd427e0374450218fbcf1dd7",
+          "targetPath": "references/case-calibration-matrix.md",
+          "targetSha256": "3c0a4d4b0cb7cabf91c3df4eb123a25e4a611458cd427e0374450218fbcf1dd7",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/cinematic-narrative.md",
+          "sourceSha256": "a8a1a09e1f4d73b884c8ae2859c4b06ebef2b3bed8eb048523f683e76b355618",
+          "targetPath": "references/cinematic-narrative.md",
+          "targetSha256": "5c6804fb6c09ddeeb4a219ac8bdd6945cacaa50792046cbb3f99594729af1257",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/cinematography-and-transitions.md",
+          "sourceSha256": "cb48e2d0c20aedfbc4b602e64c07a131cabd37b7508a50aed235b195c457d30d",
+          "targetPath": "references/cinematography-and-transitions.md",
+          "targetSha256": "eb2e19bc12657c1b19422b61e9359da5ed4c0003384685043c2c1e7b4d1362d2",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/constructed-world-vfx.md",
+          "sourceSha256": "c88ac3b7ea88c7afca52becba9d188ef67ad6af2754a273c44573c5af802cf4b",
+          "targetPath": "references/constructed-world-vfx.md",
+          "targetSha256": "72d3c276dcce4f366dfca79039b5f5e0bef50055cbd1d7d7bd3d6499128a5db5",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/editorial-collage.md",
+          "sourceSha256": "a85694d8275bbc009dd244e374e013812ca6890ffd66fc12cb7c742e97ebf790",
+          "targetPath": "references/editorial-collage.md",
+          "targetSha256": "09fda73dae9e3239411fff173a32f8c8831d504fa3c4137e59860af053127dd8",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/h3-prompt-contract.md",
+          "sourceSha256": "1cbcc85271f4802099b97acc5df7ee1cb1d7be6d0267e29a02a938ce34aa15e3",
+          "targetPath": "references/h3-prompt-contract.md",
+          "targetSha256": "c39f22ecae8c88cdb721167d282a2a09b04f3812c78a7aee8c4e3af090666547",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/live-action-graphics.md",
+          "sourceSha256": "cc7847f9fefb6ad057986b89969ce8820cf172db091a72c616091ec78eecb7ae",
+          "targetPath": "references/live-action-graphics.md",
+          "targetSha256": "d157d47559aa46c93c5f4ab055bb82b6582a2ecd34dc3e1cf6904b8731f54e47",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/typography-and-credits.md",
+          "sourceSha256": "300ca84a84dad9fab533db6934859fd8c559d999279385b26227ec6d5ba8643a",
+          "targetPath": "references/typography-and-credits.md",
+          "targetSha256": "fd2c8a7cb18dafee50c8ff66ebfaf9f8d03b807e8d472726e94fe7ad14f2f2be",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "8a35d9ef37bd62c128fb92ddf8a829119df335c1b2de497c20a8b052c023e388",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "cd7b99ec89c9b4f761e114b24048ae4850f8c05256af6245ef183faf7f91ccc5",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-cool-music-video",
+      "slug": "cool-music-video",
+      "origin": "core",
+      "author": "MiniMax Design",
+      "entrypointSha256": "6de703a84172c66fd543892ad014def33b53564add2a1dae32fc25642eb46f1b",
+      "files": [
+        {
+          "sourcePath": "references/methods.md",
+          "sourceSha256": "191e771c1d7bacd58d13be61b79a82d830c370d1536d33fdef05fc3549a11522",
+          "targetPath": "references/methods.md",
+          "targetSha256": "191e771c1d7bacd58d13be61b79a82d830c370d1536d33fdef05fc3549a11522",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/music.md",
+          "sourceSha256": "0facd28d6524d9efb2c5b304170f45369525d120b4cc8e21c1e962da461f45ff",
+          "targetPath": "references/music.md",
+          "targetSha256": "0facd28d6524d9efb2c5b304170f45369525d120b4cc8e21c1e962da461f45ff",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/performance-and-space.md",
+          "sourceSha256": "2820dc31b706e83e087806be6a73c2801e8d16542ee871c022d4a181f3d66a04",
+          "targetPath": "references/performance-and-space.md",
+          "targetSha256": "2820dc31b706e83e087806be6a73c2801e8d16542ee871c022d4a181f3d66a04",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/prompt-blueprint.md",
+          "sourceSha256": "66f182d5dbca03ebef271faa6f015eea3059e85af01c38aaac6753a02d3d4d62",
+          "targetPath": "references/prompt-blueprint.md",
+          "targetSha256": "7ba54ab7f2d291120d84c3562df6360231a55bb3d7966cf3894dfe92b74457b3",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/style-guide.md",
+          "sourceSha256": "21f69c9f5c1844c7645b017ea068ff40097087a67c025642e95e261f0785a4ff",
+          "targetPath": "references/style-guide.md",
+          "targetSha256": "21f69c9f5c1844c7645b017ea068ff40097087a67c025642e95e261f0785a4ff",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/typography.md",
+          "sourceSha256": "d9cdd4e395085cd61276cf11310a015e7190ab9b14d76e3de6edfc39b7eb982b",
+          "targetPath": "references/typography.md",
+          "targetSha256": "d9cdd4e395085cd61276cf11310a015e7190ab9b14d76e3de6edfc39b7eb982b",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "cfe65645898db40c1b231b8bc464f0328368ef92ff2fe9a88b40b20d594b5ee4",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "2bfea50adc50ab486b75bf4a019c08858734b68ede6ac56724697f6e97d5cf62",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-education-studio",
+      "slug": "education-studio",
+      "origin": "core",
+      "author": "MiniMax Design",
+      "entrypointSha256": "65e2d5f8f18873ab6a19fb14cd6cdd85c7dbd17fc94704dbb978842d7fc93981",
+      "files": [
+        {
+          "sourcePath": "references/assessment.md",
+          "sourceSha256": "ba0269d8a2cfffd51e0646617470002b8fc6b4ea2cb59b361e16cbd9a217844f",
+          "targetPath": "references/assessment.md",
+          "targetSha256": "ba0269d8a2cfffd51e0646617470002b8fc6b4ea2cb59b361e16cbd9a217844f",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/education-video-pipeline.md",
+          "sourceSha256": "bfe216348053baa2cd12ef45a47b623ff5b36e3c08de807021029043db1e1385",
+          "targetPath": "references/education-video-pipeline.md",
+          "targetSha256": "2cbf21a491f839b426cd34ea2510f0b270a8301f85a267fff8033d13096c2255",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/visual-production.md",
+          "sourceSha256": "1b62e1b7cf8f480d7e6ce6c43578ed3222e171096ba8d7d177d6da6b48bf6297",
+          "targetPath": "references/visual-production.md",
+          "targetSha256": "1b62e1b7cf8f480d7e6ce6c43578ed3222e171096ba8d7d177d6da6b48bf6297",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "f3003d6e70702d7bf5ebde56b309f23670b9a18483d49a89c61e1fb190000793",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "1b1427b1ad46e2762a1cb73baadb7356a99b6dd2325cb240dd56dc68222fb754",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-h3-visual-design",
+      "slug": "h3-visual-design",
+      "origin": "core",
+      "author": "MiniMax Design",
+      "entrypointSha256": "110c375f2647b3db788681e55a1d10f8191862ecd23b57caa3e3db0dd0ca45cb",
+      "files": [
+        {
+          "sourcePath": "references/h3-execution-grammar.md",
+          "sourceSha256": "039bfaaa552898e4254ad1201736b414cdeda95101411a08b41dbf12947fa435",
+          "targetPath": "references/h3-execution-grammar.md",
+          "targetSha256": "93461eac506140fc6b27937fc33b7d29f6881ef8755f404c44c37a21c2d25b84",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/handdrawn-live-action.md",
+          "sourceSha256": "234037c8263c5a3018bac453b8c54073a21bff00f2e0eeba2582cc945555c3c2",
+          "targetPath": "references/handdrawn-live-action.md",
+          "targetSha256": "0924a2148b5f5d54b03d155417329777bb23946dad4a0d06b261a8bd246b5f93",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/music-direction-library.md",
+          "sourceSha256": "5791c03703bcf7194f3af82fc1a2c984fc820c328a7b0b33ba9723819c3280ed",
+          "targetPath": "references/music-direction-library.md",
+          "targetSha256": "10e5da0e0881638f9512c72c020466a131819d4f19148ae0df4ef9036c65d04b",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/style-cool-art.md",
+          "sourceSha256": "ea9899a1e21f6f00305c855a5131317cd305e5c340cdf99eaaf34c093f519718",
+          "targetPath": "references/style-cool-art.md",
+          "targetSha256": "674cf1009fcd3c64714595fd9e59515c1e2d6dc218c7ca7a829fd14ffdad5df2",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/style-dark-pop-glitch.md",
+          "sourceSha256": "644eb2f649e981c4656351c610634b94b4a8241bc1ea9600cb5783bd78f218c0",
+          "targetPath": "references/style-dark-pop-glitch.md",
+          "targetSha256": "dcb637349f3639f02ff1bb1eeb5a86bc87d6695561a10a753ed550f6e0913c8a",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/style-fresh-cute.md",
+          "sourceSha256": "3b1ca288ba1d8e0dba714e85ae8d83a6ba151066c5d78f1fa77f3367e1f4d709",
+          "targetPath": "references/style-fresh-cute.md",
+          "targetSha256": "4a5eee7ad6cab7eb5778410cee154083df3e517ed5abe5080e39472019920bb2",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/style-poster-collage.md",
+          "sourceSha256": "73bf75d23455480877cbc77d343890fc37874a798cbc7a26228dc256df7ec2d8",
+          "targetPath": "references/style-poster-collage.md",
+          "targetSha256": "238699abea33c171bc3acbb47801e68eff6f2f080dbf346009a19f1a48798d2b",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/style-tech-particle.md",
+          "sourceSha256": "1f4387f06814edf589bc76f498c3358f13d2f053b6a79f1f1d27b0e3dd7baba8",
+          "targetPath": "references/style-tech-particle.md",
+          "targetSha256": "7936b3791810bd4de1d750a8ae73c6e39934694701a03e4e791a8ca67df2dac2",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/subject-packaging-system.md",
+          "sourceSha256": "25562df8b10202d400e614e952a2372d6d05ddde18362ffb02e97c797029aa60",
+          "targetPath": "references/subject-packaging-system.md",
+          "targetSha256": "2445977df430e787e851d087c6d2f3632e09f3f3ccfe194d1ba122172f71a3b3",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/td-cv-tracking.md",
+          "sourceSha256": "87d4c334cff5cb54ed0fc10ee2360ea9972e3babd7bca3ca64f23f9b80d0caa6",
+          "targetPath": "references/td-cv-tracking.md",
+          "targetSha256": "87d4c334cff5cb54ed0fc10ee2360ea9972e3babd7bca3ca64f23f9b80d0caa6",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/td-visual-attributes.md",
+          "sourceSha256": "263f6f982666b7c3fe3f84e7545674feca63094d09e0d6494aa700b3cfc8846d",
+          "targetPath": "references/td-visual-attributes.md",
+          "targetSha256": "263f6f982666b7c3fe3f84e7545674feca63094d09e0d6494aa700b3cfc8846d",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/typography-packaging.md",
+          "sourceSha256": "017b76afc1b65e461c5698c9abb0caca865049cb8ff660c178d8f4a3917e236e",
+          "targetPath": "references/typography-packaging.md",
+          "targetSha256": "1080381bc71ac76b25416beaff500e5fdee57bb902bc1bafff7252530ee135a9",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/typography-system-library.md",
+          "sourceSha256": "fab35934c65b18f79e000c17d6d176a15ec5c36dfd845b0e8f2cc0fb22294d3f",
+          "targetPath": "references/typography-system-library.md",
+          "targetSha256": "21e20d2b4cbe61fc6dd050f31063f4d92731a272650880d8e6b6251441ceb0e6",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "83de635b52844ada2bde39be420c7682b844eb8e794209434a3ac813760783c3",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "ab24707cba31542862ed337548f4dc4b8c33fdb6d3daab83872c046b2d493f62",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-koc-video",
+      "slug": "koc-video",
+      "origin": "core",
+      "author": "MiniMax Design",
+      "entrypointSha256": "99a99e707b7f01c78bdaef678b6efd02f5bd92fa986f1bc672850d4efc2b929b",
+      "files": [
+        {
+          "sourcePath": "references/creator-direction.md",
+          "sourceSha256": "aa99c26d1be2f6aead30d4ca9e08ef2ded89b16059fd21a5b77bcbb02b9c0b94",
+          "targetPath": "references/creator-direction.md",
+          "targetSha256": "aa99c26d1be2f6aead30d4ca9e08ef2ded89b16059fd21a5b77bcbb02b9c0b94",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/hook-decision.md",
+          "sourceSha256": "65b5ac5d8e1a68e85d7611c8085cdc7f4a0605c979f81e3af2102a3e42489d11",
+          "targetPath": "references/hook-decision.md",
+          "targetSha256": "65b5ac5d8e1a68e85d7611c8085cdc7f4a0605c979f81e3af2102a3e42489d11",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/production.md",
+          "sourceSha256": "06caee00e9b5407a6aa9c4bb72a63564fe82d2b915cc2f9209bad8adc36a07e5",
+          "targetPath": "references/production.md",
+          "targetSha256": "ea3cee4bb185dcb0e4c788c0cc8d438f8278361e7f81190228ba6dbbe9f00fb8",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/script-and-shots.md",
+          "sourceSha256": "accc4f20e3afd531f9593127845fe370d9972c76b49ed2cfac60c28b8bd7dda9",
+          "targetPath": "references/script-and-shots.md",
+          "targetSha256": "78013b2bfcfccb23495b05a874e05dbac2ecc07e0476b627ac328dc3d3a910c2",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/source-routing.md",
+          "sourceSha256": "420a5e1c0964ddd554b0d696f79b1becada2fac20e88c99a39f417810f19da5a",
+          "targetPath": "references/source-routing.md",
+          "targetSha256": "5d9070fc1e60110ec7f7623cff6127ce6ee13580c7ae6936cffb9ced8fbf43b8",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "d2fac7ea660c189b67a7b0b48dbdf1c394fb484833d548fcab7c4d4726d58beb",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "709dbb2804544e2623cc373d16c59acb7eadd19daa97c23afddd854dc9f4933e",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-ui-motion",
+      "slug": "ui-motion",
+      "origin": "core",
+      "author": "MiniMax Design",
+      "entrypointSha256": "8d9e33109b75bc729f8a9bd0cf2a82f03ac1ef2df822e46f0c1db2560178d3f5",
+      "files": [
+        {
+          "sourcePath": "references/brand-analysis.md",
+          "sourceSha256": "3de5892be10bff382aa0d6fb6c0f24984ea1e862eb1525efaa5696f95087957a",
+          "targetPath": "references/brand-analysis.md",
+          "targetSha256": "3de5892be10bff382aa0d6fb6c0f24984ea1e862eb1525efaa5696f95087957a",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/common-adaptations.md",
+          "sourceSha256": "d621172f3f2a464a68a6d5d13d4fd3592ab4d07baba912d3fde484ab7a348ed2",
+          "targetPath": "references/common-adaptations.md",
+          "targetSha256": "ef38018dc50ef880b053e55064a05e9ca7b540b847a8cc28b0fbfe4790280652",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/custom-style.md",
+          "sourceSha256": "2eace77ff6c60efcadd3299dcda27b78027467d667d6c4488ba8e66a6dc50285",
+          "targetPath": "references/custom-style.md",
+          "targetSha256": "2eace77ff6c60efcadd3299dcda27b78027467d667d6c4488ba8e66a6dc50285",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/long-form.md",
+          "sourceSha256": "5225570ba8460b2099ee223f260524f6d113eff4225bfe60521a0483b3c11c9f",
+          "targetPath": "references/long-form.md",
+          "targetSha256": "020089270bc4a20369a1938fe5c6d7b0c9d5d1c7b0b211338bff5c7db79fcb8f",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/motion-prompt-writing.md",
+          "sourceSha256": "3deb419e4e98d4a0a0b0746e5bd57208e074f7e1225a1b9d1f5b4ef646721bc8",
+          "targetPath": "references/motion-prompt-writing.md",
+          "targetSha256": "1d62c96a2ce64b6ab3317bfd51338ee8e35f8df7dff03ddcd043f29367cdc631",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/qa-checklist.md",
+          "sourceSha256": "bc6e7988dea91c7234cf8cf4d15c8ee450d790995909abf514a01e6783d9a77d",
+          "targetPath": "references/qa-checklist.md",
+          "targetSha256": "10160425afa8768de8fe350987abb84562362fdc3aef65497582ceff0f0d3434",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/storyboard-schema.md",
+          "sourceSha256": "7e2ed5af3db7e2e3a192d2dedc36e36a11d1b4278067a21bd7de1ff05c3ed51b",
+          "targetPath": "references/storyboard-schema.md",
+          "targetSha256": "b33b54924b1e9f29862eeed652e511672bfbee61b80ec5aa9f475936ea377a37",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/style-matching.md",
+          "sourceSha256": "5edd45a633c55111f6de1f431887df5827a965ea49305683cd0ae72b9be9ca02",
+          "targetPath": "references/style-matching.md",
+          "targetSha256": "3fbc8200cd8fa4e2d8d85c5d39e864cd970bd709435d1af8ff6aabfb1959f81c",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "references/styles/A.md",
+          "sourceSha256": "b8e93fcfcf6ee411ec11562d8b6ee414b915c3775678b528ff3e1e5609dcdb43",
+          "targetPath": "references/styles/A.md",
+          "targetSha256": "b8e93fcfcf6ee411ec11562d8b6ee414b915c3775678b528ff3e1e5609dcdb43",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/styles/B.md",
+          "sourceSha256": "68e20c9d83d83918d61b4415a17a7147b06022b043931e91185fde95aa2fd08b",
+          "targetPath": "references/styles/B.md",
+          "targetSha256": "68e20c9d83d83918d61b4415a17a7147b06022b043931e91185fde95aa2fd08b",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/styles/C.md",
+          "sourceSha256": "ec9e605121ff40afb908f683ab31e7c4e83907c837515872abbb0cabfa20e686",
+          "targetPath": "references/styles/C.md",
+          "targetSha256": "ec9e605121ff40afb908f683ab31e7c4e83907c837515872abbb0cabfa20e686",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/styles/D.md",
+          "sourceSha256": "92b0b3d039c844df180cc83f2402cc4de443474f58f6d2b17adcf32511032e42",
+          "targetPath": "references/styles/D.md",
+          "targetSha256": "92b0b3d039c844df180cc83f2402cc4de443474f58f6d2b17adcf32511032e42",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/styles/E.md",
+          "sourceSha256": "a0984a750e6c739d7ab087d4d05d42951275ffd1acfd9e6470cd6382ee3f5927",
+          "targetPath": "references/styles/E.md",
+          "targetSha256": "a0984a750e6c739d7ab087d4d05d42951275ffd1acfd9e6470cd6382ee3f5927",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/styles/F.md",
+          "sourceSha256": "b834fe4d56e1da3a9d67b62a42135243ee95af33892490ff297879d8199ebdb3",
+          "targetPath": "references/styles/F.md",
+          "targetSha256": "b834fe4d56e1da3a9d67b62a42135243ee95af33892490ff297879d8199ebdb3",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/styles/G.md",
+          "sourceSha256": "1148c95020b9bc814bcbbfa275033add886f0c6defefaaaeed1e1822c098b690",
+          "targetPath": "references/styles/G.md",
+          "targetSha256": "1148c95020b9bc814bcbbfa275033add886f0c6defefaaaeed1e1822c098b690",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "references/styles/H.md",
+          "sourceSha256": "49b0ac793a149f302de5245225d2145dada80948f5e3e4ee2256663c22196bcb",
+          "targetPath": "references/styles/H.md",
+          "targetSha256": "49b0ac793a149f302de5245225d2145dada80948f5e3e4ee2256663c22196bcb",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "573bdeff375b62e8e59af32b169c5fd9a7f9219516e180b892118e32af905eb0",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "88c55ce729dbc2c7371b996a3b303c78f91319328f904cde52c6618801f50c04",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-video-deconstruct",
+      "slug": "video-deconstruct",
+      "origin": "core",
+      "author": "MiniMax Design",
+      "entrypointSha256": "fca89c760b849f2aaa5729dbabc817bf7225280faa2d939b3d21cdd5737abd77",
+      "files": [
+        {
+          "sourcePath": "references/minimax-h3-multi-ref.md",
+          "sourceSha256": "eb321c1b2a62cf999119b32340c6d8686f2e205ef639edaecf1a1d15bad5b059",
+          "targetPath": "references/minimax-h3-multi-ref.md",
+          "targetSha256": "930dc7dc9b3f5b42ecee07b1424e1c145cbfbf4a6a54095eea0fb8121aff04db",
+          "mode": "adapted"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "caf6077ab3e9277efb3a84ff13a445c4c80227545cc860f04ab63d0ac7fc2951",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "287a8a7b9a2a053140c6c31126d852cf99ab654e9c1c5715309101a0513dad79",
+          "mode": "adapted"
+        }
+      ]
+    },
+    {
+      "name": "minimax-clip-studio-craft",
+      "slug": "clip-studio-craft",
+      "origin": "plugin",
+      "author": "MiniMax Design",
+      "entrypointSha256": "7d679fe9eac55d0bd49d91ae9b76ce2fcb9d019d587c331dd93e933e672dc282",
+      "files": [
+        {
+          "sourcePath": "references/verification.md",
+          "sourceSha256": "e704d41c4ad9c568aef79f031c37ed44164c5465795ed26eddb8c30cda918758",
+          "targetPath": "references/verification.md",
+          "targetSha256": "e704d41c4ad9c568aef79f031c37ed44164c5465795ed26eddb8c30cda918758",
+          "mode": "copied"
+        },
+        {
+          "sourcePath": "SKILL.md",
+          "sourceSha256": "27d0a93101afb1a5ecf51868e458b711727b4091dbf01e708b62c719fe253a6c",
+          "targetPath": "WORKFLOW.md",
+          "targetSha256": "bf94a9876c63c457e51408684d63fa44667a49dcad585da3072169622382ee2f",
+          "mode": "adapted"
+        }
+      ]
+    }
+  ]
+}

@@ -33,6 +33,9 @@ export const defaultSettings = {
 
 export const allowedImageExtensions = new Set([".png", ".jpg", ".jpeg", ".webp"]);
 export const allowedVideoExtensions = new Set([".mp4", ".mov"]);
+export const allowedAudioExtensions = new Set([".mp3", ".wav", ".m4a", ".aac", ".flac", ".ogg"]);
+export const allowedDocumentExtensions = new Set([".docx", ".doc", ".md", ".txt", ".pdf", ".json"]);
+export const allowedSpreadsheetExtensions = new Set([".xlsx", ".xls", ".csv"]);
 
 export function safeId(prefix = "id") {
   return `${prefix}-${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 8)}`;

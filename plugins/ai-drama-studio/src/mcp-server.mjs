@@ -8,7 +8,7 @@ import { createManagedSkill, setManagedSkillEnabled } from "./skill-registry.mjs
 import { readState } from "./store.mjs";
 import { startHttpServer } from "./http-server.mjs";
 import { closeAssetBridge, getAssetBridgeStatus } from "./asset-bridge.mjs";
-import { attachTaskRemoteUrl, claimTask, completeTask, createApproval, createProject, resumeRealPipeline, startLocalRender, updateProjectPlan } from "./workflow.mjs";
+import { appendCreationMessage, attachTaskRemoteUrl, claimTask, completeTask, createApproval, createCreation, createProject, createWorld, promoteAsset, resumeRealPipeline, startLocalRender, updateCreation, updateProjectPlan } from "./workflow.mjs";
 
 const server = new McpServer({ name: "ai-drama-studio", version: "0.1.0" });
 let workbench = { url: "http://127.0.0.1:4317", available: false, reused: false };
@@ -68,10 +68,44 @@ server.registerTool("drama_create_project", {
   inputSchema: { title: z.string().min(1).max(80), logline: z.string().max(500).optional() }
 }, async input => result({ project: await createProject(input) }));
 
+server.registerTool("drama_create_world", {
+  description: "Create one world/subproject inside a parent IP project and initialize its standard asset folders. This makes no model call.",
+  inputSchema: { projectId: z.string(), title: z.string().min(1).max(80), description: z.string().max(500).optional() }
+}, async ({ projectId, ...input }) => result({ world: await createWorld(projectId, input) }));
+
+server.registerTool("drama_create_creation", {
+  description: "Create an independent production canvas inside a project, optionally under one world. Use episode for one episode/task and world-control for an episode-level season overview.",
+  inputSchema: {
+    projectId: z.string(), title: z.string().min(1).max(80), worldId: z.string().nullable().optional(),
+    type: z.enum(["episode", "world-control", "series-control", "asset-development"]).optional()
+  }
+}, async ({ projectId, ...input }) => result({ creation: await createCreation(projectId, input) }));
+
+server.registerTool("drama_update_creation", {
+  description: "Update a creation canvas hierarchy, version-pinned asset references, or saved node/viewport positions without changing asset identity.",
+  inputSchema: {
+    projectId: z.string(), creationId: z.string(), title: z.string().max(80).optional(), worldId: z.string().nullable().optional(),
+    type: z.enum(["episode", "world-control", "series-control", "asset-development"]).optional(),
+    assetRefs: z.array(z.object({ assetId: z.string(), locked: z.boolean().optional(), version: z.number().int().positive().optional() })).max(1000).optional(),
+    canvas: z.object({ viewport: z.object({ x: z.number(), y: z.number(), zoom: z.number() }).optional(), positions: z.record(z.string(), z.object({ x: z.number(), y: z.number() })).optional() }).optional()
+  }
+}, async ({ projectId, creationId, ...patch }) => result({ creation: await updateCreation(projectId, creationId, patch) }));
+
+server.registerTool("drama_record_creation_response", {
+  description: "Write a Codex response or production note into one creation's Agent timeline so the canvas and conversation remain synchronized.",
+  inputSchema: { projectId: z.string(), creationId: z.string(), content: z.string().min(1).max(8000) }
+}, async ({ projectId, creationId, content }) => result({ message: await appendCreationMessage(projectId, creationId, { role: "assistant", content }) }));
+
+server.registerTool("drama_promote_asset", {
+  description: "Promote a validated asset to series or world common scope without changing its stable assetId or any existing creation reference.",
+  inputSchema: { projectId: z.string(), assetId: z.string(), scope: z.enum(["series", "world"]), folderId: z.string().nullable().optional() }
+}, async ({ projectId, assetId, scope, folderId }) => result({ asset: await promoteAsset(projectId, assetId, scope, folderId || null) }));
+
 server.registerTool("drama_update_plan", {
   description: "Write a formal story plan, character bible and ordered shot list into a project. This is the main Codex authoring tool and makes no model call.",
   inputSchema: {
     projectId: z.string(),
+    creationId: z.string().optional().describe("Target creation canvas. Omit only for legacy project-wide plans."),
     title: z.string().max(80).optional(),
     logline: z.string().max(500).optional(),
     premise: z.string().max(1200).optional(),
@@ -83,7 +117,7 @@ server.registerTool("drama_update_plan", {
 
 server.registerTool("drama_request_paid_batch", {
   description: "Create a pending approval for real Seedream/Seedance calls. This tool never approves or runs the paid batch.",
-  inputSchema: { projectId: z.string(), maxImageCalls: z.number().int().min(0).optional(), maxVideoCalls: z.number().int().min(0).optional() }
+  inputSchema: { projectId: z.string(), creationId: z.string().optional(), maxImageCalls: z.number().int().min(0).optional(), maxVideoCalls: z.number().int().min(0).optional() }
 }, async ({ projectId, ...limits }) => result({ approval: await createApproval(projectId, limits) }));
 
 server.registerTool("drama_resume_paid_batch", {
@@ -93,8 +127,8 @@ server.registerTool("drama_resume_paid_batch", {
 
 server.registerTool("drama_render_project", {
   description: "Deterministically edit available Seedance clips and static image shots into a local MP4 with an audio track and timed Chinese subtitles. No model call.",
-  inputSchema: { projectId: z.string() }
-}, async ({ projectId }) => result({ job: await startLocalRender(projectId) }));
+  inputSchema: { projectId: z.string(), creationId: z.string().optional().describe("Optional creation canvas whose asset versions should be locked when rendering succeeds") }
+}, async ({ projectId, creationId }) => result({ job: await startLocalRender(projectId, creationId || null) }));
 
 server.registerTool("drama_claim_image_task", {
   description: "Claim one queued Codex Image Gen task before invoking Codex image generation.",

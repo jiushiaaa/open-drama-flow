@@ -7,11 +7,13 @@ studio-data/
 
 # Local research/audit checkouts
 _audit/
+import-ready/
 
 # Local design-audit reports
 plugins/ai-drama-studio/premium-audit.json
 plugins/ai-drama-studio/design-qa.md
 plugins/ai-drama-studio/design-qa-*.png
+plugins/ai-drama-studio/.qa/
 
 # Dependencies and generated QA artifacts
 **/node_modules/

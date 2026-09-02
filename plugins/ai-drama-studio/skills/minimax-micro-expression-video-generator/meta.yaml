@@ -1,0 +1,17 @@
+display-name-zh: "人物微表情视频生成"
+version: "1.0.1"
+tag-en: "Professional Film"
+tag-cn: "专业影视"
+complete-tags-en:
+  - "Professional Film / Planning"
+complete-tags-cn:
+  - "专业影视 / 计划制定"
+summary-en: "Turns a character image, script, or emotion phrase into timed micro-expression prompts for believable, restrained screen performances."
+summary-cn: "根据角色图、剧本或情绪短语设计分时微表情提示词，用于塑造自然可信的角色表演。"
+desc-en: "This Skill helps filmmakers and character-video creators turn a character image, script segment, or short emotion phrase into a production-ready micro-expression prompt pack. It preserves the approved identity, scene, dialogue, blocking, and camera intent, then asks for duration and intensity before selecting emotion routes, visible facial and body cues, timing density, and continuity guardrails. The user reviews the prompt before video generation; 旧 MiniMax H3 is the default, while another explicitly requested model is used only after a capability check. The final output is a concise, time-aware acting prompt and, after approval, an optional generated performance clip. It is best for restrained, tearful, hesitant, angry, affectionate, or quietly decisive moments, not full scriptwriting, facial rigging, lip-sync editing, diagnosis, or final compositing."
+desc-cn: "本 Skill 面向影视创作者和角色视频制作者，将角色图片、剧本片段或一句情绪短语转化为可执行的微表情表演提示词。流程先保护已确认的角色身份、场景、台词、调度和运镜，再确认镜头时长与表演强度，按需组合情绪路线、可见的面部与身体细节、节奏密度和镜头连续性约束；用户审阅提示词后，默认先把旧 旧 H3 意图改写成连续自然语言，再通过审批链调用 Seedance 2.5 生成表演片段，明确指定其他模型时先做能力检查。最终交付分时表演提示词及可选视频片段，适合克制、含泪强撑、犹豫、愤怒、心动和冷静决绝等复杂表演，不替代完整编剧、医学判断、面部绑定、口型编辑或最终合成。"
+cover: "https://cdn.hailuoai.com/pre/2026-08-14-21/video/1786713874745782855-1786713874739.mp4"
+cover-en: "https://cdn.hailuoai.com/pre/2026-08-14-21/video/1786713874745782855-1786713874739.mp4"
+author-en: "MiniMax Design"
+author-cn: "MiniMax Design"
+source: official-featured

@@ -1,0 +1,16 @@
+display-name-zh: 宣传视频
+version: 0.1.18
+tag-en: "Advertising / Video Generation"
+tag-cn: "广告营销 / 视频生成"
+complete-tags-en:
+  - "Commercial Ad / Planning"
+complete-tags-cn:
+  - "商业广告 / 计划制定"
+summary-en: "Turn product brief into marketing video"
+summary-cn: "把产品简介转化为宣传视频"
+desc-en: "For end-to-end marketing video production from raw material to publish-ready output. Takes a product or brand brief in any format including text, URL, video or PPT presentation. Produces a publish-ready promo video with hook-body-CTA script structure, storyboard, BGM, voiceover narration and platform-specific aspect ratios. Supports Douyin vertical, YouTube widescreen and Instagram square formats for multi-platform distribution."
+desc-cn: "适用于产品宣传片的全流程自动生成,从原始素材直接输出可发布的成品视频。输入文本、URL、视频或 PPT 任一形式的产品资料,输出可直接发布的宣传视频,含 hook-body-CTA 结构脚本、分镜故事板、BGM 背景音乐、旁白配音。支持 16:9 横屏、9:16 竖屏、1:1 方形三种画幅,适配抖音、YouTube、Instagram 等主流平台发布规格。"
+cover: "https://cdn.hailuoai.com/hailuo-video-web/public_assets/3404e317-2f28-4d4a-9a49-3c092a7730ff.mp4"
+author-en: "MiniMax Design"
+author-cn: "MiniMax Design"
+source: official

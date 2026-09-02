@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.5",
-    "adm-zip": "^0.5.16",
+    "adm-zip": "^0.6.0",
     "lucide-static": "^0.468.0",
     "zod": "^3.25.76"
   }
