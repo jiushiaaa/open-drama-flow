@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>制作台 — OpenDramaFlow</title>
+  <link rel="icon" href="/assets/studio-favicon.png" type="image/png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div id="app-shell" class="app-shell">
+    <aside class="sidebar" aria-label="片场主导航">
+      <a class="brand" href="/" aria-label="片场首页">
+        <img src="/assets/studio-pixel-icon.png" alt="" width="44" height="44">
+        <span><strong>片场</strong><small>OpenDramaFlow</small></span>
+      </a>
+
+      <nav class="sidebar-nav" aria-label="工作区">
+        <button id="create-project-button" class="sidebar-create" type="button">
+          <img src="/icons/plus.svg" alt="" aria-hidden="true">开始创作
+        </button>
+        <a class="nav-item active" href="#project-library" aria-current="page"><img src="/icons/folder-kanban.svg" alt="" aria-hidden="true">项目库</a>
+        <a class="nav-item" href="#production-spine"><img src="/icons/workflow.svg" alt="" aria-hidden="true">制作流程</a>
+        <a class="nav-item" href="#workspace"><img src="/icons/clapperboard.svg" alt="" aria-hidden="true">镜头工作台</a>
+        <a class="nav-item" href="#project-guide"><img src="/icons/book-open.svg" alt="" aria-hidden="true">项目新手指引</a>
+        <button id="settings-button" class="nav-item" type="button"><img src="/icons/settings-2.svg" alt="" aria-hidden="true">API Key</button>
+      </nav>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-title"><span>项目</span><span id="sidebar-project-count">0</span></div>
+        <div id="sidebar-projects" class="sidebar-projects">
+          <p>还没有项目</p>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <span id="service-status" class="service-status"><span aria-hidden="true"></span>本地服务连接中</span>
+        <button id="refresh-button" class="icon-text-button" type="button"><img src="/icons/refresh-cw.svg" alt="" aria-hidden="true">刷新状态</button>
+      </div>
+    </aside>
+
+    <main class="content-shell">
+      <div class="canvas">
+        <section id="project-library" class="page-header" aria-labelledby="page-title">
+          <div>
+            <p class="eyebrow">AI 漫剧本地制作台</p>
+            <h1 id="page-title">项目库</h1>
+            <p class="lede">从故事、角色和分镜开始，让 Codex 管理图片、视频、剪辑与每一次模型调用。</p>
+          </div>
+          <div id="project-header-actions" class="header-actions" hidden>
+            <label class="button outline file-picker" for="asset-file"><img src="/icons/upload.svg" alt="" aria-hidden="true">导入素材</label>
+            <input id="asset-file" type="file" accept=".png,.jpg,.jpeg,.webp,.mp4,.mov" hidden>
+          </div>
+        </section>
+
+        <nav id="production-spine" class="production-spine" aria-label="制作阶段">
+          <div class="spine-heading">
+            <div><p class="section-label">制作流程</p><h2>从故事到成片</h2></div>
+            <span class="spine-note">真实模型调用始终先审批</span>
+          </div>
+          <ol id="stage-list"></ol>
+        </nav>
+
+        <section id="empty-state" class="empty-state" hidden>
+          <div class="empty-visual" aria-hidden="true">
+            <img src="/assets/studio-pixel-hero.png" alt="">
+          </div>
+          <h2>创建你的第一部 AI 漫剧</h2>
+          <p>先建立一个空白项目。之后可以让 Codex 写剧本、拆分镜头，再按审批上限调用 Seedream、Seedance 和本地 FFmpeg。</p>
+          <div class="empty-actions">
+            <button class="button primary" type="button" data-action="create-project"><img src="/icons/plus.svg" alt="" aria-hidden="true">新建空白项目</button>
+            <button class="button outline" type="button" data-action="open-settings"><img src="/icons/settings-2.svg" alt="" aria-hidden="true">配置 API Key</button>
+            <a class="button outline" href="#project-guide"><img src="/icons/book-open.svg" alt="" aria-hidden="true">查看新手指引</a>
+          </div>
+        </section>
+
+        <section id="workspace" class="workspace" hidden>
+        <aside class="panel project-panel" aria-labelledby="project-panel-title">
+          <div class="panel-heading">
+            <div><p class="panel-kicker">PROJECT BRIEF</p><h2 id="project-panel-title">项目</h2></div>
+            <span id="project-status" class="status-chip neutral">草稿</span>
+          </div>
+          <div id="project-summary"></div>
+          <div class="section-rule"></div>
+          <h3>角色锚点</h3>
+          <div id="character-list" class="character-list"></div>
+          <div class="project-actions">
+            <button id="render-button" class="button outline wide" type="button">合成当前镜头成片</button>
+            <button id="request-real-button" class="button warning wide" type="button">创建真实模型审批</button>
+          </div>
+        </aside>
+
+        <section class="panel board-panel" aria-labelledby="board-title">
+          <div class="panel-heading board-heading">
+            <div><p class="panel-kicker">SHOT LEDGER</p><h2 id="board-title">分镜台</h2></div>
+            <span id="shot-count" class="count-label">0 个镜头</span>
+          </div>
+          <div id="shot-board" class="shot-board"></div>
+          <div id="final-output" class="final-output" hidden></div>
+        </section>
+
+        <aside class="panel activity-panel" aria-labelledby="activity-title">
+          <div class="panel-heading">
+            <div><p class="panel-kicker">CONTROL ROOM</p><h2 id="activity-title">任务与审批</h2></div>
+          </div>
+          <div id="approval-list" class="stack"></div>
+          <div id="job-list" class="stack"></div>
+          <div class="section-rule"></div>
+          <h3>最近记录</h3>
+          <ol id="event-list" class="event-list"></ol>
+        </aside>
+        </section>
+
+        <section id="project-guide" class="guide-section" aria-labelledby="guide-title">
+          <header class="guide-heading">
+            <div class="guide-icon" aria-hidden="true"><img src="/icons/book-open.svg" alt=""></div>
+            <div>
+              <p class="panel-kicker">内置项目文档</p>
+              <h2 id="guide-title">项目新手指引</h2>
+              <p>这里仅说明正式制作流程，内容不会写入项目库或任务记录。</p>
+            </div>
+          </header>
+          <ol class="guide-steps">
+            <li><span>01</span><div><strong>建立空白项目</strong><p>项目库只保存你主动创建的项目，不会自动注入任何故事内容。</p></div></li>
+            <li><span>02</span><div><strong>把创作目标交给 Codex</strong><p>说明题材、时长、风格和受众，Codex 会写正式剧本、角色设定与分镜方案。</p></div></li>
+            <li><span>03</span><div><strong>确认真实生成批次</strong><p>分镜完成后创建审批；未经批准，不会调用 Seedream 或 Seedance。</p></div></li>
+            <li><span>04</span><div><strong>生成并剪辑成片</strong><p>Codex Image Gen 负责图片资产，Seedance 负责视频镜头，FFmpeg 只合成真实素材。</p></div></li>
+          </ol>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="settings-overlay" class="dialog-overlay" hidden>
+    <section id="settings-dialog" class="dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title" aria-describedby="settings-description" tabindex="-1">
+      <header class="dialog-header">
+        <div>
+          <p class="panel-kicker">LOCAL CREDENTIAL VAULT</p>
+          <h2 id="settings-title">API Key</h2>
+          <p id="settings-description">只需保存火山方舟 API Key，图片、视频和生成参数由片场自动配置。</p>
+        </div>
+        <button id="settings-close" class="icon-button" type="button" aria-label="关闭 API Key 设置"><img src="/icons/x.svg" alt="" aria-hidden="true"></button>
+      </header>
+      <div class="dialog-body">
+        <div id="settings-alert" class="form-alert" role="alert" hidden></div>
+
+        <section class="settings-section credential-card" aria-labelledby="credential-title">
+          <div class="settings-section-heading">
+            <div><h3 id="credential-title">火山方舟 API Key</h3><p>加密保存在当前 Windows 用户下，重启项目后会自动继续使用。</p></div>
+            <span id="credential-chip" class="status-chip neutral">读取中</span>
+          </div>
+          <form id="credential-form" novalidate>
+            <label id="ark-key-label" for="ark-api-key">API Key</label>
+            <div class="secret-field">
+              <input id="ark-api-key" name="apiKey" type="password" autocomplete="off" spellcheck="false" aria-describedby="ark-key-help ark-key-error">
+              <button id="secret-toggle" class="button ghost" type="button" aria-label="显示 API Key" aria-pressed="false">显示</button>
+            </div>
+            <p id="ark-key-help" class="field-help">请只在这里粘贴。保存后持续显示掩码，不会把明文送回页面。</p>
+            <p id="ark-key-error" class="field-error" role="alert"></p>
+            <div class="inline-actions">
+              <button id="save-key-button" class="button primary" type="submit">安全保存密钥</button>
+              <button id="replace-key-button" class="button outline" type="button" hidden>更换 API Key</button>
+              <button id="clear-key-button" class="button danger-ghost" type="button">清除已保存密钥</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="settings-section capability-section" aria-labelledby="capability-title">
+          <div class="settings-section-heading">
+            <div><h3 id="capability-title">系统已接入</h3><p>模型版本和生成参数由片场维护，升级时自动更新，无需手动填写。</p></div>
+            <span class="status-chip success">已就绪</span>
+          </div>
+          <dl class="capability-list">
+            <div class="capability-row"><dt>图片资产</dt><dd>Codex Image Gen <span>主生成</span></dd></div>
+            <div class="capability-row"><dt>备用图片</dt><dd>Seedream 5.0 Pro</dd></div>
+            <div class="capability-row"><dt>视频镜头</dt><dd>Seedance 2.5</dd></div>
+          </dl>
+          <p class="capability-note">创作参数已内置，由系统统一管理。</p>
+        </section>
+      </div>
+      <footer class="dialog-footer">
+        <button id="settings-cancel" class="button primary" type="button">完成</button>
+      </footer>
+    </section>
+  </div>
+
+  <div id="toast-viewport" class="toast-viewport" aria-live="polite" aria-relevant="additions"></div>
+  <div id="live-status" class="sr-only" role="status" aria-live="polite"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

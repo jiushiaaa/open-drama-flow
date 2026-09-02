@@ -1,0 +1,24 @@
+# Runtime data and secrets
+studio-data/
+*.key
+.env
+.env.*
+!.env.example
+
+# Local research/audit checkouts
+_audit/
+
+# Local design-audit reports
+plugins/ai-drama-studio/premium-audit.json
+plugins/ai-drama-studio/design-qa.md
+
+# Dependencies and generated QA artifacts
+**/node_modules/
+**/.playwright-cli/
+plugins/ai-drama-studio/output/
+
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db
+desktop.ini

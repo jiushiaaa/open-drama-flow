@@ -1,0 +1,6 @@
+interface:
+  display_name: "AI 漫剧制片人"
+  short_description: "从剧本、分镜、图像到视频剪辑的 Codex 本地制作流程"
+  default_prompt: "接管当前 AI 漫剧项目：先检查制作状态，再推进下一步；任何真实模型费用前先创建审批。"
+policy:
+  allow_implicit_invocation: true

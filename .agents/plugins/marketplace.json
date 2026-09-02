@@ -1,0 +1,20 @@
+{
+  "name": "ai-drama-local",
+  "interface": {
+    "displayName": "Ai Drama Local"
+  },
+  "plugins": [
+    {
+      "name": "ai-drama-studio",
+      "source": {
+        "source": "local",
+        "path": "./plugins/ai-drama-studio"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "media-production"
+    }
+  ]
+}

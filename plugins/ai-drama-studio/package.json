@@ -1,0 +1,18 @@
+{
+  "name": "ai-drama-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenDramaFlow — a Codex-native Windows desktop production harness for AI comic drama workflows.",
+  "scripts": {
+    "start": "node src/http-server.mjs",
+    "mcp": "node src/mcp-server.mjs",
+    "test": "node --test",
+    "check": "node --check src/http-server.mjs && node --check src/mcp-server.mjs && node --check src/skill-catalog.mjs && node --check src/skill-router.mjs && node --check public/app.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.5",
+    "lucide-static": "^0.468.0",
+    "zod": "^3.25.76"
+  }
+}

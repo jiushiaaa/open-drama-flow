@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "ai-drama-studio": {
+      "cwd": ".",
+      "command": "node",
+      "args": ["./src/mcp-server.mjs"]
+    }
+  }
+}
