@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import test from "node:test";
-import { resolveApprovalLimits } from "../src/workflow.mjs";
+import { moveDirectoryToTrash, resolveApprovalLimits } from "../src/workflow.mjs";
 
 async function freePort() {
   return new Promise((resolve, reject) => {
@@ -39,6 +39,28 @@ async function post(baseUrl, route, payload = {}) {
   assert.equal(response.ok, true, JSON.stringify(body));
   return body;
 }
+
+test("project trash move falls back when Windows rejects directory rename", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "ai-drama-trash-test-"));
+  const source = path.join(tempRoot, "projects", "project-locked");
+  const destination = path.join(tempRoot, ".trash", "project-locked");
+  try {
+    await fs.mkdir(source, { recursive: true });
+    await fs.writeFile(path.join(source, "asset.txt"), "recoverable project data");
+    const result = await moveDirectoryToTrash(source, destination, {
+      rename: async () => {
+        const error = new Error("Windows denied directory rename");
+        error.code = "EPERM";
+        throw error;
+      }
+    });
+    assert.deepEqual(result, { moved: true, method: "copy", sourceRetained: false });
+    assert.equal(await fs.readFile(path.join(destination, "asset.txt"), "utf8"), "recoverable project data");
+    await assert.rejects(fs.stat(source), error => error?.code === "ENOENT");
+  } finally {
+    await fs.rm(tempRoot, { recursive: true, force: true });
+  }
+});
 
 test("a blank project never receives sample production data", { timeout: 15_000 }, async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "ai-drama-studio-test-"));
@@ -223,10 +245,9 @@ test("a blank project never receives sample production data", { timeout: 15_000 
     assert.match(page, /\.docx.*\.xlsx.*\.csv/);
     assert.match(page, /id="project-library-view"/);
     assert.match(page, /id="canvas-stage"/);
-    assert.match(page, /id="canvas-inspector-resizer"/);
+    assert.doesNotMatch(page, /canvas-inspector-resizer|创作检查器|canvas-toolbar|canvas-fit-bottom/);
     assert.match(page, /分卷 \/ 季度/);
     assert.doesNotMatch(page, /新建世界|所属世界|世界总控|生成可用/);
-    assert.match(page, /当前创作引用/);
     assert.match(page, /id="world-filter-list"/);
     assert.match(page, /id="project-guide-view"[^>]*hidden/);
     assert.doesNotMatch(page, /登录|本地项目|共创项目/);

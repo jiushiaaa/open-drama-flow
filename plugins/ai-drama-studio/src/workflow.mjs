@@ -11,6 +11,48 @@ function projectDir(projectId) {
   return path.join(dataRoot, "projects", projectId);
 }
 
+const retryableMoveCodes = new Set(["EACCES", "EBUSY", "ENOTEMPTY", "EPERM"]);
+
+function wait(milliseconds) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
+export async function moveDirectoryToTrash(source, destination, operations = {}) {
+  const rename = operations.rename || fs.rename;
+  const copy = operations.copy || fs.cp;
+  const remove = operations.remove || fs.rm;
+  let renameError = null;
+
+  await fs.mkdir(path.dirname(destination), { recursive: true });
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      await rename(source, destination);
+      return { moved: true, method: "rename", sourceRetained: false };
+    } catch (error) {
+      if (error?.code === "ENOENT") return { moved: false, method: "missing", sourceRetained: false };
+      if (!retryableMoveCodes.has(error?.code)) throw error;
+      renameError = error;
+      if (attempt < 3) await wait(75 * (attempt + 1));
+    }
+  }
+
+  try {
+    await copy(source, destination, { recursive: true, errorOnExist: true, force: false });
+  } catch (error) {
+    try { await remove(destination, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }); } catch {}
+    if (error?.code === "ENOENT") return { moved: false, method: "missing", sourceRetained: false };
+    throw renameError || error;
+  }
+
+  let sourceRetained = false;
+  try {
+    await remove(source, { recursive: true, force: true, maxRetries: 6, retryDelay: 150 });
+  } catch {
+    sourceRetained = true;
+  }
+  return { moved: true, method: "copy", sourceRetained };
+}
+
 function canvasDefaults() {
   return { viewport: { x: 120, y: 90, zoom: 0.78 }, positions: {} };
 }
@@ -100,22 +142,24 @@ export async function deleteProject(projectId) {
   const source = projectDir(projectId);
   const trashRoot = path.join(dataRoot, ".trash");
   const trashedPath = path.join(trashRoot, `${projectId}-${Date.now()}`);
-  await fs.mkdir(trashRoot, { recursive: true });
-  try { await fs.rename(source, trashedPath); }
-  catch (error) { if (error?.code !== "ENOENT") throw error; }
+  const moveResult = await moveDirectoryToTrash(source, trashedPath);
   try {
     await mutateState(next => {
       next.projects = next.projects.filter(item => item.id !== projectId);
       next.jobs = next.jobs.filter(item => item.projectId !== projectId);
       next.approvals = next.approvals.filter(item => item.projectId !== projectId);
       next.tasks = next.tasks.filter(item => item.projectId !== projectId);
-      appendEvent(next, "project.deleted", `项目《${project.title}》已移入本机回收区`, { projectId });
+      appendEvent(next, "project.deleted", `项目《${project.title}》已移入本机回收区`, { projectId, sourceCleanupPending: moveResult.sourceRetained });
     });
   } catch (error) {
-    try { await fs.rename(trashedPath, source); } catch {}
+    if (moveResult.moved && moveResult.sourceRetained) {
+      try { await fs.rm(trashedPath, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }); } catch {}
+    } else if (moveResult.moved) {
+      try { await moveDirectoryToTrash(trashedPath, source); } catch {}
+    }
     throw error;
   }
-  return { id: projectId, title: project.title, recoverablePath: trashedPath };
+  return { id: projectId, title: project.title, recoverablePath: trashedPath, sourceCleanupPending: moveResult.sourceRetained };
 }
 
 export async function createWorld(projectId, input = {}) {

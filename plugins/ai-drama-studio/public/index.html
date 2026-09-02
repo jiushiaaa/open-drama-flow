@@ -127,16 +127,8 @@
               <div id="canvas-world" class="canvas-world"><svg id="canvas-edges" class="canvas-edges" aria-hidden="true"></svg><div id="canvas-nodes" class="canvas-nodes"></div></div>
               <div id="canvas-empty" class="canvas-empty" hidden><img src="/assets/studio-pixel-icon.png" alt=""><strong>从一条创作指令开始</strong><span>回到当前 Codex 对话描述目标，或把项目文件拖入画布。</span></div>
               <div id="canvas-minimap" class="canvas-minimap" aria-label="画布小地图"><div id="minimap-nodes"></div><span id="minimap-viewport"></span></div>
-              <div class="canvas-toolbar" role="toolbar" aria-label="画布工具"><button id="canvas-add-button" class="canvas-add" type="button" title="添加节点"><img src="/icons/plus.svg" alt=""></button><button id="canvas-select-button" class="active" type="button" title="选择与移动">选择</button><label for="canvas-file" title="上传文件到当前创作">上传</label><input id="canvas-file" type="file" accept=".png,.jpg,.jpeg,.webp,.mp4,.mov,.mp3,.wav,.m4a,.aac,.flac,.ogg,.docx,.doc,.md,.txt,.pdf,.json,.xlsx,.xls,.csv" multiple hidden><button id="canvas-fit-bottom" type="button">定位全部</button></div>
             </div>
           </section>
-          <div id="canvas-inspector-resizer" class="canvas-inspector-resizer" role="separator" aria-label="调整画布与创作检查器宽度" aria-orientation="vertical" tabindex="0"></div>
-          <aside class="inspector-panel">
-            <header class="inspector-header"><div><span class="inspector-status-dot"></span><strong>创作检查器</strong></div><button id="inspector-panel-toggle" type="button" title="收起检查器">›</button></header>
-            <section class="inspector-context"><small>当前生产单元</small><strong id="inspector-creation-title"></strong><div><span id="agent-project-context"></span><span id="agent-world-context"></span></div><p>创作指令、追问与确认直接在当前 Codex 对话中完成；这里仅展示画布上下文和可执行状态。</p></section>
-            <section class="creation-reference-panel"><header><strong>当前创作引用</strong><span id="reference-count">0</span></header><p>自动加载系列公共资产与当前分卷 / 季度资产，并锁定实际使用版本。</p><div id="creation-reference-list"></div></section>
-            <section class="inspector-run-panel"><small>执行入口</small><p>真实模型调用仍需先创建审批；本地剪辑只使用当前创作页已确认的镜头与素材版本。</p><div class="agent-run-actions"><button id="request-real-button" class="button outline" type="button">创建模型审批</button><button id="render-button" class="button primary" type="button"><img src="/icons/play.svg" alt="">合成最终视频</button></div></section>
-          </aside>
         </div>
       </section>
 

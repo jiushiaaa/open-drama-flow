@@ -796,8 +796,8 @@
           "sourcePath": "references/source-notes.md",
           "sourceSha256": "53a518c8b45a6a1b62c8b11a7aecc2e062f2e5b918fe81724c256b1512343abc",
           "targetPath": "references/source-notes.md",
-          "targetSha256": "53a518c8b45a6a1b62c8b11a7aecc2e062f2e5b918fe81724c256b1512343abc",
-          "mode": "copied"
+          "targetSha256": "5ece285cc8dc61586519a4850b3c2ed26dee3a7730d762a0097a11d778b857fc",
+          "mode": "adapted"
         },
         {
           "sourcePath": "references/tempo-density-guide.md",

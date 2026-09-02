@@ -487,9 +487,6 @@ function renderWorkspace() {
   $("#workspace-creation-title").textContent = creation.title;
   $("#workspace-world-link").textContent = world?.title || "系列";
   $("#workspace-world-separator").hidden = false;
-  $("#agent-project-context").textContent = project.title;
-  $("#agent-world-context").textContent = world?.title || "系列级";
-  $("#inspector-creation-title").textContent = creation.title + " · " + creationTypeLabel(creation.type);
   const graph = buildCanvasGraph(project, creation);
   canvasRuntime.nodeIds = graph.nodes.map(node => node.id);
   let shouldInitialFit = false;
@@ -503,11 +500,7 @@ function renderWorkspace() {
   $("#canvas-empty").hidden = graph.nodes.length > 0;
   drawCanvasEdges(graph);
   applyCanvasTransform();
-  renderAgentPanel(project, creation, world);
   if (shouldInitialFit) requestAnimationFrame(fitCanvas);
-  const production = creation.plan || project;
-  $("#request-real-button").disabled = !production.shots?.length;
-  $("#render-button").disabled = !production.shots?.length || studioState.jobs.some(job => job.projectId === project.id && ["queued", "running"].includes(job.status));
 }
 
 function drawCanvasEdges(graph) {
@@ -594,22 +587,6 @@ async function saveCanvasState() {
   catch (error) { toast(error.message, "error"); }
 }
 
-function renderAgentPanel(project, creation, world) {
-  const refList = $("#creation-reference-list"); refList.replaceChildren();
-  const refs = creation.assetRefs || []; const assetsById = new Map((project.assets || []).map(asset => [asset.id, asset]));
-  $("#reference-count").textContent = String(refs.length);
-  for (const ref of refs) {
-    const asset = assetsById.get(ref.assetId); if (!asset) continue;
-    refList.append(el("article", {}, el("div", {}, el("strong", { text: asset.originalName || asset.id }), el("small", { text: `v${ref.version || asset.version || 1} · ${ref.locked ? "已锁定" : "使用中"}` })), asset.scope !== "series" ? el("button", { type: "button", onclick: () => promoteCanvasAsset(asset.id) }, "提升为公共资产") : el("span", { text: "系列公共" })));
-  }
-  if (!refs.length) refList.append(el("p", { class: "muted", text: "尚未固定素材引用。把文件上传到画布后会按 assetId + 版本记录。" }));
-}
-
-async function promoteCanvasAsset(assetId) {
-  try { await api(`/api/projects/${activeProjectId}/assets/${assetId}/promote`, { method: "POST", body: JSON.stringify({ scope: "series" }) }); await refreshState({ quiet: true }); toast("已提升为系列公共资产，原 assetId 与创作引用保持不变。", "success"); }
-  catch (error) { toast(error.message, "error"); }
-}
-
 function renderStages(project) {
   const list = $("#stage-list"); list.replaceChildren();
   const current = Math.max(0, stageDefinitions.findIndex(([key]) => key === project.currentStage));
@@ -622,8 +599,6 @@ function renderBrief(project) {
   const characters = $("#character-list"); characters.replaceChildren();
   for (const person of project.characters || []) characters.append(el("article", { class: "character-card" }, el("strong", { text: person.name }), el("p", { text: person.visual })));
   if (!project.characters?.length) characters.append(el("p", { class: "muted", text: "尚未建立角色锚点。" }));
-  $("#request-real-button").disabled = !project.shots?.length;
-  $("#render-button").disabled = !project.shots?.length || studioState.jobs.some(job => job.projectId === project.id && ["queued", "running"].includes(job.status));
 }
 
 function renderShots(project) {
@@ -842,17 +817,6 @@ async function importAssets(files, targetFolderId = activeAssetFolderId) {
   catch (error) { toast(error.message, "error"); }
 }
 
-async function importCanvasAssets(files) {
-  const project = activeProject(); const creation = activeCreation(); if (!project || !creation || !files.length) return;
-  try {
-    for (const file of files) {
-      const form = new FormData(); form.append("projectId", project.id); form.append("creationId", creation.id); form.append("worldId", creation.worldId || ""); form.append("file", file);
-      await api("/api/assets/import", { method: "POST", body: form });
-    }
-    $("#canvas-file").value = ""; await refreshState({ quiet: true }); toast(`已把 ${files.length} 个文件加入当前画布，并建立稳定版本引用。`, "success");
-  } catch (error) { toast(error.message, "error"); }
-}
-
 async function saveEditedAsset(event) {
   event.preventDefault(); if (!activeEditorAssetId) return;
   const submit = $("#asset-editor-submit"); submit.disabled = true; submit.textContent = "保存中…"; $("#asset-editor-error").textContent = "";
@@ -898,7 +862,6 @@ $("#asset-file").addEventListener("change", event => importAssets([...event.targ
 $("#asset-grid").addEventListener("dragover", event => { event.preventDefault(); event.currentTarget.classList.add("drop-target"); });
 $("#asset-grid").addEventListener("dragleave", event => { if (!event.currentTarget.contains(event.relatedTarget)) event.currentTarget.classList.remove("drop-target"); });
 $("#asset-grid").addEventListener("drop", event => { event.preventDefault(); event.currentTarget.classList.remove("drop-target"); const assetId = event.dataTransfer.getData("application/x-opendrama-asset"); if (assetId) moveAssetToFolder(assetId, activeAssetFolderId); else importAssets([...event.dataTransfer.files], activeAssetFolderId); });
-$("#canvas-file").addEventListener("change", event => importCanvasAssets([...event.target.files]));
 $("#asset-search").addEventListener("input", () => renderAssets(activeProject()));
 $("#asset-list-button").addEventListener("click", () => { assetViewMode = "list"; renderAssets(activeProject()); });
 $("#asset-grid-button").addEventListener("click", () => { assetViewMode = "grid"; renderAssets(activeProject()); });
@@ -925,35 +888,14 @@ $("#skill-detail-toggle").addEventListener("change", event => { if (activeSkillD
 $("#secret-toggle").addEventListener("click", event => { const input = $("#ark-api-key"); input.type = input.type === "password" ? "text" : "password"; event.currentTarget.textContent = input.type === "password" ? "显示" : "隐藏"; });
 $("#credential-form").addEventListener("submit", async event => { event.preventDefault(); const apiKey = $("#ark-api-key").value.trim(); if (!apiKey) { $("#ark-key-error").textContent = "请输入 API Key。"; return; } try { await api("/api/secrets/ark", { method: "PUT", body: JSON.stringify({ apiKey }) }); $("#ark-api-key").value = ""; $("#settings-dialog").close(); await refreshState(); toast("API Key 已安全保存。", "success"); } catch (error) { $("#ark-key-error").textContent = error.message; } });
 $("#clear-key-button").addEventListener("click", async () => { try { await api("/api/secrets/ark", { method: "DELETE" }); await refreshState(); toast("已清除保存的 API Key。", "success"); } catch (error) { toast(error.message, "error"); } });
-$("#request-real-button").addEventListener("click", async () => { try { await api(`/api/projects/${activeProjectId}/approvals`, { method: "POST", body: JSON.stringify({ creationId: activeCreationId }) }); await refreshState(); toast("当前创作页的真实模型批次已创建，等待批准。", "success"); } catch (error) { toast(error.message, "error"); } });
-$("#render-button").addEventListener("click", async () => { try { await api(`/api/projects/${activeProjectId}/render`, { method: "POST", body: JSON.stringify({ creationId: activeCreationId }) }); await refreshState(); toast("本地剪辑已开始，当前创作引用将在成片后锁定。", "success"); } catch (error) { toast(error.message, "error"); } });
 $("#canvas-zoom-in").addEventListener("click", () => zoomCanvas(1.15));
 $("#canvas-zoom-out").addEventListener("click", () => zoomCanvas(1 / 1.15));
 $("#canvas-fit").addEventListener("click", fitCanvas);
-$("#canvas-fit-bottom").addEventListener("click", fitCanvas);
-$("#canvas-add-button").addEventListener("click", () => $("#canvas-file").click());
 $("#canvas-minimap-toggle").addEventListener("click", event => { event.currentTarget.classList.toggle("active"); $("#canvas-minimap").hidden = !event.currentTarget.classList.contains("active"); });
-$("#inspector-panel-toggle").addEventListener("click", () => $("#workspace-view").classList.toggle("inspector-collapsed"));
-const inspectorWidth = Number(localStorage.getItem("opendramaflow.inspectorWidth") || 308);
-$(".canvas-shell").style.setProperty("--inspector-width", `${Math.min(520, Math.max(250, inspectorWidth))}px`);
-$("#canvas-inspector-resizer").addEventListener("pointerdown", event => {
-  if (event.button !== 0 || $("#workspace-view").classList.contains("inspector-collapsed")) return;
-  canvasRuntime.inspectorResize = { startWidth: $(".inspector-panel").getBoundingClientRect().width, startX: event.clientX };
-  event.currentTarget.setPointerCapture(event.pointerId); event.currentTarget.classList.add("dragging");
-});
-$("#canvas-inspector-resizer").addEventListener("pointermove", event => {
-  const resize = canvasRuntime.inspectorResize; if (!resize) return;
-  const width = Math.min(520, Math.max(250, resize.startWidth + resize.startX - event.clientX));
-  $(".canvas-shell").style.setProperty("--inspector-width", `${width}px`); updateMinimapViewport();
-});
-$("#canvas-inspector-resizer").addEventListener("pointerup", event => {
-  if (!canvasRuntime.inspectorResize) return; canvasRuntime.inspectorResize = null; event.currentTarget.classList.remove("dragging");
-  localStorage.setItem("opendramaflow.inspectorWidth", String(Math.round($(".inspector-panel").getBoundingClientRect().width)));
-});
 $("#canvas-stage").addEventListener("pointerdown", event => {
   const leftBlank = event.button === 0 && !event.target.closest(".canvas-node");
   const middlePan = event.button === 1;
-  if ((!leftBlank && !middlePan) || event.target.closest(".canvas-toolbar") || event.target.closest(".canvas-minimap")) return;
+  if ((!leftBlank && !middlePan) || event.target.closest(".canvas-minimap")) return;
   event.preventDefault();
   canvasRuntime.dragging = { type: "pan", startX: event.clientX, startY: event.clientY, originX: canvasRuntime.x, originY: canvasRuntime.y };
   event.currentTarget.setPointerCapture(event.pointerId);
