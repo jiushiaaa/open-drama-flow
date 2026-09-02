@@ -27,7 +27,8 @@ const routingCases = [
   ["逐镜拆解这个参考视频并反推 Seedance 提示词", "minimax-video-deconstruct"],
   ["审查这个 Skill 的触发描述", "minimax-skill-reviewer"],
   ["给产品做一条极简高级广告", "minimax-minimalist-product-ad-generator"],
-  ["制作二次元角色觉醒游戏 PV", "minimax-anime-game-pv"]
+  ["制作二次元角色觉醒游戏 PV", "minimax-anime-game-pv"],
+  ["做一条雨夜悬疑二次元漫剧，重点表现人物惊恐、迟疑和压抑的微表情", "minimax-micro-expression-video-generator"]
 ];
 
 for (const [request, expected] of routingCases) {

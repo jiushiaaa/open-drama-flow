@@ -5,10 +5,15 @@ import { fileURLToPath } from "node:url";
 export const pluginRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 export const workspaceRoot = path.resolve(pluginRoot, "..", "..");
 const localAppDataRoot = process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local");
-export const dataRoot = path.resolve(process.env.AI_DRAMA_DATA_DIR || path.join(localAppDataRoot, "OpenDramaFlow", "data"));
+export const runtimeRoot = path.join(localAppDataRoot, "OpenDramaFlow");
+export const dataRoot = path.resolve(process.env.AI_DRAMA_DATA_DIR || path.join(runtimeRoot, "data"));
+export const runtimeBinRoot = path.join(runtimeRoot, "bin");
+export const userSkillsRoot = path.join(dataRoot, "skills");
 export const publicRoot = path.join(pluginRoot, "public");
 export const host = "127.0.0.1";
 export const port = Number.parseInt(process.env.AI_DRAMA_PORT || "4317", 10);
+export const assetBridgePort = Number.parseInt(process.env.AI_DRAMA_BRIDGE_PORT || String(port + 1), 10);
+export const assetBridgeControlPort = Number.parseInt(process.env.AI_DRAMA_BRIDGE_CONTROL_PORT || "4040", 10);
 
 export const lockedGenerationSettings = {
   arkBaseUrl: "https://ark.cn-beijing.volces.com/api/v3",
@@ -18,9 +23,7 @@ export const lockedGenerationSettings = {
   ratio: "9:16",
   resolution: "720p",
   generateAudio: false,
-  watermark: false,
-  maxImageCallsPerBatch: 20,
-  maxVideoCallsPerBatch: 20
+  watermark: false
 };
 
 export const defaultSettings = {

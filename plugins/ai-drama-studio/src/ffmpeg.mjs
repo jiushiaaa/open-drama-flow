@@ -66,7 +66,7 @@ export async function probeDuration(filePath) {
   return duration;
 }
 
-export async function renderFinal({ clips, subtitles, outputPath, workingDir, preserveAudio = false }) {
+export async function renderFinal({ clips, subtitles, outputPath, workingDir }) {
   if (!clips.length) throw new Error("NO_VIDEO_CLIPS");
   await fs.mkdir(workingDir, { recursive: true });
   const concatPath = path.join(workingDir, "concat.txt");
@@ -78,18 +78,11 @@ export async function renderFinal({ clips, subtitles, outputPath, workingDir, pr
 
   const srtPath = path.join(workingDir, "subtitles.srt");
   await fs.writeFile(srtPath, subtitles, "utf8");
-  if (preserveAudio) {
-    await run("ffmpeg", [
-      "-y", "-i", videoOnly, "-i", srtPath,
-      "-map", "0:v:0", "-map", "0:a:0", "-map", "1:0", "-c:v", "copy", "-c:a", "copy",
-      "-c:s", "mov_text", "-metadata:s:s:0", "language=zho", "-movflags", "+faststart", outputPath
-    ], workingDir);
-    return outputPath;
-  }
+  const subtitleFilter = "subtitles=filename='subtitles.srt':charenc=UTF-8:force_style='FontName=Microsoft YaHei,FontSize=9,PrimaryColour=&H00FFFFFF,OutlineColour=&H00101010,BorderStyle=1,Outline=2,Shadow=0,MarginV=52,Alignment=2'";
   await run("ffmpeg", [
-    "-y", "-i", videoOnly, "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo", "-i", srtPath,
-    "-map", "0:v:0", "-map", "1:a:0", "-map", "2:0", "-c:v", "copy", "-c:a", "aac", "-b:a", "128k",
-    "-c:s", "mov_text", "-metadata:s:s:0", "language=zho", "-shortest", "-movflags", "+faststart", outputPath
+    "-y", "-i", videoOnly, "-vf", subtitleFilter,
+    "-map", "0:v:0", "-map", "0:a:0", "-c:v", "libx264", "-preset", "medium", "-crf", "18",
+    "-c:a", "aac", "-b:a", "128k", "-ar", "48000", "-ac", "2", "-movflags", "+faststart", outputPath
   ], workingDir);
   return outputPath;
 }

@@ -5,6 +5,7 @@ import { appendEvent, mutateState, readState } from "./store.mjs";
 import { readArkKey } from "./secrets.mjs";
 import { createShotVideo, normalizeVideoClip, probeDuration, renderFinal, srtTimestamp } from "./ffmpeg.mjs";
 import { createSeedanceTask, downloadSeedanceVideo, generateSeedreamImage, waitForSeedanceTask } from "./ark.mjs";
+import { ensureAssetRemoteUrl } from "./asset-bridge.mjs";
 
 function projectDir(projectId) {
   return path.join(dataRoot, "projects", projectId);
@@ -13,6 +14,8 @@ function projectDir(projectId) {
 function safeJobFailure(error) {
   const raw = String(error?.message || error || "UNKNOWN_ERROR");
   const code = raw.match(/^[A-Z0-9_]+/)?.[0] || "JOB_FAILED";
+  if (code.startsWith("ASSET_BRIDGE")) return { code, message: "参考图 HTTPS 桥暂时不可用。素材与原审批均已保留，恢复桥接后可继续，不会重复提交已创建的视频任务。" };
+  if (code === "SEEDANCE_REQUIRES_REMOTE_IMAGE_URL") return { code, message: "Codex 图片目前只有本地副本。请为对应图片任务补充可访问的 HTTPS 地址后续跑；不会重复已成功步骤或产生额外调用。" };
   if (code.startsWith("FFMPEG")) return { code, message: "本地 FFmpeg 渲染失败。请检查素材格式和 FFmpeg 后重试。" };
   if (code.startsWith("SEEDREAM")) return { code, message: "Seedream 图片步骤未完成。已成功产物会保留，请检查模型 ID、权限或提示词后新建审批重试。" };
   if (code.startsWith("SEEDANCE")) return { code, message: "Seedance 视频步骤未完成。请先查询已有任务状态，避免重复付费提交。" };
@@ -26,7 +29,7 @@ export async function createProject({ title = "未命名漫剧", logline = "" } 
   const project = {
     id, title: String(title).slice(0, 80), logline: String(logline).slice(0, 500),
     status: "draft", currentStage: "story", createdAt: now, updatedAt: now,
-    script: { premise: "", scenes: [] }, characters: [], shots: [], assets: [], outputs: []
+    script: { premise: "", scenes: [] }, characters: [], shots: [], assets: [], outputs: [], creations: []
   };
   await fs.mkdir(projectDir(id), { recursive: true });
   await mutateState(state => {
@@ -36,10 +39,69 @@ export async function createProject({ title = "未命名漫剧", logline = "" } 
   return project;
 }
 
+export async function renameProject(projectId, title) {
+  const normalized = String(title || "").trim().slice(0, 80);
+  if (!normalized) throw new Error("PROJECT_TITLE_REQUIRED");
+  return mutateState(state => {
+    const project = state.projects.find(item => item.id === projectId);
+    if (!project) throw new Error("PROJECT_NOT_FOUND");
+    project.title = normalized;
+    project.updatedAt = new Date().toISOString();
+    appendEvent(state, "project.renamed", `项目已重命名为《${normalized}》`, { projectId });
+    return project;
+  });
+}
+
+export async function deleteProject(projectId) {
+  const state = await readState();
+  const project = state.projects.find(item => item.id === projectId);
+  if (!project) throw new Error("PROJECT_NOT_FOUND");
+  const source = projectDir(projectId);
+  const trashRoot = path.join(dataRoot, ".trash");
+  const trashedPath = path.join(trashRoot, `${projectId}-${Date.now()}`);
+  await fs.mkdir(trashRoot, { recursive: true });
+  try { await fs.rename(source, trashedPath); }
+  catch (error) { if (error?.code !== "ENOENT") throw error; }
+  try {
+    await mutateState(next => {
+      next.projects = next.projects.filter(item => item.id !== projectId);
+      next.jobs = next.jobs.filter(item => item.projectId !== projectId);
+      next.approvals = next.approvals.filter(item => item.projectId !== projectId);
+      next.tasks = next.tasks.filter(item => item.projectId !== projectId);
+      appendEvent(next, "project.deleted", `项目《${project.title}》已移入本机回收区`, { projectId });
+    });
+  } catch (error) {
+    try { await fs.rename(trashedPath, source); } catch {}
+    throw error;
+  }
+  return { id: projectId, title: project.title, recoverablePath: trashedPath };
+}
+
+export async function createCreation(projectId, title) {
+  const normalized = String(title || "").trim().slice(0, 80);
+  if (!normalized) throw new Error("CREATION_TITLE_REQUIRED");
+  return mutateState(state => {
+    const project = state.projects.find(item => item.id === projectId);
+    if (!project) throw new Error("PROJECT_NOT_FOUND");
+    project.creations ||= [];
+    const now = new Date().toISOString();
+    const creation = { id: safeId("creation"), title: normalized, status: "draft", createdAt: now, updatedAt: now };
+    project.creations.unshift(creation);
+    project.updatedAt = now;
+    appendEvent(state, "creation.created", `《${project.title}》已新建创作页“${normalized}”`, { projectId, creationId: creation.id });
+    return creation;
+  });
+}
+
 export async function updateProjectPlan(projectId, plan) {
   return mutateState(state => {
     const project = state.projects.find(item => item.id === projectId);
     if (!project) throw new Error("PROJECT_NOT_FOUND");
+    project.creations ||= [];
+    if (!project.creations.length) {
+      const now = new Date().toISOString();
+      project.creations.push({ id: safeId("creation"), title: "主创作页", status: "draft", createdAt: now, updatedAt: now });
+    }
     if (plan.title !== undefined) project.title = String(plan.title).trim().slice(0, 80) || project.title;
     if (plan.logline !== undefined) project.logline = String(plan.logline).trim().slice(0, 500);
     if (plan.premise !== undefined) project.script.premise = String(plan.premise).trim().slice(0, 1200);
@@ -78,6 +140,8 @@ export async function updateProjectPlan(projectId, plan) {
     project.currentStage = project.shots.length ? "storyboard" : project.characters.length ? "characters" : "story";
     project.status = project.shots.length ? "ready" : "draft";
     project.updatedAt = new Date().toISOString();
+    project.creations[0].updatedAt = project.updatedAt;
+    project.creations[0].status = project.shots.length ? "ready" : "draft";
     appendEvent(state, "project.plan_updated", `《${project.title}》的正式制作方案已更新`, { projectId, scenes: project.script.scenes.length, characters: project.characters.length, shots: project.shots.length });
     return project;
   });
@@ -145,7 +209,7 @@ async function runLocalRender(jobId, projectId) {
     }).join("\n");
     const outputPath = path.join(projectDir(projectId), "outputs", `${jobId}.mp4`);
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
-    await renderFinal({ clips, subtitles, outputPath, workingDir: renderDir, preserveAudio: true });
+    await renderFinal({ clips, subtitles, outputPath, workingDir: renderDir });
     await mutateState(next => {
       const target = next.projects.find(item => item.id === projectId);
       target.outputs.unshift({ id: safeId("output"), kind: "video", localPath: outputPath, duration: cursor, createdAt: new Date().toISOString(), jobId });
@@ -164,10 +228,9 @@ export async function createApproval(projectId, requested = {}) {
   const project = state.projects.find(item => item.id === projectId);
   if (!project) throw new Error("PROJECT_NOT_FOUND");
   if (!project.shots.length) throw new Error("PROJECT_HAS_NO_SHOTS");
-  const maxImageCalls = Math.min(Math.max(Number(requested.maxImageCalls || state.settings.maxImageCallsPerBatch), 0), 20);
-  const maxVideoCalls = Math.min(Math.max(Number(requested.maxVideoCalls || state.settings.maxVideoCallsPerBatch), 0), 20);
+  const { maxImageCalls, maxVideoCalls } = resolveApprovalLimits(project, state.settings, requested);
   const approval = {
-    id: safeId("approval"), projectId, status: "pending", purpose: "生成当前项目缺失图片与视频镜头",
+    id: safeId("approval"), projectId, status: "pending", purpose: "生成当前项目尚缺的付费图片与视频镜头",
     maxImageCalls, maxVideoCalls, usedImageCalls: 0, usedVideoCalls: 0,
     createdAt: new Date().toISOString(), decidedAt: null
   };
@@ -176,6 +239,19 @@ export async function createApproval(projectId, requested = {}) {
     appendEvent(next, "approval.requested", `《${project.title}》真实模型批次等待审批`, { approvalId: approval.id, projectId, maxImageCalls, maxVideoCalls });
   });
   return approval;
+}
+
+export function resolveApprovalLimits(project, settings, requested = {}) {
+  const shotCount = project.shots.length;
+  const missingImages = settings.imageProvider === "ark-seedream"
+    ? project.shots.filter(shot => !project.assets.some(asset => asset.shotId === shot.id && asset.kind === "image")).length
+    : 0;
+  const missingVideos = project.shots.filter(shot => !shot.clipPath).length;
+  const bounded = (value, fallback) => Math.min(Math.max(Number(value ?? fallback) || 0, 0), shotCount);
+  return {
+    maxImageCalls: bounded(requested.maxImageCalls, missingImages),
+    maxVideoCalls: bounded(requested.maxVideoCalls, missingVideos)
+  };
 }
 
 export async function decideApproval(approvalId, decision) {
@@ -250,25 +326,37 @@ async function runRealPipeline(jobId, approvalId) {
         await updateJob(jobId, { status: "waiting", stage: "codex-images" }, `还有 ${missingImages.length} 个镜头等待 Codex Image Gen 回填`);
         return;
       }
+      const missingRemoteSources = afterProject.shots.map(shot => afterProject.assets.find(asset => asset.shotId === shot.id && asset.kind === "image" && asset.provider === "codex-imagegen")).filter(asset => asset && (!asset.remoteUrl || asset.remoteSource === "local-bridge"));
+      try {
+        for (const asset of missingRemoteSources) await ensureAssetRemoteUrl(project.id, asset.id);
+      } catch (error) {
+        const failure = safeJobFailure(error);
+        await updateJob(jobId, { status: "waiting", stage: "asset-bridge", error: failure.message, errorCode: failure.code }, "参考图片等待受控 HTTPS 桥接");
+        return;
+      }
     }
 
     await updateJob(jobId, { stage: "videos" }, "真实批次正在生成视频镜头");
     state = await readState();
     const latestProject = state.projects.find(item => item.id === project.id);
     for (const shot of latestProject.shots) {
+      if (shot.clipPath) continue;
       const latest = await readState();
       const currentApproval = latest.approvals.find(item => item.id === approvalId);
-      if (currentApproval.usedVideoCalls >= currentApproval.maxVideoCalls) break;
       const asset = latest.projects.find(item => item.id === project.id).assets.find(item => item.shotId === shot.id && item.kind === "image" && item.remoteUrl);
       if (!asset) throw new Error("SEEDANCE_REQUIRES_REMOTE_IMAGE_URL");
-      const taskId = await createSeedanceTask({ apiKey, baseUrl: settings.arkBaseUrl, model: settings.seedanceModel, prompt: shot.prompt, imageUrl: asset.remoteUrl, ratio: settings.ratio, resolution: settings.resolution, generateAudio: settings.generateAudio, watermark: settings.watermark, duration: Math.max(4, Math.round(shot.duration)) });
-      await mutateState(next => {
-        const targetApproval = next.approvals.find(item => item.id === approvalId);
-        targetApproval.usedVideoCalls += 1;
-        const targetShot = next.projects.find(item => item.id === project.id).shots.find(item => item.id === shot.id);
-        targetShot.providerTaskId = taskId;
-        targetShot.status = "video-running";
-      });
+      let taskId = shot.providerTaskId;
+      if (!taskId) {
+        if (currentApproval.usedVideoCalls >= currentApproval.maxVideoCalls) break;
+        taskId = await createSeedanceTask({ apiKey, baseUrl: settings.arkBaseUrl, model: settings.seedanceModel, prompt: shot.prompt, imageUrl: asset.remoteUrl, ratio: settings.ratio, resolution: settings.resolution, generateAudio: settings.generateAudio, watermark: settings.watermark, duration: Math.max(4, Math.round(shot.duration)) });
+        await mutateState(next => {
+          const targetApproval = next.approvals.find(item => item.id === approvalId);
+          targetApproval.usedVideoCalls += 1;
+          const targetShot = next.projects.find(item => item.id === project.id).shots.find(item => item.id === shot.id);
+          targetShot.providerTaskId = taskId;
+          targetShot.status = "video-running";
+        });
+      }
       const result = await waitForSeedanceTask({ apiKey, baseUrl: settings.arkBaseUrl, taskId, onStatus: async status => updateJob(jobId, { stage: `video-${shot.order}-${status}` }) });
       const outputPath = path.join(projectDir(project.id), "clips", `${shot.id}-seedance.mp4`);
       await downloadSeedanceVideo(result, outputPath);
@@ -310,6 +398,11 @@ export async function claimTask(taskId, actor = "codex") {
 export async function completeTask(taskId, localPath, remoteUrl = "") {
   const normalized = path.resolve(localPath);
   await fs.access(normalized);
+  if (remoteUrl) {
+    const parsed = new URL(String(remoteUrl));
+    if (!["https:", "asset:"].includes(parsed.protocol)) throw new Error("REMOTE_IMAGE_URL_MUST_BE_HTTPS_OR_ASSET");
+    remoteUrl = parsed.toString();
+  }
   return mutateState(state => {
     const task = state.tasks.find(item => item.id === taskId);
     if (!task) throw new Error("TASK_NOT_FOUND");
@@ -319,8 +412,26 @@ export async function completeTask(taskId, localPath, remoteUrl = "") {
     task.localPath = normalized;
     task.remoteUrl = remoteUrl;
     const project = state.projects.find(item => item.id === task.projectId);
-    project.assets.push({ id: safeId("asset"), projectId: task.projectId, shotId: task.shotId, kind: "image", provider: "codex-imagegen", localPath: normalized, remoteUrl, createdAt: new Date().toISOString() });
+    project.assets.push({ id: safeId("asset"), projectId: task.projectId, shotId: task.shotId, kind: "image", provider: "codex-imagegen", localPath: normalized, remoteUrl, remoteSource: remoteUrl ? "external" : "", createdAt: new Date().toISOString() });
     appendEvent(state, "task.completed", "Codex Image Gen 素材已回填", { taskId, projectId: task.projectId, shotId: task.shotId });
+    return task;
+  });
+}
+
+export async function attachTaskRemoteUrl(taskId, remoteUrl) {
+  const normalized = new URL(String(remoteUrl || ""));
+  if (!["https:", "asset:"].includes(normalized.protocol)) throw new Error("REMOTE_IMAGE_URL_MUST_BE_HTTPS_OR_ASSET");
+  return mutateState(state => {
+    const task = state.tasks.find(item => item.id === taskId);
+    if (!task || task.kind !== "codex-imagegen") throw new Error("TASK_NOT_FOUND");
+    if (task.status !== "completed") throw new Error("TASK_NOT_COMPLETED");
+    const project = state.projects.find(item => item.id === task.projectId);
+    const asset = project.assets.find(item => item.shotId === task.shotId && item.kind === "image" && item.provider === "codex-imagegen");
+    if (!asset) throw new Error("TASK_ASSET_NOT_FOUND");
+    task.remoteUrl = normalized.toString();
+    asset.remoteUrl = normalized.toString();
+    asset.remoteSource = "external";
+    appendEvent(state, "task.remote_source_attached", "Codex 图片的远程素材地址已补充", { taskId, projectId: task.projectId, shotId: task.shotId });
     return task;
   });
 }

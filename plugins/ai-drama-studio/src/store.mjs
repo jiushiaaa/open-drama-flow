@@ -8,7 +8,7 @@ let writeChain = Promise.resolve();
 function freshState() {
   const now = new Date().toISOString();
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     updatedAt: now,
     settings: { ...defaultSettings },
     projects: [],
@@ -38,6 +38,20 @@ async function atomicWrite(state) {
 export async function readState() {
   await ensureState();
   const state = JSON.parse(await fs.readFile(statePath, "utf8"));
+  state.schemaVersion = 2;
+  for (const project of state.projects || []) {
+    if (!Array.isArray(project.creations)) project.creations = [];
+    const hasProduction = Boolean(project.shots?.length || project.characters?.length || project.script?.scenes?.length || project.outputs?.length);
+    if (hasProduction && !project.creations.length) {
+      project.creations.push({
+        id: `creation-${project.id}-main`,
+        title: "主创作页",
+        status: project.shots?.length ? "ready" : "draft",
+        createdAt: project.createdAt,
+        updatedAt: project.updatedAt
+      });
+    }
+  }
   state.settings = { ...defaultSettings, ...state.settings, ...lockedGenerationSettings };
   return state;
 }

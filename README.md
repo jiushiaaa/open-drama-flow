@@ -125,9 +125,27 @@ OpenDramaFlow includes 49 project Skills:
 
 - Windows 10 or Windows 11
 - Codex Desktop
-- Node.js 20 or newer
-- FFmpeg available on `PATH`
 - A Volcengine Ark API key for Seedream or Seedance calls
+
+Node.js 20+, FFmpeg, the Codex plugin, and the zero-account HTTPS helper are checked and installed by the repository installer.
+
+### Install by prompt (recommended)
+
+Open Codex Desktop and send this single prompt. Codex performs the setup; the user does not need to type installation commands:
+
+> Clone or open https://github.com/jiushiaaa/open-drama-flow on this Windows PC. Read the repository instructions, inspect `scripts/install.ps1`, then run it from the repository root. Verify that all 49 bundled Skills are present, the Codex plugin is enabled, and the local workbench health endpoint responds. Do not request or print any API key. When complete, tell me to restart Codex Desktop and then open OpenDramaFlow.
+
+If you are using a fork, replace the URL in that prompt with your fork URL. All 49 built-in Skills, the installer, and the HTTPS bridge implementation are committed in the repository; they are not copied from the maintainer's computer.
+
+### Direct installer (development fallback)
+
+From an already cloned repository:
+
+```powershell
+.\scripts\install.ps1
+```
+
+The installer uses the official Cloudflare `cloudflared` Windows binary for a temporary [Quick Tunnel](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/trycloudflare/). It requires no Cloudflare account, API token, ngrok account, or public object-storage configuration. Quick Tunnels are intended for testing and development; a team-hosted HTTPS base URL can be supplied through `AI_DRAMA_ASSET_BRIDGE_BASE_URL` when a stable production endpoint is required.
 
 ### Run the desktop service
 
@@ -147,14 +165,7 @@ The HTTP service binds to the loopback interface only. Project state is stored i
 
 The repository contains a Codex plugin manifest, MCP configuration, local marketplace entry, and all 49 Skills.
 
-From the repository root:
-
-```powershell
-codex plugin marketplace add .
-codex plugin add ai-drama-studio@ai-drama-local
-```
-
-After updating the plugin, run the second command again and start a new Codex task so the refreshed Skills and MCP server are loaded.
+`scripts/install.ps1` registers the repository as a local marketplace, refreshes `ai-drama-studio@ai-drama-local`, and starts the workbench. Restart Codex Desktop after installation so the refreshed Skills and MCP server are loaded.
 
 ### MCP tools
 
@@ -163,6 +174,8 @@ After updating the plugin, run the second command again and start a new Codex ta
 | `drama_get_state` | Read projects, shots, jobs, approvals, tasks, and recent events |
 | `drama_route_skills` | Select and load specialist creative Skills automatically |
 | `drama_list_skills` | List the available specialist Skill catalog |
+| `drama_create_skill` | Write a new local Skill that immediately joins automatic routing |
+| `drama_set_skill_enabled` | Enable or disable a Skill for automatic routing |
 | `drama_create_project` | Create a blank local project without a model call |
 | `drama_update_plan` | Write the formal story, characters, scenes, and shots |
 | `drama_request_paid_batch` | Create a pending bounded approval for real provider calls |
@@ -177,6 +190,7 @@ After updating the plugin, run the second command again and start a new Codex ta
 open-drama-flow/
 ├─ .agents/plugins/marketplace.json
 ├─ docs/images/
+├─ scripts/install.ps1        # Windows one-step installer
 ├─ plugins/ai-drama-studio/
 │  ├─ .codex-plugin/plugin.json
 │  ├─ public/                 # Windows desktop web interface
@@ -197,7 +211,7 @@ npm run check
 npm test
 ```
 
-The current regression suite checks blank-project integrity, all 48 specialist entrypoints, automatic routing for representative creative requests, and producer fallback.
+The regression suite checks blank-project integrity, all 49 shipped Skill entrypoints, Skill import and persistent toggles, automatic routing, producer fallback, and deterministic media rendering.
 
 ## Security
 
@@ -205,7 +219,7 @@ The current regression suite checks blank-project integrity, all 48 specialist e
 - The Ark API key is encrypted for the current Windows user with DPAPI and is never returned by MCP.
 - `studio-data`, local audits, dependencies, generated QA output, and credential files are excluded from Git.
 - Provider calls are not evidence of success until a real result is downloaded and attached to the project.
-- Codex Image Gen files need a reachable URL, a Volcengine Asset ID, or an object-storage bridge before Seedance can consume them.
+- Seedance still requires an HTTPS or `asset://` reference. OpenDramaFlow automatically exposes the exact local image through a random-token, one-hour HTTPS route using Cloudflare Quick Tunnels; the project never uploads the whole asset library. If the network blocks Quick Tunnels, the job waits safely and can use `AI_DRAMA_ASSET_BRIDGE_BASE_URL` or an Ark `asset://` reference instead.
 
 ## Current boundaries
 

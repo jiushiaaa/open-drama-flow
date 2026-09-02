@@ -1,9 +1,9 @@
 {
   "name": "ai-drama-studio",
-  "version": "0.1.0+codex.20260902014509",
+  "version": "0.1.0+codex.20260902035830",
   "description": "Codex-native local harness for AI comic-drama scripting, storyboards, media generation, approvals and FFmpeg editing.",
   "author": {
-    "name": "C2023 Local Studio"
+    "name": "OpenDramaFlow Contributors"
   },
   "license": "MIT",
   "keywords": [

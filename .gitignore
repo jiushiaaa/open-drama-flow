@@ -11,6 +11,7 @@ _audit/
 # Local design-audit reports
 plugins/ai-drama-studio/premium-audit.json
 plugins/ai-drama-studio/design-qa.md
+plugins/ai-drama-studio/design-qa-*.png
 
 # Dependencies and generated QA artifacts
 **/node_modules/

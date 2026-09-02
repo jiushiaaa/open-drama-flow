@@ -4,189 +4,170 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>制作台 — OpenDramaFlow</title>
+  <title>项目库 — OpenDramaFlow</title>
   <link rel="icon" href="/assets/studio-favicon.png" type="image/png">
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/desktop-overrides.css">
 </head>
 <body>
-  <div id="app-shell" class="app-shell">
-    <aside class="sidebar" aria-label="片场主导航">
-      <a class="brand" href="/" aria-label="片场首页">
-        <img src="/assets/studio-pixel-icon.png" alt="" width="44" height="44">
-        <span><strong>片场</strong><small>OpenDramaFlow</small></span>
+  <div class="desktop-shell">
+    <aside class="sidebar" aria-label="主导航">
+      <a class="brand" href="#project-library">
+        <img src="/assets/studio-pixel-icon.png" width="38" height="38" alt="">
+        <span><strong>OpenDramaFlow</strong><small>AI 漫剧本地片场</small></span>
       </a>
 
-      <nav class="sidebar-nav" aria-label="工作区">
-        <button id="create-project-button" class="sidebar-create" type="button">
-          <img src="/icons/plus.svg" alt="" aria-hidden="true">开始创作
-        </button>
-        <a class="nav-item active" href="#project-library" aria-current="page"><img src="/icons/folder-kanban.svg" alt="" aria-hidden="true">项目库</a>
-        <a class="nav-item" href="#production-spine"><img src="/icons/workflow.svg" alt="" aria-hidden="true">制作流程</a>
-        <a class="nav-item" href="#workspace"><img src="/icons/clapperboard.svg" alt="" aria-hidden="true">镜头工作台</a>
-        <a class="nav-item" href="#project-guide"><img src="/icons/book-open.svg" alt="" aria-hidden="true">项目新手指引</a>
-        <button id="settings-button" class="nav-item" type="button"><img src="/icons/settings-2.svg" alt="" aria-hidden="true">API Key</button>
+      <nav class="primary-nav">
+        <button class="nav-create" type="button" data-action="create-project"><img src="/icons/plus.svg" alt="">开始创作</button>
+        <a class="nav-item active" href="#project-library"><img src="/icons/folder-kanban.svg" alt="">项目库</a>
+        <a class="nav-item" href="#skills"><img src="/icons/sparkles.svg" alt="">Skill</a>
+        <a class="nav-item" href="#project-guide"><img src="/icons/book-open.svg" alt="">项目新手指引</a>
+        <button id="settings-button" class="nav-item" type="button"><img src="/icons/key-round.svg" alt="">API Key</button>
       </nav>
 
-      <div class="sidebar-section">
-        <div class="sidebar-section-title"><span>项目</span><span id="sidebar-project-count">0</span></div>
-        <div id="sidebar-projects" class="sidebar-projects">
-          <p>还没有项目</p>
+      <section class="sidebar-project-section" aria-labelledby="sidebar-project-title">
+        <header>
+          <span id="sidebar-project-title">项目</span>
+          <div class="sidebar-tools">
+            <button id="sidebar-sort-button" class="icon-button quiet" type="button" aria-label="项目排序"><img src="/icons/arrow-up-down.svg" alt=""></button>
+            <button class="icon-button quiet" type="button" aria-label="新建项目" data-action="create-project"><img src="/icons/plus.svg" alt=""></button>
+          </div>
+        </header>
+        <div id="sidebar-sort-menu" class="popover compact" hidden>
+          <strong>排序方式</strong>
+          <button type="button" data-sort="updated">最近更新</button>
+          <button type="button" data-sort="created">最近创建</button>
+          <button type="button" data-sort="title">名称顺序</button>
         </div>
-      </div>
-
-      <div class="sidebar-footer">
-        <span id="service-status" class="service-status"><span aria-hidden="true"></span>本地服务连接中</span>
-        <button id="refresh-button" class="icon-text-button" type="button"><img src="/icons/refresh-cw.svg" alt="" aria-hidden="true">刷新状态</button>
-      </div>
+        <p class="sidebar-group-label">进行中</p>
+        <div id="sidebar-projects" class="sidebar-projects"></div>
+      </section>
     </aside>
 
-    <main class="content-shell">
-      <div class="canvas">
-        <section id="project-library" class="page-header" aria-labelledby="page-title">
+    <main class="main-surface">
+      <section id="project-library-view" class="route-view library-view">
+        <header class="library-header">
           <div>
-            <p class="eyebrow">AI 漫剧本地制作台</p>
-            <h1 id="page-title">项目库</h1>
-            <p class="lede">从故事、角色和分镜开始，让 Codex 管理图片、视频、剪辑与每一次模型调用。</p>
+            <p class="eyebrow">LOCAL CREATIVE PROJECTS</p>
+            <h1>项目库</h1>
+            <p>管理创作页、生成素材与最终成片。这里只显示你真实创建的本机项目。</p>
           </div>
-          <div id="project-header-actions" class="header-actions" hidden>
-            <label class="button outline file-picker" for="asset-file"><img src="/icons/upload.svg" alt="" aria-hidden="true">导入素材</label>
-            <input id="asset-file" type="file" accept=".png,.jpg,.jpeg,.webp,.mp4,.mov" hidden>
-          </div>
-        </section>
-
-        <nav id="production-spine" class="production-spine" aria-label="制作阶段">
-          <div class="spine-heading">
-            <div><p class="section-label">制作流程</p><h2>从故事到成片</h2></div>
-            <span class="spine-note">真实模型调用始终先审批</span>
-          </div>
-          <ol id="stage-list"></ol>
-        </nav>
-
-        <section id="empty-state" class="empty-state" hidden>
-          <div class="empty-visual" aria-hidden="true">
-            <img src="/assets/studio-pixel-hero.png" alt="">
-          </div>
-          <h2>创建你的第一部 AI 漫剧</h2>
-          <p>先建立一个空白项目。之后可以让 Codex 写剧本、拆分镜头，再按审批上限调用 Seedream、Seedance 和本地 FFmpeg。</p>
-          <div class="empty-actions">
-            <button class="button primary" type="button" data-action="create-project"><img src="/icons/plus.svg" alt="" aria-hidden="true">新建空白项目</button>
-            <button class="button outline" type="button" data-action="open-settings"><img src="/icons/settings-2.svg" alt="" aria-hidden="true">配置 API Key</button>
-            <a class="button outline" href="#project-guide"><img src="/icons/book-open.svg" alt="" aria-hidden="true">查看新手指引</a>
-          </div>
-        </section>
-
-        <section id="workspace" class="workspace" hidden>
-        <aside class="panel project-panel" aria-labelledby="project-panel-title">
-          <div class="panel-heading">
-            <div><p class="panel-kicker">PROJECT BRIEF</p><h2 id="project-panel-title">项目</h2></div>
-            <span id="project-status" class="status-chip neutral">草稿</span>
-          </div>
-          <div id="project-summary"></div>
-          <div class="section-rule"></div>
-          <h3>角色锚点</h3>
-          <div id="character-list" class="character-list"></div>
-          <div class="project-actions">
-            <button id="render-button" class="button outline wide" type="button">合成当前镜头成片</button>
-            <button id="request-real-button" class="button warning wide" type="button">创建真实模型审批</button>
-          </div>
-        </aside>
-
-        <section class="panel board-panel" aria-labelledby="board-title">
-          <div class="panel-heading board-heading">
-            <div><p class="panel-kicker">SHOT LEDGER</p><h2 id="board-title">分镜台</h2></div>
-            <span id="shot-count" class="count-label">0 个镜头</span>
-          </div>
-          <div id="shot-board" class="shot-board"></div>
-          <div id="final-output" class="final-output" hidden></div>
-        </section>
-
-        <aside class="panel activity-panel" aria-labelledby="activity-title">
-          <div class="panel-heading">
-            <div><p class="panel-kicker">CONTROL ROOM</p><h2 id="activity-title">任务与审批</h2></div>
-          </div>
-          <div id="approval-list" class="stack"></div>
-          <div id="job-list" class="stack"></div>
-          <div class="section-rule"></div>
-          <h3>最近记录</h3>
-          <ol id="event-list" class="event-list"></ol>
-        </aside>
-        </section>
-
-        <section id="project-guide" class="guide-section" aria-labelledby="guide-title">
-          <header class="guide-heading">
-            <div class="guide-icon" aria-hidden="true"><img src="/icons/book-open.svg" alt=""></div>
-            <div>
-              <p class="panel-kicker">内置项目文档</p>
-              <h2 id="guide-title">项目新手指引</h2>
-              <p>这里仅说明正式制作流程，内容不会写入项目库或任务记录。</p>
+          <img class="library-illustration" src="/assets/project-cover-rain-station.png" alt="" aria-hidden="true">
+        </header>
+        <div class="library-toolbar">
+          <button class="button primary" type="button" data-action="create-project"><img src="/icons/plus.svg" alt="">新建项目</button>
+          <div class="toolbar-spacer"></div>
+          <label class="search-field"><img src="/icons/search.svg" alt=""><input id="project-search" type="search" placeholder="搜索项目" autocomplete="off"></label>
+          <div class="sort-control">
+            <button id="library-sort-button" class="button subtle" type="button"><span id="library-sort-label">最近更新</span><img src="/icons/chevron-down.svg" alt=""></button>
+            <div id="library-sort-menu" class="popover" hidden>
+              <strong>排列顺序</strong>
+              <button type="button" data-sort="updated">最近更新</button>
+              <button type="button" data-sort="created">最近创建</button>
+              <button type="button" data-sort="title">名称顺序</button>
             </div>
-          </header>
-          <ol class="guide-steps">
-            <li><span>01</span><div><strong>建立空白项目</strong><p>项目库只保存你主动创建的项目，不会自动注入任何故事内容。</p></div></li>
-            <li><span>02</span><div><strong>把创作目标交给 Codex</strong><p>说明题材、时长、风格和受众，Codex 会写正式剧本、角色设定与分镜方案。</p></div></li>
-            <li><span>03</span><div><strong>确认真实生成批次</strong><p>分镜完成后创建审批；未经批准，不会调用 Seedream 或 Seedance。</p></div></li>
-            <li><span>04</span><div><strong>生成并剪辑成片</strong><p>Codex Image Gen 负责图片资产，Seedance 负责视频镜头，FFmpeg 只合成真实素材。</p></div></li>
-          </ol>
-        </section>
-      </div>
+          </div>
+        </div>
+        <div id="project-library-grid" class="project-grid"></div>
+      </section>
+
+      <section id="project-overview-view" class="route-view project-overview" hidden>
+        <header class="breadcrumb-bar"><button type="button" data-route="project-library">项目库</button><span>›</span><strong id="overview-project-title"></strong></header>
+        <div class="project-tabs" role="tablist">
+          <button id="creations-tab" class="active" type="button" role="tab">创作页</button>
+          <button id="assets-tab" type="button" role="tab">项目资产</button>
+          <div class="toolbar-spacer"></div>
+          <button id="new-creation-button" class="button primary" type="button"><img src="/icons/plus.svg" alt="">新建创作页</button>
+        </div>
+        <div id="creations-panel" class="tab-panel"><div id="creation-grid" class="creation-grid"></div></div>
+        <div id="assets-panel" class="tab-panel" hidden>
+          <div class="asset-actions">
+            <label class="asset-action-card" for="asset-file"><img src="/icons/upload.svg" alt=""><span><strong>上传文件</strong><small>支持图片与视频素材</small></span></label>
+            <input id="asset-file" type="file" accept=".png,.jpg,.jpeg,.webp,.mp4,.mov" multiple hidden>
+            <label class="search-field asset-search"><img src="/icons/search.svg" alt=""><input id="asset-search" type="search" placeholder="搜索素材" autocomplete="off"></label>
+          </div>
+          <div id="asset-grid" class="asset-grid"></div>
+        </div>
+      </section>
+
+      <section id="workspace-view" class="route-view workspace-view" hidden>
+        <header class="breadcrumb-bar"><button type="button" data-route="project-library">项目库</button><span>›</span><button id="workspace-project-link" type="button"></button><span>›</span><strong id="workspace-creation-title">主创作页</strong></header>
+        <div class="workspace-heading">
+          <div><p class="eyebrow">CODEX PRODUCTION CANVAS</p><h1 id="workspace-title">创作画板</h1><p id="workspace-logline">等待 Codex 写入正式故事与分镜。</p></div>
+          <div class="workspace-actions"><button id="request-real-button" class="button outline" type="button">创建模型审批</button><button id="render-button" class="button primary" type="button"><img src="/icons/play.svg" alt="">合成最终视频</button></div>
+        </div>
+        <nav class="stage-strip" aria-label="制作阶段"><ol id="stage-list"></ol></nav>
+        <div class="workspace-grid">
+          <aside class="studio-panel brief-panel"><header><h2>故事与角色</h2><span id="project-status" class="status-chip">草稿</span></header><div id="project-summary"></div><h3>角色锚点</h3><div id="character-list"></div></aside>
+          <section class="studio-panel shot-panel"><header><h2>镜头工作台</h2><span id="shot-count">0 个镜头</span></header><div id="shot-board" class="shot-board"></div><div id="final-output" class="final-output" hidden></div></section>
+          <aside class="studio-panel activity-panel"><header><h2>任务与审批</h2></header><div id="approval-list" class="stack"></div><div id="job-list" class="stack"></div><h3>最近记录</h3><ol id="event-list" class="event-list"></ol></aside>
+        </div>
+      </section>
+
+      <section id="skills-view" class="route-view document-view" hidden>
+        <header class="skills-header">
+          <div><p class="eyebrow">AUTO ROUTED CREATIVE SKILLS</p><h1>Skill</h1><p><strong id="skill-count">49</strong> 个创作能力已随项目内置，Codex 会按目标自动识别并加载。</p></div>
+          <button id="import-skill-button" class="button primary" type="button"><img src="/icons/upload.svg" alt="">导入 Skill</button>
+        </header>
+        <div class="skills-toolbar">
+          <div id="skill-filters" class="filter-chips" role="group" aria-label="Skill 筛选">
+            <button class="active" type="button" data-skill-filter="all">全部</button>
+            <button type="button" data-skill-filter="built-in">内置</button>
+            <button type="button" data-skill-filter="imported">已导入</button>
+            <button type="button" data-skill-filter="disabled">已停用</button>
+          </div>
+          <label class="search-field"><img src="/icons/search.svg" alt=""><input id="skill-search" type="search" placeholder="搜索 Skill" autocomplete="off"></label>
+        </div>
+        <div id="skill-grid" class="skill-grid"></div>
+      </section>
+
+      <section id="project-guide-view" class="route-view document-view" hidden>
+        <p class="eyebrow">OFFICIAL GUIDE</p><h1>项目新手指引</h1><p>这是独立的正式操作说明，不会写入项目数据。</p>
+        <ol class="guide-steps"><li><span>01</span><div><strong>创建项目</strong><p>在项目库建立空白项目，只保存你主动创建的内容。</p></div></li><li><span>02</span><div><strong>让 Codex 编剧与拆镜</strong><p>说明题材、时长、风格和受众，Codex 自动匹配 Skill 并建立创作页。</p></div></li><li><span>03</span><div><strong>批准真实生成批次</strong><p>图片资产完成后自动建立临时 HTTPS 参考地址，再提交 Seedance。</p></div></li><li><span>04</span><div><strong>剪辑与验片</strong><p>成片由本机 FFmpeg 合成真实镜头、声音和字幕，可下载继续精修。</p></div></li></ol>
+      </section>
     </main>
   </div>
 
-  <div id="settings-overlay" class="dialog-overlay" hidden>
-    <section id="settings-dialog" class="dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title" aria-describedby="settings-description" tabindex="-1">
-      <header class="dialog-header">
-        <div>
-          <p class="panel-kicker">LOCAL CREDENTIAL VAULT</p>
-          <h2 id="settings-title">API Key</h2>
-          <p id="settings-description">只需保存火山方舟 API Key，图片、视频和生成参数由片场自动配置。</p>
-        </div>
-        <button id="settings-close" class="icon-button" type="button" aria-label="关闭 API Key 设置"><img src="/icons/x.svg" alt="" aria-hidden="true"></button>
-      </header>
-      <div class="dialog-body">
-        <div id="settings-alert" class="form-alert" role="alert" hidden></div>
+  <dialog id="project-dialog" class="modal">
+    <form id="project-form" method="dialog">
+      <header><div><p class="eyebrow">LOCAL PROJECT</p><h2 id="project-dialog-title">新建项目</h2></div><button class="icon-button" type="button" data-close-dialog="project-dialog"><img src="/icons/x.svg" alt=""></button></header>
+      <label for="project-name">项目名称</label><input id="project-name" maxlength="80" autocomplete="off" placeholder="例如：雨夜便利店"><p id="project-form-error" class="field-error"></p>
+      <footer><button class="button subtle" type="button" data-close-dialog="project-dialog">取消</button><button id="project-submit" class="button primary" type="submit">创建项目</button></footer>
+    </form>
+  </dialog>
 
-        <section class="settings-section credential-card" aria-labelledby="credential-title">
-          <div class="settings-section-heading">
-            <div><h3 id="credential-title">火山方舟 API Key</h3><p>加密保存在当前 Windows 用户下，重启项目后会自动继续使用。</p></div>
-            <span id="credential-chip" class="status-chip neutral">读取中</span>
-          </div>
-          <form id="credential-form" novalidate>
-            <label id="ark-key-label" for="ark-api-key">API Key</label>
-            <div class="secret-field">
-              <input id="ark-api-key" name="apiKey" type="password" autocomplete="off" spellcheck="false" aria-describedby="ark-key-help ark-key-error">
-              <button id="secret-toggle" class="button ghost" type="button" aria-label="显示 API Key" aria-pressed="false">显示</button>
-            </div>
-            <p id="ark-key-help" class="field-help">请只在这里粘贴。保存后持续显示掩码，不会把明文送回页面。</p>
-            <p id="ark-key-error" class="field-error" role="alert"></p>
-            <div class="inline-actions">
-              <button id="save-key-button" class="button primary" type="submit">安全保存密钥</button>
-              <button id="replace-key-button" class="button outline" type="button" hidden>更换 API Key</button>
-              <button id="clear-key-button" class="button danger-ghost" type="button">清除已保存密钥</button>
-            </div>
-          </form>
-        </section>
+  <dialog id="delete-dialog" class="modal danger-modal"><form id="delete-form" method="dialog"><header><div><p class="eyebrow">RECOVERABLE DELETE</p><h2>删除项目？</h2></div><button class="icon-button" type="button" data-close-dialog="delete-dialog"><img src="/icons/x.svg" alt=""></button></header><p>项目将移入本机回收目录，不会永久擦除。确认删除“<strong id="delete-project-name"></strong>”吗？</p><footer><button class="button subtle" type="button" data-close-dialog="delete-dialog">取消</button><button class="button danger" type="submit">删除项目</button></footer></form></dialog>
 
-        <section class="settings-section capability-section" aria-labelledby="capability-title">
-          <div class="settings-section-heading">
-            <div><h3 id="capability-title">系统已接入</h3><p>模型版本和生成参数由片场维护，升级时自动更新，无需手动填写。</p></div>
-            <span class="status-chip success">已就绪</span>
-          </div>
-          <dl class="capability-list">
-            <div class="capability-row"><dt>图片资产</dt><dd>Codex Image Gen <span>主生成</span></dd></div>
-            <div class="capability-row"><dt>备用图片</dt><dd>Seedream 5.0 Pro</dd></div>
-            <div class="capability-row"><dt>视频镜头</dt><dd>Seedance 2.5</dd></div>
-          </dl>
-          <p class="capability-note">创作参数已内置，由系统统一管理。</p>
-        </section>
-      </div>
-      <footer class="dialog-footer">
-        <button id="settings-cancel" class="button primary" type="button">完成</button>
-      </footer>
-    </section>
-  </div>
+  <dialog id="settings-dialog" class="modal settings-modal">
+    <form id="credential-form" method="dialog">
+      <header><div><p class="eyebrow">LOCAL CREDENTIAL VAULT</p><h2>API Key</h2></div><button class="icon-button" type="button" data-close-dialog="settings-dialog"><img src="/icons/x.svg" alt=""></button></header>
+      <section class="credential-block"><div class="credential-heading"><div><strong>火山方舟 API Key</strong><p>经 Windows DPAPI 加密，重启后继续使用；页面不会回显明文。</p></div><span id="credential-chip" class="status-chip">读取中</span></div><label for="ark-api-key">API Key</label><div class="secret-field"><input id="ark-api-key" type="password" autocomplete="off" spellcheck="false"><button id="secret-toggle" class="button subtle" type="button">显示</button></div><p id="ark-key-error" class="field-error"></p></section>
+      <section class="capability-block"><strong>系统已接入</strong><dl><div><dt>图片资产</dt><dd>Codex Image Gen</dd></div><div><dt>视频镜头</dt><dd>Seedance 2.5</dd></div><div><dt>本地图片桥</dt><dd id="bridge-status">按需自动连接</dd></div></dl></section>
+      <footer><button id="clear-key-button" class="button danger-ghost" type="button">清除密钥</button><span></span><button class="button subtle" type="button" data-close-dialog="settings-dialog">取消</button><button id="save-key-button" class="button primary" type="submit">安全保存</button></footer>
+    </form>
+  </dialog>
 
-  <div id="toast-viewport" class="toast-viewport" aria-live="polite" aria-relevant="additions"></div>
-  <div id="live-status" class="sr-only" role="status" aria-live="polite"></div>
+  <dialog id="skill-import-dialog" class="modal skill-import-modal">
+    <form id="skill-import-form" method="dialog">
+      <header><div><p class="eyebrow">LOCAL SKILL IMPORT</p><h2>导入 Skill</h2></div><button class="icon-button" type="button" data-close-dialog="skill-import-dialog"><img src="/icons/x.svg" alt=""></button></header>
+      <label id="skill-dropzone" class="skill-dropzone" for="skill-file"><img src="/icons/upload.svg" alt=""><strong>拖入 .zip 或 SKILL.md</strong><span>也可以点击选择文件</span></label>
+      <input id="skill-file" type="file" accept=".zip,.md" hidden>
+      <p class="skill-file-name" id="skill-file-name">尚未选择文件</p>
+      <ul class="import-rules"><li>.zip 中必须且只能包含一个 SKILL.md</li><li>导入后立即加入自动路由，默认启用</li><li>仅保存在这台电脑，不会改写仓库内置 Skill</li></ul>
+      <p id="skill-import-error" class="field-error"></p>
+      <footer><button class="button subtle" type="button" data-close-dialog="skill-import-dialog">取消</button><button id="skill-import-submit" class="button primary" type="submit" disabled>安装</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="skill-detail-dialog" class="modal skill-detail-modal">
+    <div class="skill-detail-shell">
+      <header class="skill-detail-header"><div><p id="skill-detail-origin" class="eyebrow">BUILT-IN SKILL</p><h2 id="skill-detail-title"></h2><p id="skill-detail-description"></p></div><button class="icon-button" type="button" data-close-dialog="skill-detail-dialog"><img src="/icons/x.svg" alt=""></button></header>
+      <div class="skill-detail-body"><nav id="skill-file-tree" class="skill-file-tree" aria-label="Skill 文件"></nav><article class="skill-document"><div class="skill-document-bar"><span id="skill-selected-file">SKILL.md</span></div><pre id="skill-file-content"></pre></article></div>
+      <footer class="skill-detail-footer"><label class="toggle-label"><input id="skill-detail-toggle" type="checkbox"><span class="toggle-ui"></span><span id="skill-detail-toggle-label">已启用</span></label><span>状态会影响 Codex 自动路由</span></footer>
+    </div>
+  </dialog>
+
+  <div id="toast-viewport" class="toast-viewport" aria-live="polite"></div>
   <script type="module" src="/app.js"></script>
 </body>
 </html>

@@ -4,10 +4,12 @@ import fsp from "node:fs/promises";
 import path from "node:path";
 import { Readable } from "node:stream";
 import { fileURLToPath } from "node:url";
-import { allowedImageExtensions, allowedVideoExtensions, assertInside, dataRoot, defaultSettings, host, lockedGenerationSettings, port, publicRoot, safeId } from "./config.mjs";
+import { allowedImageExtensions, allowedVideoExtensions, assertInside, dataRoot, defaultSettings, host, lockedGenerationSettings, port, publicRoot, safeId, workspaceRoot } from "./config.mjs";
 import { appendEvent, mutateState, readState } from "./store.mjs";
 import { clearArkKey, hasArkKey, saveArkKey } from "./secrets.mjs";
-import { claimTask, completeTask, createApproval, createProject, decideApproval, resumeRealPipeline, startLocalRender, startRealPipeline } from "./workflow.mjs";
+import { getAssetBridgeStatus } from "./asset-bridge.mjs";
+import { getManagedSkill, importSkillFile, listManagedSkills, setManagedSkillEnabled } from "./skill-registry.mjs";
+import { attachTaskRemoteUrl, claimTask, completeTask, createApproval, createCreation, createProject, decideApproval, deleteProject, renameProject, resumeRealPipeline, startLocalRender, startRealPipeline } from "./workflow.mjs";
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8",
@@ -40,16 +42,34 @@ async function readJson(req, maxBytes = 1024 * 1024) {
   catch { throw new Error("JSON_INVALID"); }
 }
 
-function publicState(state, keyConfigured) {
+function publicState(state, keyConfigured, assetBridge) {
   return {
     ...state,
     credentialStatus: { arkConfigured: keyConfigured },
+    assetBridge,
     projects: state.projects.map(project => ({
       ...project,
-      assets: project.assets.map(asset => ({ ...asset, mediaUrl: `/media/${path.relative(dataRoot, asset.localPath).replaceAll("\\", "/")}` })),
-      outputs: project.outputs.map(output => ({ ...output, mediaUrl: `/media/${path.relative(dataRoot, output.localPath).replaceAll("\\", "/")}` }))
-    }))
+      shots: project.shots.map(({ clipPath, ...shot }) => ({ ...shot, hasClip: Boolean(clipPath) })),
+      assets: project.assets.map(({ localPath, remoteUrl, bridge, ...asset }) => ({ ...asset, mediaUrl: `/media/assets/${encodeURIComponent(asset.id)}`, hasRemoteSource: Boolean(remoteUrl), remoteSourceType: remoteUrl?.startsWith("asset://") ? "asset" : remoteUrl ? "https" : "local" })),
+      outputs: project.outputs.map(({ localPath, ...output }) => ({ ...output, mediaUrl: `/media/outputs/${encodeURIComponent(output.id)}` }))
+    })),
+    jobs: state.jobs.map(({ outputPath, ...job }) => job),
+    tasks: state.tasks.map(({ localPath, remoteUrl, ...task }) => ({ ...task, hasLocalAsset: Boolean(localPath), hasRemoteSource: Boolean(remoteUrl) }))
   };
+}
+
+function registeredMediaPath(state, kind, id) {
+  const collection = kind === "assets"
+    ? state.projects.flatMap(project => project.assets)
+    : kind === "outputs" ? state.projects.flatMap(project => project.outputs) : [];
+  const item = collection.find(entry => entry.id === id);
+  if (!item?.localPath) throw new Error("FILE_NOT_FOUND");
+  const candidate = path.resolve(item.localPath);
+  for (const root of [dataRoot, workspaceRoot]) {
+    try { return assertInside(root, candidate); }
+    catch {}
+  }
+  throw new Error("PATH_OUTSIDE_WORKSPACE");
 }
 
 async function serveFile(req, res, filePath) {
@@ -101,19 +121,37 @@ function validateSettings(input, previous) {
   }
   if (input.resolution !== undefined) next.resolution = String(input.resolution).trim().slice(0, 30);
   for (const key of ["generateAudio", "watermark"]) if (input[key] !== undefined) next[key] = Boolean(input[key]);
-  for (const key of ["maxImageCallsPerBatch", "maxVideoCallsPerBatch"]) {
-    if (input[key] !== undefined) next[key] = Math.min(Math.max(Number.parseInt(input[key], 10) || 0, 0), 20);
-  }
   return { ...next, ...lockedGenerationSettings };
 }
 
 async function handleApi(req, res, url) {
   const segments = url.pathname.split("/").filter(Boolean);
   if (req.method === "GET" && url.pathname === "/api/health") {
-    json(res, 200, { ok: true, service: "ai-drama-studio", now: new Date().toISOString(), ffmpeg: true }); return;
+    json(res, 200, { ok: true, service: "ai-drama-studio", now: new Date().toISOString(), ffmpeg: true, assetBridge: await getAssetBridgeStatus() }); return;
   }
   if (req.method === "GET" && url.pathname === "/api/state") {
-    json(res, 200, publicState(await readState(), await hasArkKey())); return;
+    json(res, 200, publicState(await readState(), await hasArkKey(), await getAssetBridgeStatus())); return;
+  }
+  if (req.method === "GET" && url.pathname === "/api/skills") {
+    const skills = await listManagedSkills();
+    json(res, 200, { count: skills.length, skills }); return;
+  }
+  if (req.method === "POST" && url.pathname === "/api/skills/import") {
+    const form = await parseMultipart(req);
+    const file = form.get("file");
+    if (!(file instanceof File) || file.size === 0) throw new Error("SKILL_FILE_REQUIRED");
+    json(res, 201, { skill: await importSkillFile(file.name, Buffer.from(await file.arrayBuffer())) }); return;
+  }
+  if (segments[0] === "api" && segments[1] === "skills" && segments[2]) {
+    const skillName = decodeURIComponent(segments[2]);
+    if (req.method === "GET") {
+      json(res, 200, await getManagedSkill(skillName, url.searchParams.get("file") || "SKILL.md")); return;
+    }
+    if (req.method === "PATCH") {
+      const body = await readJson(req, 4096);
+      if (typeof body.enabled !== "boolean") throw new Error("SKILL_ENABLED_REQUIRED");
+      json(res, 200, { skill: await setManagedSkillEnabled(skillName, body.enabled) }); return;
+    }
   }
   if (req.method === "PUT" && url.pathname === "/api/settings") {
     const body = await readJson(req);
@@ -138,6 +176,9 @@ async function handleApi(req, res, url) {
   }
   if (segments[0] === "api" && segments[1] === "projects" && segments[2]) {
     const projectId = segments[2];
+    if (req.method === "PATCH" && segments.length === 3) { json(res, 200, { project: await renameProject(projectId, (await readJson(req)).title) }); return; }
+    if (req.method === "DELETE" && segments.length === 3) { await deleteProject(projectId); json(res, 200, { deleted: true }); return; }
+    if (req.method === "POST" && segments[3] === "creations") { json(res, 201, { creation: await createCreation(projectId, (await readJson(req)).title) }); return; }
     if (req.method === "POST" && segments[3] === "render") { json(res, 202, { job: await startLocalRender(projectId) }); return; }
     if (req.method === "POST" && segments[3] === "approvals") { json(res, 201, { approval: await createApproval(projectId, await readJson(req)) }); return; }
   }
@@ -168,7 +209,7 @@ async function handleApi(req, res, url) {
     await fsp.writeFile(destination, Buffer.from(await file.arrayBuffer()));
     const asset = { id: safeId("asset"), projectId, shotId: null, kind, provider: "import", localPath: destination, remoteUrl: "", originalName: file.name.slice(0, 180), createdAt: new Date().toISOString() };
     await mutateState(next => { next.projects.find(project => project.id === projectId).assets.push(asset); appendEvent(next, "asset.imported", "本地素材已导入", { projectId, assetId: asset.id, kind }); });
-    json(res, 201, { asset: { ...asset, mediaUrl: `/media/${path.relative(dataRoot, destination).replaceAll("\\", "/")}` } }); return;
+    json(res, 201, { asset: { id: asset.id, projectId, kind, provider: asset.provider, originalName: asset.originalName, mediaUrl: `/media/assets/${encodeURIComponent(asset.id)}` } }); return;
   }
   if (req.method === "GET" && url.pathname === "/api/tasks") {
     const state = await readState();
@@ -181,6 +222,10 @@ async function handleApi(req, res, url) {
       const body = await readJson(req);
       json(res, 200, { task: await completeTask(segments[2], body.localPath, body.remoteUrl || "") }); return;
     }
+    if (req.method === "POST" && segments[3] === "remote-source") {
+      const body = await readJson(req);
+      json(res, 200, { task: await attachTaskRemoteUrl(segments[2], body.remoteUrl) }); return;
+    }
   }
   json(res, 404, { error: { code: "NOT_FOUND", message: "未找到该接口。" } });
 }
@@ -190,8 +235,8 @@ async function handler(req, res) {
     const url = new URL(req.url, `http://${host}:${port}`);
     if (url.pathname.startsWith("/api/")) { await handleApi(req, res, url); return; }
     if (url.pathname.startsWith("/media/")) {
-      const relative = decodeURIComponent(url.pathname.slice("/media/".length));
-      await serveFile(req, res, assertInside(dataRoot, path.join(dataRoot, relative))); return;
+      const [, , kind, encodedId] = url.pathname.split("/");
+      await serveFile(req, res, registeredMediaPath(await readState(), kind, decodeURIComponent(encodedId || ""))); return;
     }
     const requestPath = url.pathname === "/" ? "index.html" : url.pathname.slice(1);
     await serveFile(req, res, assertInside(publicRoot, path.join(publicRoot, requestPath)));
@@ -202,10 +247,43 @@ async function handler(req, res) {
   }
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+let runningServer = null;
+
+async function existingWorkbenchIsHealthy() {
+  try {
+    const response = await fetch(`http://${host}:${port}/api/health`, { signal: AbortSignal.timeout(900) });
+    const body = await response.json();
+    return response.ok && body?.service === "ai-drama-studio";
+  } catch {
+    return false;
+  }
+}
+
+export async function startHttpServer({ log = false } = {}) {
+  const url = `http://${host}:${port}`;
+  if (runningServer?.listening) return { server: runningServer, url, reused: false };
+  if (await existingWorkbenchIsHealthy()) {
+    if (log) console.log(`OpenDramaFlow: ${url}（复用已运行服务）`);
+    return { server: null, url, reused: true };
+  }
   await fsp.mkdir(dataRoot, { recursive: true });
   const server = http.createServer(handler);
-  server.listen(port, host, () => console.log(`OpenDramaFlow: http://${host}:${port}`));
+  return new Promise((resolve, reject) => {
+    server.once("error", async error => {
+      if (error?.code === "EADDRINUSE" && await existingWorkbenchIsHealthy()) {
+        resolve({ server: null, url, reused: true });
+        return;
+      }
+      reject(error);
+    });
+    server.listen(port, host, () => {
+      runningServer = server;
+      if (log) console.log(`OpenDramaFlow: ${url}`);
+      resolve({ server, url, reused: false });
+    });
+  });
 }
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) await startHttpServer({ log: true });
 
 export { handler };

@@ -1,485 +1,399 @@
-const stageDefinitions = [
-  ["story", "故事", "剧本与节奏"],
-  ["characters", "角色", "一致性锚点"],
-  ["storyboard", "分镜", "镜头与对白"],
-  ["assets", "素材", "图片与导入"],
-  ["videos", "视频", "模型镜头"],
-  ["final", "成片", "剪辑与导出"]
-];
-
 const $ = selector => document.querySelector(selector);
-const shell = $("#app-shell");
+const $$ = selector => [...document.querySelectorAll(selector)];
+const stageDefinitions = [["story", "故事"], ["characters", "角色"], ["storyboard", "分镜"], ["assets", "素材"], ["videos", "视频"], ["final", "成片"]];
+const sortLabels = { updated: "最近更新", created: "最近创建", title: "名称顺序" };
+
 let studioState = null;
 let activeProjectId = null;
-let stateController = null;
-let settingsTrigger = null;
+let activeCreationId = null;
+let activeProjectTab = "creations";
+let projectSort = "updated";
+let projectSearch = "";
+let projectDialogMode = "create-project";
+let mutationTargetId = null;
 let pollTimer = null;
-let keyEditMode = false;
+let availableSkills = [];
+let skillSearch = "";
+let skillFilter = "all";
+let activeSkillDetail = null;
 
-const savedKeyMask = "••••••••••••••••";
-
-function el(tag, attributes = {}, ...children) {
+function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
-  for (const [key, value] of Object.entries(attributes)) {
+  for (const [key, value] of Object.entries(attrs)) {
     if (key === "class") node.className = value;
     else if (key === "text") node.textContent = value;
-    else if (key === "dataset") Object.assign(node.dataset, value);
     else if (key.startsWith("on") && typeof value === "function") node.addEventListener(key.slice(2).toLowerCase(), value);
-    else if (value !== undefined && value !== null && value !== false) node.setAttribute(key, value === true ? "" : String(value));
+    else if (value !== false && value !== null && value !== undefined) node.setAttribute(key, value === true ? "" : String(value));
   }
-  for (const child of children.flat()) {
-    if (child === null || child === undefined || child === false) continue;
-    node.append(child instanceof Node ? child : document.createTextNode(String(child)));
-  }
+  for (const child of children.flat()) if (child !== null && child !== undefined && child !== false) node.append(child instanceof Node ? child : document.createTextNode(String(child)));
   return node;
 }
 
 async function api(path, options = {}) {
-  const response = await fetch(path, {
-    ...options,
-    headers: options.body instanceof FormData ? options.headers : { "Content-Type": "application/json", ...(options.headers || {}) }
-  });
+  const response = await fetch(path, { cache: "no-store", ...options, headers: options.body instanceof FormData ? options.headers : { "Content-Type": "application/json", ...(options.headers || {}) } });
   const body = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const error = new Error(body?.error?.message || `HTTP_${response.status}`);
-    error.code = body?.error?.code || `HTTP_${response.status}`;
-    throw error;
-  }
+  if (!response.ok) throw new Error(body?.error?.message || `HTTP_${response.status}`);
   return body;
 }
 
-function setBusy(button, busy, busyLabel) {
-  if (!button) return;
-  if (busy) {
-    button.dataset.originalLabel = button.textContent;
-    button.textContent = busyLabel || "处理中…";
-    button.disabled = true;
-    button.setAttribute("aria-busy", "true");
-  } else {
-    button.textContent = button.dataset.originalLabel || button.textContent;
-    button.disabled = false;
-    button.removeAttribute("aria-busy");
-  }
-}
-
 function toast(message, tone = "info") {
-  const viewport = $("#toast-viewport");
-  const duplicate = [...viewport.children].find(item => item.textContent === message);
-  if (duplicate) duplicate.remove();
   const node = el("div", { class: `toast ${tone}`, role: tone === "error" ? "alert" : "status", text: message });
-  viewport.append(node);
-  while (viewport.children.length > 4) viewport.firstElementChild.remove();
-  const timer = setTimeout(() => node.remove(), tone === "error" ? 8000 : 4500);
-  node.addEventListener("mouseenter", () => clearTimeout(timer), { once: true });
+  $("#toast-viewport").append(node);
+  setTimeout(() => node.remove(), tone === "error" ? 7000 : 4200);
 }
 
-function activeProject() {
-  return studioState?.projects.find(project => project.id === activeProjectId) || studioState?.projects[0] || null;
+function activeProject() { return studioState?.projects.find(project => project.id === activeProjectId) || null; }
+function currentRoute() { return ["project-library", "project", "workspace", "skills", "project-guide"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "project-library"; }
+function go(route) { location.hash = route; }
+
+function sortedProjects() {
+  const items = [...(studioState?.projects || [])].filter(item => item.title.toLowerCase().includes(projectSearch.toLowerCase()));
+  return items.sort((a, b) => projectSort === "title" ? a.title.localeCompare(b.title, "zh-CN") : new Date(projectSort === "created" ? b.createdAt : b.updatedAt) - new Date(projectSort === "created" ? a.createdAt : a.updatedAt));
 }
 
-async function refreshState({ silent = false } = {}) {
-  stateController?.abort();
-  const controller = new AbortController();
-  stateController = controller;
+async function refreshState({ quiet = false } = {}) {
   try {
-    const response = await fetch("/api/state", { signal: controller.signal, cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP_${response.status}`);
-    const next = await response.json();
-    if (controller !== stateController) return;
-    studioState = next;
+    const [stateResponse, skillResponse] = await Promise.all([api("/api/state"), api("/api/skills")]);
+    studioState = stateResponse;
+    availableSkills = skillResponse.skills || [];
     if (!activeProjectId || !studioState.projects.some(project => project.id === activeProjectId)) activeProjectId = studioState.projects[0]?.id || null;
+    const project = activeProject();
+    if (project && (!activeCreationId || !project.creations?.some(item => item.id === activeCreationId))) activeCreationId = project.creations?.[0]?.id || null;
     render();
-    const service = $("#service-status");
-    service.className = "service-status online";
-    service.lastChild.textContent = "本地服务在线";
     schedulePoll();
   } catch (error) {
-    if (error.name === "AbortError") return;
-    document.title = "服务不可用 — OpenDramaFlow";
-    const service = $("#service-status");
-    service.className = "service-status offline";
-    service.lastChild.textContent = "本地服务不可用";
-    if (!silent) toast("无法读取本地制作状态，请确认服务仍在运行。", "error");
+    if (!quiet) toast("本地工作台未连接，请重新打开插件。", "error");
   }
 }
 
 function schedulePoll() {
   clearTimeout(pollTimer);
-  const active = studioState?.jobs.some(job => ["queued", "running"].includes(job.status));
-  pollTimer = setTimeout(() => refreshState({ silent: true }), active ? 1500 : 6000);
+  const busy = studioState?.jobs.some(job => ["queued", "running"].includes(job.status));
+  pollTimer = setTimeout(() => refreshState({ quiet: true }), busy ? 1500 : 7000);
 }
 
 function render() {
-  document.title = "制作台 — OpenDramaFlow";
-  const project = activeProject();
-  $("#empty-state").hidden = Boolean(project);
-  $("#workspace").hidden = !project;
-  $("#production-spine").hidden = !project;
-  $("#project-header-actions").hidden = !project;
-  renderSidebarProjects(project);
-  renderStages(project);
+  renderSidebar();
+  renderLibrary();
+  renderProjectOverview();
+  renderWorkspace();
   renderSettings();
-  if (!project) return;
-  renderProject(project);
-  renderShots(project);
-  renderActivity(project);
-  renderOutput(project);
+  renderSkills();
+  applyRoute();
 }
 
-function renderSidebarProjects(project) {
+function applyRoute() {
+  let route = currentRoute();
+  if (!activeProject() && ["project", "workspace"].includes(route)) route = "project-library";
+  const routeViewIds = { "project-library": "project-library-view", project: "project-overview-view", workspace: "workspace-view", skills: "skills-view", "project-guide": "project-guide-view" };
+  $$(".route-view").forEach(view => { view.hidden = view.id !== routeViewIds[route]; });
+  $$(".primary-nav a").forEach(link => link.classList.toggle("active", link.getAttribute("href") === `#${route}` || (route === "project" && link.getAttribute("href") === "#project-library") || (route === "workspace" && link.getAttribute("href") === "#project-library")));
+  document.title = `${route === "project-library" ? "项目库" : activeProject()?.title || "OpenDramaFlow"} — OpenDramaFlow`;
+}
+
+function renderSidebar() {
   const container = $("#sidebar-projects");
-  const projects = studioState?.projects || [];
-  $("#sidebar-project-count").textContent = String(projects.length);
   container.replaceChildren();
-  if (!projects.length) {
-    container.append(el("p", { text: "还没有项目" }));
-    return;
+  const projects = [...(studioState?.projects || [])].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+  if (!projects.length) container.append(el("p", { class: "sidebar-empty", text: "暂无项目" }));
+  for (const project of projects) container.append(el("button", { class: project.id === activeProjectId ? "active" : "", type: "button", onclick: () => openProject(project.id) }, el("img", { src: "/icons/folder-kanban.svg", alt: "" }), el("span", { text: project.title })));
+}
+
+function projectCover(project) {
+  const image = [...(project.assets || [])].reverse().find(asset => asset.kind === "image");
+  return image?.mediaUrl || "/assets/project-cover-rain-station.png";
+}
+
+function renderLibrary() {
+  const grid = $("#project-library-grid");
+  grid.replaceChildren();
+  for (const project of sortedProjects()) {
+    const card = el("article", { class: "project-card", tabindex: "0" },
+      el("button", { class: "project-card-main", type: "button", onclick: () => openProject(project.id) },
+        el("div", { class: "project-cover" }, el("img", { src: projectCover(project), alt: "" })),
+        el("div", { class: "project-card-copy" }, el("strong", { text: project.title }), el("time", { datetime: project.updatedAt, text: formatDate(project.updatedAt) }), el("small", { text: `${project.creations?.length || 0} 个创作页 · ${project.assets?.length || 0} 项素材` }))
+      ),
+      el("button", { class: "card-more", type: "button", "aria-label": `管理 ${project.title}`, onclick: event => toggleProjectMenu(event, project.id) }, el("img", { src: "/icons/ellipsis.svg", alt: "" })),
+      projectMenu(project)
+    );
+    grid.append(card);
   }
-  for (const item of projects) {
-    const button = el("button", {
-      class: `sidebar-project-button${item.id === project?.id ? " active" : ""}`,
-      type: "button",
-      "aria-current": item.id === project?.id ? "true" : null,
-      onclick: () => {
-        activeProjectId = item.id;
-        render();
-        $("#workspace").scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    },
-    el("img", { src: "/icons/film.svg", alt: "", "aria-hidden": "true" }),
-    el("span", { text: item.title }));
-    container.append(button);
-  }
+  if (!projectSearch) grid.append(el("button", { class: "new-project-tile", type: "button", onclick: () => openProjectDialog("create-project") }, el("img", { src: "/icons/folder-plus.svg", alt: "" }), el("strong", { text: studioState?.projects.length ? "新建项目" : "新建第一个项目" }), el("span", { text: "从空白本地项目开始" })));
+  else if (!sortedProjects().length) grid.append(el("div", { class: "empty-result" }, el("strong", { text: "没有匹配的项目" }), el("p", { text: "换一个关键词试试。" })));
+}
+
+function projectMenu(project) {
+  return el("div", { class: "project-menu", "data-project-menu": project.id, hidden: true },
+    el("button", { type: "button", onclick: () => openProjectDialog("rename-project", project.id) }, el("img", { src: "/icons/pencil.svg", alt: "" }), "重命名"),
+    el("button", { class: "danger-text", type: "button", onclick: () => openDeleteDialog(project.id) }, el("img", { src: "/icons/trash-2.svg", alt: "" }), "删除")
+  );
+}
+
+function toggleProjectMenu(event, projectId) {
+  event.stopPropagation();
+  $$('[data-project-menu]').forEach(menu => { menu.hidden = menu.dataset.projectMenu !== projectId || !menu.hidden; });
+}
+
+function openProject(projectId) {
+  activeProjectId = projectId;
+  activeCreationId = activeProject()?.creations?.[0]?.id || null;
+  activeProjectTab = "creations";
+  render();
+  go("project");
+}
+
+function renderProjectOverview() {
+  const project = activeProject();
+  if (!project) return;
+  $("#overview-project-title").textContent = project.title;
+  $("#creations-tab").classList.toggle("active", activeProjectTab === "creations");
+  $("#assets-tab").classList.toggle("active", activeProjectTab === "assets");
+  $("#creations-panel").hidden = activeProjectTab !== "creations";
+  $("#assets-panel").hidden = activeProjectTab !== "assets";
+  $("#new-creation-button").hidden = activeProjectTab !== "creations";
+  const creations = $("#creation-grid");
+  creations.replaceChildren();
+  for (const creation of project.creations || []) creations.append(el("button", { class: "creation-card", type: "button", onclick: () => openWorkspace(creation.id) }, el("div", { class: "creation-art" }, el("img", { src: projectCover(project), alt: "" }), el("span", {}, el("img", { src: "/icons/message-square.svg", alt: "" }), friendlyStatus(creation.status))), el("strong", { text: creation.title }), el("time", { datetime: creation.updatedAt, text: formatDate(creation.updatedAt) })));
+  if (!project.creations?.length) creations.append(el("button", { class: "new-project-tile creation-empty", type: "button", onclick: () => openProjectDialog("create-creation") }, el("img", { src: "/icons/message-square.svg", alt: "" }), el("strong", { text: "新建创作页" }), el("span", { text: "一个项目可以保存多个创作会话" })));
+  renderAssets(project);
+}
+
+function renderAssets(project) {
+  const query = $("#asset-search")?.value?.trim().toLowerCase() || "";
+  const grid = $("#asset-grid");
+  grid.replaceChildren();
+  const assets = (project.assets || []).filter(asset => String(asset.originalName || asset.shotId || "").toLowerCase().includes(query));
+  for (const asset of assets) grid.append(el("article", { class: "asset-card" }, asset.kind === "image" ? el("img", { src: asset.mediaUrl, alt: asset.originalName || "项目图片素材" }) : el("video", { src: asset.mediaUrl, muted: true, preload: "metadata" }), el("div", {}, el("strong", { text: asset.originalName || (asset.kind === "image" ? "生成图片" : "视频镜头") }), el("small", { text: `${asset.provider} · ${formatDate(asset.createdAt)}` }), el("span", { class: `source-badge ${asset.remoteSourceType === "local" ? "local" : "ready"}`, text: asset.remoteSourceType === "local" ? "本地" : "Seedance 可用" }))));
+  if (!assets.length) grid.append(el("div", { class: "asset-empty" }, el("img", { src: "/icons/images.svg", alt: "" }), el("strong", { text: "还没有项目资产" }), el("p", { text: "Codex Image Gen 生成的图片和导入文件会自动出现在这里。" })));
+}
+
+function openWorkspace(creationId) { activeCreationId = creationId; renderWorkspace(); go("workspace"); }
+
+function renderWorkspace() {
+  const project = activeProject();
+  if (!project) return;
+  const creation = project.creations?.find(item => item.id === activeCreationId) || project.creations?.[0];
+  $("#workspace-project-link").textContent = project.title;
+  $("#workspace-creation-title").textContent = creation?.title || "主创作页";
+  $("#workspace-title").textContent = creation?.title || project.title;
+  $("#workspace-logline").textContent = project.logline || "等待 Codex 写入正式故事与分镜。";
+  renderStages(project); renderBrief(project); renderShots(project); renderActivity(project); renderOutput(project);
 }
 
 function renderStages(project) {
-  const list = $("#stage-list");
-  list.replaceChildren();
-  if (!project) return;
-  const currentIndex = Math.max(0, stageDefinitions.findIndex(([key]) => key === project.currentStage));
-  stageDefinitions.forEach(([key, label, detail], index) => {
-    const count = key === "story" ? `${project.script?.scenes?.length || 0} 场` : key === "characters" ? `${project.characters?.length || 0} 人` : key === "storyboard" ? `${project.shots?.length || 0} 镜` : key === "assets" ? `${project.assets?.length || 0} 项` : key === "videos" ? `${project.shots?.filter(shot => shot.clipPath).length || 0} 段` : `${project.outputs?.length || 0} 条`;
-    const className = index === currentIndex ? "active" : index < currentIndex ? "complete" : "";
-    const item = el("li", { class: className, "aria-current": index === currentIndex ? "step" : null },
-      el("span", { class: "stage-index", text: String(index + 1).padStart(2, "0") }),
-      el("strong", { text: label }),
-      el("small", { text: count || detail })
-    );
-    list.append(item);
-  });
+  const list = $("#stage-list"); list.replaceChildren();
+  const current = Math.max(0, stageDefinitions.findIndex(([key]) => key === project.currentStage));
+  stageDefinitions.forEach(([key, label], index) => list.append(el("li", { class: index < current ? "complete" : index === current ? "active" : "" }, el("span", { text: String(index + 1).padStart(2, "0") }), el("strong", { text: label }))));
 }
 
-function renderProject(project) {
-  const summary = $("#project-summary");
-  summary.replaceChildren(
-    el("h3", { class: "project-title", text: project.title }),
-    el("p", { class: "project-logline", text: project.logline || "尚未写入故事梗概。" }),
-    project.script?.premise ? el("p", { class: "premise", text: project.script.premise }) : null
-  );
-  const status = $("#project-status");
-  const statusMap = { draft: ["草稿", "neutral"], ready: ["分镜就绪", "warning"], rendered: ["已成片", "success"] };
-  const [label, tone] = statusMap[project.status] || [project.status, "neutral"];
-  status.textContent = label;
-  status.className = `status-chip ${tone}`;
-
-  const characters = $("#character-list");
-  characters.replaceChildren();
-  if (!project.characters.length) characters.append(el("p", { class: "project-logline", text: "暂无角色锚点。让 Codex 写入正式角色设定后会显示在这里。" }));
-  for (const character of project.characters) characters.append(el("article", { class: "character-card" }, el("strong", { text: character.name }), el("p", { text: character.visual })));
-
-  $("#render-button").disabled = project.shots.length === 0 || studioState.jobs.some(job => job.projectId === project.id && ["queued", "running"].includes(job.status));
-  $("#request-real-button").disabled = project.shots.length === 0;
+function renderBrief(project) {
+  $("#project-status").textContent = friendlyStatus(project.status);
+  $("#project-summary").replaceChildren(el("h3", { text: project.title }), el("p", { text: project.script?.premise || project.logline || "尚未写入故事梗概。" }));
+  const characters = $("#character-list"); characters.replaceChildren();
+  for (const person of project.characters || []) characters.append(el("article", { class: "character-card" }, el("strong", { text: person.name }), el("p", { text: person.visual })));
+  if (!project.characters?.length) characters.append(el("p", { class: "muted", text: "尚未建立角色锚点。" }));
+  $("#request-real-button").disabled = !project.shots?.length;
+  $("#render-button").disabled = !project.shots?.length || studioState.jobs.some(job => job.projectId === project.id && ["queued", "running"].includes(job.status));
 }
 
 function renderShots(project) {
-  $("#shot-count").textContent = `${project.shots.length} 个镜头`;
-  const board = $("#shot-board");
-  board.replaceChildren();
-  if (!project.shots.length) {
-    board.append(el("div", { class: "empty-state" }, el("h3", { text: "还没有分镜" }), el("p", { text: "把真实创作目标告诉 Codex，由它按你的故事写剧本并拆镜。" })));
-    return;
-  }
-  for (const shot of project.shots) {
+  $("#shot-count").textContent = `${project.shots?.length || 0} 个镜头`;
+  const board = $("#shot-board"); board.replaceChildren();
+  for (const shot of project.shots || []) {
     const asset = [...project.assets].reverse().find(item => item.shotId === shot.id && item.kind === "image");
-    const visual = el("div", { class: "shot-visual" },
-      el("span", { class: "shot-number", text: `SHOT ${String(shot.order).padStart(2, "0")}` }),
-      asset ? el("img", { src: asset.mediaUrl, alt: `镜头 ${shot.order} 图片素材` }) : el("span", { class: "shot-placeholder", text: "待生成" })
-    );
-    const tone = shot.status === "rendered" || shot.status === "video-ready" ? "success" : shot.status?.includes("running") ? "warning" : "neutral";
-    board.append(el("article", { class: "shot-card" }, visual,
-      el("div", { class: "shot-body" },
-        el("div", { class: "shot-meta" }, el("span", { text: `${shot.framing} · ${shot.duration}s` }), el("span", { class: `status-chip ${tone}`, text: shot.status || "planned" })),
-        el("h3", { text: shot.scene }),
-        el("p", { class: "shot-prompt", text: shot.prompt }),
-        el("p", { class: "shot-subtitle", text: `「${shot.subtitle}」` })
-      )
-    ));
+    board.append(el("article", { class: "shot-card" }, el("div", { class: "shot-media" }, asset ? el("img", { src: asset.mediaUrl, alt: "" }) : el("span", { text: "等待图片" }), el("b", { text: `SHOT ${String(shot.order).padStart(2, "0")}` })), el("div", { class: "shot-copy" }, el("header", {}, el("strong", { text: shot.scene }), el("span", { text: `${shot.framing} · ${shot.duration}s` })), el("p", { text: shot.prompt }), shot.subtitle ? el("blockquote", { text: shot.subtitle }) : null, el("small", { text: friendlyStatus(shot.status || "planned") }))));
   }
-}
-
-function statusTone(status) {
-  if (["succeeded", "approved", "completed"].includes(status)) return "success";
-  if (["failed", "rejected", "expired", "cancelled"].includes(status)) return "danger";
-  if (["pending", "queued", "running", "waiting", "claimed"].includes(status)) return "warning";
-  return "neutral";
-}
-
-function friendlyJobError(value) {
-  const text = String(value || "");
-  if (text.startsWith("FFMPEG_FAILED")) return "本地 FFmpeg 渲染失败。请检查素材格式和 FFmpeg 后重试。";
-  if (text.startsWith("SEEDREAM")) return "Seedream 图片步骤未完成。请检查模型 ID、权限或提示词。";
-  if (text.startsWith("SEEDANCE")) return "Seedance 视频步骤未完成。请查询原任务状态后再决定是否重试。";
-  return text.length > 220 ? `${text.slice(0, 220)}…` : text;
+  if (!project.shots?.length) board.append(el("div", { class: "shot-empty" }, el("strong", { text: "还没有分镜" }), el("p", { text: "在 Codex 中描述创作目标后，剧本与镜头会同步到这里。" })));
 }
 
 function renderActivity(project) {
-  const approvals = $("#approval-list");
-  approvals.replaceChildren();
-  const projectApprovals = studioState.approvals.filter(item => item.projectId === project.id).slice(0, 4);
-  if (!projectApprovals.length) approvals.append(el("p", { class: "project-logline", text: "暂无真实模型审批。" }));
-  for (const approval of projectApprovals) {
+  const approvals = $("#approval-list"); approvals.replaceChildren();
+  for (const approval of studioState.approvals.filter(item => item.projectId === project.id).slice(0, 4)) {
     const actions = el("div", { class: "card-actions" });
-    if (approval.status === "pending") {
-      actions.append(
-        el("button", { class: "button primary", type: "button", onclick: event => decideApprovalAction(event.currentTarget, approval.id, "approved") }, "批准此批次"),
-        el("button", { class: "button ghost", type: "button", onclick: event => decideApprovalAction(event.currentTarget, approval.id, "rejected") }, "拒绝")
-      );
-    } else if (approval.status === "approved" && !approval.jobId) {
-      actions.append(el("button", { class: "button warning", type: "button", onclick: event => runRealAction(event.currentTarget, approval.id) }, "执行已批准批次"));
-    }
-    approvals.append(el("article", { class: "approval-card" },
-      el("header", {}, el("strong", { text: "真实模型费用审批" }), el("span", { class: `status-chip ${statusTone(approval.status)}`, text: approval.status })),
-      el("p", { text: `图片最多 ${approval.maxImageCalls} 次（已用 ${approval.usedImageCalls}），视频最多 ${approval.maxVideoCalls} 次（已用 ${approval.usedVideoCalls}）。` }),
-      actions
-    ));
+    if (approval.status === "pending") actions.append(el("button", { class: "button small primary", type: "button", onclick: () => decideApproval(approval.id, "approved") }, "批准"), el("button", { class: "button small subtle", type: "button", onclick: () => decideApproval(approval.id, "rejected") }, "拒绝"));
+    if (approval.status === "approved" && !approval.jobId) actions.append(el("button", { class: "button small primary", type: "button", onclick: () => runApproval(approval.id) }, "执行批次"));
+    approvals.append(el("article", { class: "activity-card" }, el("header", {}, el("strong", { text: "真实模型批次" }), el("span", { class: "status-chip", text: friendlyStatus(approval.status) })), el("p", { text: `视频上限 ${approval.maxVideoCalls} 次 · 已用 ${approval.usedVideoCalls}` }), actions));
   }
-
-  const jobs = $("#job-list");
-  jobs.replaceChildren();
-  const projectJobs = studioState.jobs.filter(item => item.projectId === project.id).slice(0, 5);
-  if (!projectJobs.length) jobs.append(el("p", { class: "project-logline", text: "暂无生成或剪辑任务。" }));
-  for (const job of projectJobs) {
-    const jobLabel = job.type === "local-render" ? "本地混合剪辑" : "真实模型批次";
-    const actions = el("div", { class: "card-actions" });
-    if (job.type === "real-pipeline" && job.status === "waiting") {
-      actions.append(el("button", { class: "button outline", type: "button", onclick: event => resumeRealAction(event.currentTarget, job.id) }, "图片回填后续跑"));
-    }
-    jobs.append(el("article", { class: "task-card" },
-      el("header", {}, el("strong", { text: jobLabel }), el("span", { class: `status-chip ${statusTone(job.status)}`, text: job.status })),
-      el("p", { text: `阶段：${job.stage}` }),
-      job.error ? el("p", { class: "task-error", text: friendlyJobError(job.error) }) : null,
-      actions
-    ));
-  }
-
-  const events = $("#event-list");
-  events.replaceChildren();
-  for (const event of studioState.events.filter(item => !item.detail?.projectId || item.detail.projectId === project.id).slice(0, 8)) {
-    events.append(el("li", {}, event.message, el("time", { datetime: event.at, text: new Date(event.at).toLocaleString("zh-CN", { hour12: false }) })));
-  }
+  const jobs = $("#job-list"); jobs.replaceChildren();
+  for (const job of studioState.jobs.filter(item => item.projectId === project.id).slice(0, 5)) jobs.append(el("article", { class: "activity-card" }, el("header", {}, el("strong", { text: job.type === "local-render" ? "本地剪辑" : "模型生成" }), el("span", { class: "status-chip", text: friendlyStatus(job.status) })), el("p", { text: friendlyStage(job.stage) }), job.status === "waiting" ? el("button", { class: "button small subtle", type: "button", onclick: () => resumeJob(job.id) }, job.stage === "asset-bridge" ? "重新连接并续跑" : "续跑") : null));
+  if (!approvals.children.length && !jobs.children.length) approvals.append(el("p", { class: "muted", text: "暂无任务与审批。" }));
+  const events = $("#event-list"); events.replaceChildren();
+  for (const event of studioState.events.filter(item => !item.detail?.projectId || item.detail.projectId === project.id).slice(0, 8)) events.append(el("li", {}, el("span", { text: event.message }), el("time", { text: formatDate(event.at) })));
 }
 
 function renderOutput(project) {
-  const container = $("#final-output");
-  const output = project.outputs[0];
-  container.hidden = !output;
-  container.replaceChildren();
-  if (!output) return;
-  container.append(
-    el("header", {}, el("h3", { text: "本地成片已生成" }), el("a", { class: "button outline", href: output.mediaUrl, download: "", text: "下载 MP4" })),
-    el("video", { controls: true, preload: "metadata", src: output.mediaUrl, "aria-label": `${project.title} 本地成片` })
-  );
+  const output = project.outputs?.[0]; const holder = $("#final-output"); holder.hidden = !output; holder.replaceChildren();
+  if (output) holder.append(el("header", {}, el("strong", { text: "最终视频" }), el("a", { class: "button small subtle", href: output.mediaUrl, download: true, text: "下载 MP4" })), el("video", { src: output.mediaUrl, controls: true, preload: "metadata" }));
 }
 
 function renderSettings() {
   if (!studioState) return;
-  const configured = studioState.credentialStatus.arkConfigured;
-  const chip = $("#credential-chip");
-  chip.textContent = configured ? "已安全保存" : "未配置";
-  chip.className = `status-chip ${configured ? "success" : "warning"}`;
-  $("#clear-key-button").disabled = !configured;
-  renderCredentialField(configured);
+  const configured = studioState.credentialStatus?.arkConfigured;
+  $("#credential-chip").textContent = configured ? "已安全保存" : "未配置";
+  $("#credential-chip").className = `status-chip ${configured ? "success" : ""}`;
+  $("#ark-api-key").placeholder = configured ? "••••••••••••••••" : "粘贴火山方舟 API Key";
+  $("#save-key-button").textContent = configured ? "更换并保存" : "安全保存";
+  const bridge = studioState.assetBridge;
+  $("#bridge-status").textContent = bridge?.ready ? "受控 HTTPS 桥已连接" : bridge?.configured ? "已配置，按需连接" : "按需自动连接";
 }
 
-function renderCredentialField(configured) {
-  const input = $("#ark-api-key");
-  const viewingSaved = configured && !keyEditMode;
-  if (viewingSaved) {
-    input.value = savedKeyMask;
-    input.readOnly = true;
-    input.type = "password";
-  } else if (input.readOnly) {
-    input.value = "";
-    input.readOnly = false;
-    input.type = "password";
+function renderSkills() {
+  const grid = $("#skill-grid");
+  grid.replaceChildren();
+  $("#skill-count").textContent = availableSkills.length;
+  const query = skillSearch.trim().toLowerCase();
+  const visible = availableSkills.filter(skill => {
+    const matchesQuery = !query || `${skill.label} ${skill.name} ${skill.description}`.toLowerCase().includes(query);
+    const matchesFilter = skillFilter === "all" || skillFilter === "disabled" ? skillFilter !== "disabled" || !skill.enabled : skill.source === skillFilter;
+    return matchesQuery && matchesFilter;
+  });
+  for (const skill of visible) {
+    const toggle = el("input", { type: "checkbox", checked: skill.enabled, "aria-label": `${skill.enabled ? "停用" : "启用"}${skill.label}`, onchange: event => setSkillEnabled(skill, event.currentTarget.checked) });
+    const button = el("button", { class: "skill-card-main", type: "button", onclick: () => openSkillDetail(skill.name) },
+      el("span", { class: "skill-card-icon" }, el("img", { src: "/assets/studio-pixel-icon.png", alt: "" })),
+      el("span", { class: "skill-card-copy" }, el("strong", { text: skill.label }), el("small", { text: skill.description }))
+    );
+    grid.append(el("article", { class: `skill-card ${skill.enabled ? "" : "disabled"}` }, button, el("label", { class: "toggle-label compact" }, toggle, el("span", { class: "toggle-ui" }))));
   }
-  $("#ark-key-label").textContent = viewingSaved ? "已保存的 API Key" : configured ? "新的 API Key" : "API Key";
-  $("#ark-key-help").textContent = viewingSaved
-    ? "已加密保存；关闭页面或重启项目后仍会自动使用。明文不会回显。"
-    : "请只在这里粘贴。保存后持续显示掩码，不会把明文送回页面。";
-  $("#secret-toggle").hidden = viewingSaved;
-  $("#replace-key-button").hidden = !viewingSaved;
-  $("#save-key-button").hidden = viewingSaved;
+  if (!visible.length) grid.append(el("div", { class: "empty-result" }, el("strong", { text: "没有匹配的 Skill" }), el("p", { text: "调整搜索词或筛选条件。" })));
 }
 
-async function createProjectAction(button) {
-  setBusy(button, true, "正在建立…");
+async function setSkillEnabled(skill, enabled) {
+  const previous = skill.enabled;
+  skill.enabled = enabled;
+  renderSkills();
   try {
-    const { project } = await api("/api/projects", { method: "POST", body: JSON.stringify({ title: "未命名漫剧" }) });
-    activeProjectId = project.id;
-    await refreshState();
-    $("#workspace").scrollIntoView({ behavior: "smooth", block: "start" });
-    toast("空白项目已建立，可以让 Codex 开始写剧本。", "success");
+    const response = await api(`/api/skills/${encodeURIComponent(skill.name)}`, { method: "PATCH", body: JSON.stringify({ enabled }) });
+    const index = availableSkills.findIndex(item => item.name === skill.name);
+    if (index >= 0) availableSkills[index] = response.skill;
+    if (activeSkillDetail?.skill?.name === skill.name) updateSkillDetailToggle(response.skill);
+    renderSkills();
+    toast(`${skill.label} 已${enabled ? "启用" : "停用"}。`, "success");
+  } catch (error) {
+    skill.enabled = previous;
+    renderSkills();
+    toast(error.message, "error");
+  }
+}
+
+function updateSkillDetailToggle(skill) {
+  $("#skill-detail-toggle").checked = Boolean(skill.enabled);
+  $("#skill-detail-toggle-label").textContent = skill.enabled ? "已启用" : "已停用";
+}
+
+async function openSkillDetail(name, file = "SKILL.md") {
+  try {
+    const detail = await api(`/api/skills/${encodeURIComponent(name)}?file=${encodeURIComponent(file)}`);
+    activeSkillDetail = detail;
+    $("#skill-detail-origin").textContent = detail.skill.source === "built-in" ? "BUILT-IN SKILL" : "IMPORTED SKILL";
+    $("#skill-detail-title").textContent = detail.skill.label;
+    $("#skill-detail-description").textContent = detail.skill.description;
+    $("#skill-selected-file").textContent = detail.selectedFile;
+    $("#skill-file-content").textContent = detail.binary ? "该文件无法在此预览。" : detail.content;
+    updateSkillDetailToggle(detail.skill);
+    const tree = $("#skill-file-tree"); tree.replaceChildren();
+    for (const item of detail.files) {
+      if (item.type === "directory") tree.append(el("div", { class: "skill-tree-directory" }, el("img", { src: "/icons/folder-kanban.svg", alt: "" }), el("span", { text: item.path })));
+      else tree.append(el("button", { class: item.path === detail.selectedFile ? "active" : "", type: "button", onclick: () => openSkillDetail(name, item.path) }, el("span", { text: "MD" }), el("strong", { text: item.path.split("/").pop() })));
+    }
+    if (!$("#skill-detail-dialog").open) $("#skill-detail-dialog").showModal();
   } catch (error) { toast(error.message, "error"); }
-  finally { setBusy(button, false); }
 }
 
-async function requestRealAction(button) {
-  const project = activeProject();
-  if (!project) return;
-  setBusy(button, true, "正在创建…");
-  try { await api(`/api/projects/${project.id}/approvals`, { method: "POST", body: "{}" }); await refreshState(); toast("真实模型批次已创建，尚未调用模型。", "success"); }
-  catch (error) { toast(error.message, "error"); }
-  finally { setBusy(button, false); }
-}
-
-async function renderProjectAction(button) {
-  const project = activeProject();
-  if (!project) return;
-  setBusy(button, true, "正在提交…");
-  try { await api(`/api/projects/${project.id}/render`, { method: "POST", body: "{}" }); await refreshState(); toast("本地剪辑已启动，不会调用模型。", "success"); }
-  catch (error) { toast(error.message, "error"); }
-  finally { setBusy(button, false); }
-}
-
-async function resumeRealAction(button, jobId) {
-  setBusy(button, true, "正在续跑…");
-  try { await api(`/api/jobs/${jobId}/resume`, { method: "POST", body: "{}" }); await refreshState(); toast("真实批次已按原审批上限续跑。", "success"); }
-  catch (error) { toast(error.message, "error"); }
-  finally { setBusy(button, false); }
-}
-
-async function decideApprovalAction(button, id, decision) {
-  setBusy(button, true, decision === "approved" ? "正在批准…" : "正在拒绝…");
-  try { await api(`/api/approvals/${id}/decision`, { method: "POST", body: JSON.stringify({ decision }) }); await refreshState(); toast(decision === "approved" ? "批次已批准，尚未执行。" : "批次已拒绝。", "success"); }
-  catch (error) { toast(error.message, "error"); }
-  finally { setBusy(button, false); }
-}
-
-async function runRealAction(button, id) {
-  setBusy(button, true, "正在提交…");
-  try { await api(`/api/approvals/${id}/run`, { method: "POST", body: "{}" }); await refreshState(); toast("已批准的真实批次开始执行。", "success"); }
-  catch (error) { toast(error.message, "error"); }
-  finally { setBusy(button, false); }
-}
-
-function openSettings() {
-  settingsTrigger = document.activeElement;
-  keyEditMode = false;
-  renderSettings();
-  renderCredentialField(Boolean(studioState?.credentialStatus.arkConfigured));
-  const overlay = $("#settings-overlay");
-  overlay.hidden = false;
-  shell.inert = true;
-  $("#settings-dialog").focus();
-}
-
-function closeSettings() {
-  $("#settings-overlay").hidden = true;
-  shell.inert = false;
-  keyEditMode = false;
-  $("#ark-api-key").value = "";
-  $("#ark-api-key").readOnly = false;
-  $("#ark-key-error").textContent = "";
-  $("#settings-alert").hidden = true;
-  settingsTrigger?.focus();
-}
-
-function trapDialogFocus(event) {
-  if (event.key === "Escape") { closeSettings(); return; }
-  if (event.key !== "Tab") return;
-  const focusable = [...$("#settings-dialog").querySelectorAll("button:not(:disabled), input:not(:disabled), select:not(:disabled), [href]")].filter(node => node.offsetParent !== null);
-  if (!focusable.length) return;
-  const first = focusable[0];
-  const last = focusable.at(-1);
-  if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-  else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-}
-
-async function saveCredential(event) {
+async function importSkill(event) {
   event.preventDefault();
-  const input = $("#ark-api-key");
-  const errorNode = $("#ark-key-error");
-  errorNode.textContent = "";
-  input.removeAttribute("aria-invalid");
-  const value = input.value.trim();
-  if (value.length < 12 || /\s/.test(value)) {
-    input.setAttribute("aria-invalid", "true");
-    errorNode.textContent = "请输入不含空格的完整 API Key。";
-    input.focus();
-    return;
-  }
-  const button = $("#save-key-button");
-  setBusy(button, true, "正在加密…");
+  const file = $("#skill-file").files[0];
+  if (!file) return;
+  const submit = $("#skill-import-submit"); submit.disabled = true; submit.textContent = "安装中…"; $("#skill-import-error").textContent = "";
   try {
-    await api("/api/secrets/ark", { method: "PUT", body: JSON.stringify({ apiKey: value }) });
-    keyEditMode = false;
-    input.value = "";
-    input.type = "password";
-    await refreshState({ silent: true });
-    toast("API Key 已使用 Windows DPAPI 加密保存。", "success");
-  } catch (error) { errorNode.textContent = error.message; }
-  finally { setBusy(button, false); }
+    const form = new FormData(); form.append("file", file);
+    const response = await api("/api/skills/import", { method: "POST", body: form });
+    $("#skill-import-dialog").close();
+    $("#skill-import-form").reset(); $("#skill-file-name").textContent = "尚未选择文件";
+    await refreshState({ quiet: true });
+    toast(`${response.skill.label} 已导入并启用。`, "success");
+  } catch (error) { $("#skill-import-error").textContent = error.message; }
+  finally { submit.textContent = "安装"; submit.disabled = !$("#skill-file").files[0]; }
 }
 
-async function clearCredential() {
-  const button = $("#clear-key-button");
-  setBusy(button, true, "正在清除…");
-  try { await api("/api/secrets/ark", { method: "DELETE" }); keyEditMode = false; await refreshState({ silent: true }); toast("已清除本机保存的 Ark API Key。", "success"); }
-  catch (error) { $("#settings-alert").textContent = error.message; $("#settings-alert").hidden = false; }
-  finally { setBusy(button, false); }
+function acceptSkillFile(file) {
+  if (!file) return;
+  const transfer = new DataTransfer(); transfer.items.add(file); $("#skill-file").files = transfer.files;
+  $("#skill-file-name").textContent = file.name; $("#skill-import-submit").disabled = false; $("#skill-import-error").textContent = "";
 }
 
-async function importAsset(file) {
-  const project = activeProject();
-  if (!project) { toast("请先建立项目，再导入素材。", "error"); return; }
-  if (file.size > 30 * 1024 * 1024) { toast("文件超过 30MB 上限。", "error"); return; }
-  const form = new FormData();
-  form.append("projectId", project.id);
-  form.append("file", file);
-  try { await api("/api/assets/import", { method: "POST", body: form }); await refreshState(); toast(`已导入 ${file.name}`, "success"); }
+function openProjectDialog(mode, targetId = null) {
+  projectDialogMode = mode; mutationTargetId = targetId;
+  const project = studioState?.projects.find(item => item.id === targetId);
+  const meta = mode === "rename-project" ? ["重命名项目", "保存名称", project?.title || ""] : mode === "create-creation" ? ["新建创作页", "创建创作页", ""] : ["新建项目", "创建项目", ""];
+  $("#project-dialog-title").textContent = meta[0]; $("#project-submit").textContent = meta[1]; $("#project-name").value = meta[2]; $("#project-form-error").textContent = "";
+  $("#project-dialog").showModal(); setTimeout(() => $("#project-name").focus(), 30);
+}
+
+function openDeleteDialog(projectId) { mutationTargetId = projectId; $("#delete-project-name").textContent = studioState.projects.find(item => item.id === projectId)?.title || ""; $("#delete-dialog").showModal(); }
+
+async function submitProjectForm(event) {
+  event.preventDefault(); const title = $("#project-name").value.trim();
+  if (!title) { $("#project-form-error").textContent = "请输入名称。"; return; }
+  try {
+    if (projectDialogMode === "rename-project") await api(`/api/projects/${mutationTargetId}`, { method: "PATCH", body: JSON.stringify({ title }) });
+    else if (projectDialogMode === "create-creation") { const result = await api(`/api/projects/${activeProjectId}/creations`, { method: "POST", body: JSON.stringify({ title }) }); activeCreationId = result.creation.id; }
+    else { const result = await api("/api/projects", { method: "POST", body: JSON.stringify({ title }) }); activeProjectId = result.project.id; }
+    $("#project-dialog").close(); await refreshState(); go(projectDialogMode === "create-project" ? "project" : currentRoute());
+  } catch (error) { $("#project-form-error").textContent = error.message; }
+}
+
+async function deleteProject(event) {
+  event.preventDefault();
+  try { await api(`/api/projects/${mutationTargetId}`, { method: "DELETE" }); $("#delete-dialog").close(); activeProjectId = null; await refreshState(); go("project-library"); toast("项目已移入本机回收目录。", "success"); }
   catch (error) { toast(error.message, "error"); }
-  finally { $("#asset-file").value = ""; }
 }
 
-$("#refresh-button").addEventListener("click", event => refreshState().finally(() => event.currentTarget.focus()));
-$("#settings-button").addEventListener("click", openSettings);
-$("#settings-close").addEventListener("click", closeSettings);
-$("#settings-cancel").addEventListener("click", closeSettings);
-$("#settings-dialog").addEventListener("keydown", trapDialogFocus);
-$("#create-project-button").addEventListener("click", event => createProjectAction(event.currentTarget));
-$("#empty-state").addEventListener("click", event => {
-  if (event.target.closest('[data-action="create-project"]')) createProjectAction(event.target.closest("button"));
-  if (event.target.closest('[data-action="open-settings"]')) openSettings();
-});
-$("#render-button").addEventListener("click", event => renderProjectAction(event.currentTarget));
-$("#request-real-button").addEventListener("click", event => requestRealAction(event.currentTarget));
-$("#credential-form").addEventListener("submit", saveCredential);
-$("#replace-key-button").addEventListener("click", () => {
-  keyEditMode = true;
-  renderCredentialField(true);
-  $("#ark-api-key").focus();
-});
-$("#clear-key-button").addEventListener("click", clearCredential);
-$("#asset-file").addEventListener("change", event => { const [file] = event.target.files; if (file) importAsset(file); });
-$("#secret-toggle").addEventListener("click", event => {
-  const input = $("#ark-api-key");
-  const showing = input.type === "text";
-  input.type = showing ? "password" : "text";
-  event.currentTarget.textContent = showing ? "显示" : "隐藏";
-  event.currentTarget.setAttribute("aria-label", showing ? "显示 API Key" : "隐藏 API Key");
-  event.currentTarget.setAttribute("aria-pressed", String(!showing));
-  input.focus();
-});
+async function importAssets(files) {
+  const project = activeProject(); if (!project || !files.length) return;
+  try { for (const file of files) { const form = new FormData(); form.append("projectId", project.id); form.append("file", file); await api("/api/assets/import", { method: "POST", body: form }); } await refreshState(); toast(`已导入 ${files.length} 个素材。`, "success"); }
+  catch (error) { toast(error.message, "error"); }
+}
+
+async function decideApproval(id, decision) { try { await api(`/api/approvals/${id}/decision`, { method: "POST", body: JSON.stringify({ decision }) }); await refreshState(); } catch (error) { toast(error.message, "error"); } }
+async function runApproval(id) { try { await api(`/api/approvals/${id}/run`, { method: "POST", body: "{}" }); await refreshState(); } catch (error) { toast(error.message, "error"); } }
+async function resumeJob(id) { try { await api(`/api/jobs/${id}/resume`, { method: "POST", body: "{}" }); await refreshState(); } catch (error) { toast(error.message, "error"); } }
+
+function friendlyStatus(value) { return ({ draft: "草稿", ready: "分镜就绪", rendered: "已成片", planned: "待制作", pending: "待审批", approved: "已批准", rejected: "已拒绝", queued: "排队中", running: "执行中", waiting: "等待续跑", succeeded: "已完成", failed: "失败", "video-ready": "视频就绪", "video-running": "生成中" })[value] || value || "待制作"; }
+function friendlyStage(stage) { return ({ queued: "等待开始", images: "准备图片素材", "codex-images": "等待 Codex 图片回填", "asset-bridge": "正在建立受控 HTTPS 图片桥", videos: "生成 Seedance 视频", "videos-ready": "视频镜头已就绪", clips: "标准化镜头", render: "合成声音与字幕", complete: "成片完成", failed: "任务停止" })[stage] || String(stage || "准备中").replace(/^video-(\d+)-/, "镜头 $1："); }
+function formatDate(value) { if (!value) return ""; return new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value)); }
+
+$("#project-form").addEventListener("submit", submitProjectForm);
+$("#delete-form").addEventListener("submit", deleteProject);
+$$('[data-close-dialog]').forEach(button => button.addEventListener("click", () => $(`#${button.dataset.closeDialog}`).close()));
+$$('[data-action="create-project"]').forEach(button => button.addEventListener("click", () => openProjectDialog("create-project")));
+$$('[data-route]').forEach(button => button.addEventListener("click", () => go(button.dataset.route)));
+$("#workspace-project-link").addEventListener("click", () => go("project"));
+$("#new-creation-button").addEventListener("click", () => openProjectDialog("create-creation"));
+$("#creations-tab").addEventListener("click", () => { activeProjectTab = "creations"; renderProjectOverview(); });
+$("#assets-tab").addEventListener("click", () => { activeProjectTab = "assets"; renderProjectOverview(); });
+$("#asset-file").addEventListener("change", event => importAssets([...event.target.files]));
+$("#asset-search").addEventListener("input", () => renderAssets(activeProject()));
+$("#project-search").addEventListener("input", event => { projectSearch = event.target.value; renderLibrary(); });
+$("#library-sort-button").addEventListener("click", () => { $("#library-sort-menu").hidden = !$("#library-sort-menu").hidden; });
+$("#sidebar-sort-button").addEventListener("click", () => { $("#sidebar-sort-menu").hidden = !$("#sidebar-sort-menu").hidden; });
+$$('[data-sort]').forEach(button => button.addEventListener("click", () => { projectSort = button.dataset.sort; $("#library-sort-label").textContent = sortLabels[projectSort]; $("#library-sort-menu").hidden = true; $("#sidebar-sort-menu").hidden = true; renderLibrary(); }));
+$("#settings-button").addEventListener("click", () => $("#settings-dialog").showModal());
+$("#import-skill-button").addEventListener("click", () => $("#skill-import-dialog").showModal());
+$("#skill-import-form").addEventListener("submit", importSkill);
+$("#skill-file").addEventListener("change", event => { const file = event.target.files[0]; $("#skill-file-name").textContent = file?.name || "尚未选择文件"; $("#skill-import-submit").disabled = !file; $("#skill-import-error").textContent = ""; });
+$("#skill-dropzone").addEventListener("dragover", event => { event.preventDefault(); event.currentTarget.classList.add("dragging"); });
+$("#skill-dropzone").addEventListener("dragleave", event => event.currentTarget.classList.remove("dragging"));
+$("#skill-dropzone").addEventListener("drop", event => { event.preventDefault(); event.currentTarget.classList.remove("dragging"); acceptSkillFile(event.dataTransfer.files[0]); });
+$("#skill-search").addEventListener("input", event => { skillSearch = event.target.value; renderSkills(); });
+$$("[data-skill-filter]").forEach(button => button.addEventListener("click", () => { skillFilter = button.dataset.skillFilter; $$("[data-skill-filter]").forEach(item => item.classList.toggle("active", item === button)); renderSkills(); }));
+$("#skill-detail-toggle").addEventListener("change", event => { if (activeSkillDetail?.skill) setSkillEnabled(activeSkillDetail.skill, event.currentTarget.checked); });
+$("#secret-toggle").addEventListener("click", event => { const input = $("#ark-api-key"); input.type = input.type === "password" ? "text" : "password"; event.currentTarget.textContent = input.type === "password" ? "显示" : "隐藏"; });
+$("#credential-form").addEventListener("submit", async event => { event.preventDefault(); const apiKey = $("#ark-api-key").value.trim(); if (!apiKey) { $("#ark-key-error").textContent = "请输入 API Key。"; return; } try { await api("/api/secrets/ark", { method: "PUT", body: JSON.stringify({ apiKey }) }); $("#ark-api-key").value = ""; $("#settings-dialog").close(); await refreshState(); toast("API Key 已安全保存。", "success"); } catch (error) { $("#ark-key-error").textContent = error.message; } });
+$("#clear-key-button").addEventListener("click", async () => { try { await api("/api/secrets/ark", { method: "DELETE" }); await refreshState(); toast("已清除保存的 API Key。", "success"); } catch (error) { toast(error.message, "error"); } });
+$("#request-real-button").addEventListener("click", async () => { try { await api(`/api/projects/${activeProjectId}/approvals`, { method: "POST", body: JSON.stringify({}) }); await refreshState(); toast("真实模型批次已创建，等待批准。", "success"); } catch (error) { toast(error.message, "error"); } });
+$("#render-button").addEventListener("click", async () => { try { await api(`/api/projects/${activeProjectId}/render`, { method: "POST", body: "{}" }); await refreshState(); toast("本地剪辑已开始。", "success"); } catch (error) { toast(error.message, "error"); } });
+window.addEventListener("hashchange", applyRoute);
+document.addEventListener("click", event => { if (!event.target.closest(".project-card")) $$('[data-project-menu]').forEach(menu => { menu.hidden = true; }); if (!event.target.closest(".sort-control")) $("#library-sort-menu").hidden = true; });
 
 refreshState();

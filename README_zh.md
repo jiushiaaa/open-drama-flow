@@ -125,9 +125,27 @@ OpenDramaFlow 当前包含 49 个项目 Skill：
 
 - Windows 10 或 Windows 11
 - Codex Desktop
-- Node.js 20 或更高版本
-- 可以通过 `ffmpeg` 命令访问的 FFmpeg
 - 调用 Seedream 或 Seedance 时所需的火山方舟 API Key
+
+Node.js 20+、FFmpeg、Codex 插件和免账号 HTTPS 辅助程序都会由仓库安装器检查并安装。
+
+### 用一句 Prompt 安装（推荐）
+
+打开 Codex Desktop，直接发送下面这段话。Codex 会完成安装，普通用户不需要手动输入安装命令：
+
+> 请在这台 Windows 电脑上克隆或打开 https://github.com/jiushiaaa/open-drama-flow。先阅读仓库说明并检查 `scripts/install.ps1`，然后在仓库根目录执行它。验证仓库内置的 49 个 Skill 全部存在、Codex 插件已经启用、本地工作台健康接口能够响应。不要索取或输出任何 API Key。完成后提醒我重启 Codex Desktop，再打开 OpenDramaFlow。
+
+如果使用 Fork 仓库，只需把 Prompt 中的地址替换成自己的 Fork 地址。49 个内置 Skill、安装器和 HTTPS 桥实现都跟随 Git 仓库提交，不依赖作者电脑上的本地文件。
+
+### 直接运行安装器（开发备用）
+
+已经克隆仓库时，也可以在仓库根目录运行：
+
+```powershell
+.\scripts\install.ps1
+```
+
+安装器会下载 Cloudflare 官方 Windows `cloudflared`，并为本地参考图建立临时 [Quick Tunnel](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/trycloudflare/)。这个过程不需要 Cloudflare 账号、API Token、ngrok 账号或对象存储配置。Quick Tunnel 适合测试和开发；正式团队环境如果需要固定域名或 SLA，可通过 `AI_DRAMA_ASSET_BRIDGE_BASE_URL` 接入自建 HTTPS 地址。
 
 ### 启动桌面服务
 
@@ -147,14 +165,7 @@ HTTP 服务只监听本机回环地址。项目状态默认保存在 `%LOCALAPPD
 
 仓库已经包含 Codex 插件清单、MCP 配置、本地 marketplace 和全部 49 个 Skill。
 
-在仓库根目录运行：
-
-```powershell
-codex plugin marketplace add .
-codex plugin add ai-drama-studio@ai-drama-local
-```
-
-更新插件后再次执行第二条命令，并新建一个 Codex 任务，使新的 Skill 和 MCP 服务生效。
+`scripts/install.ps1` 会自动把仓库注册为本地 marketplace、刷新 `ai-drama-studio@ai-drama-local` 并启动工作台。安装完成后重启 Codex Desktop，使新的 Skill 与 MCP 服务生效。
 
 ### MCP 工具
 
@@ -163,6 +174,8 @@ codex plugin add ai-drama-studio@ai-drama-local
 | `drama_get_state` | 读取项目、分镜、任务、审批和最近事件 |
 | `drama_route_skills` | 自动识别并加载专业创作 Skill |
 | `drama_list_skills` | 查看当前专业 Skill 目录 |
+| `drama_create_skill` | 直接写入一个会立即加入自动路由的本地 Skill |
+| `drama_set_skill_enabled` | 启用或停用某个 Skill 的自动路由 |
 | `drama_create_project` | 创建不触发模型调用的空白项目 |
 | `drama_update_plan` | 写入正式故事、人物、场景和分镜 |
 | `drama_request_paid_batch` | 创建有次数上限的真实调用审批 |
@@ -177,6 +190,7 @@ codex plugin add ai-drama-studio@ai-drama-local
 open-drama-flow/
 ├─ .agents/plugins/marketplace.json
 ├─ docs/images/
+├─ scripts/install.ps1        # Windows 一步安装器
 ├─ plugins/ai-drama-studio/
 │  ├─ .codex-plugin/plugin.json
 │  ├─ public/                 # Windows PC 桌面端界面
@@ -197,7 +211,7 @@ npm run check
 npm test
 ```
 
-当前回归测试覆盖空项目无模拟数据、48 个专业 Skill 入口、代表性中文创作请求的自动路由以及总控回退。
+当前回归测试覆盖空项目无模拟数据、仓库自带的全部 49 个 Skill、Skill 导入与持久化开关、代表性创作请求的自动路由、总控回退和确定性成片渲染。
 
 ## 安全边界
 
@@ -205,7 +219,7 @@ npm test
 - 方舟 API Key 使用 Windows DPAPI 为当前用户加密，且不会通过 MCP 返回。
 - `studio-data`、本地审计目录、依赖、QA 输出和密钥文件均被 Git 排除。
 - 只有真实结果已经下载并关联到项目后，才能声称模型调用成功。
-- Codex Image Gen 的本地文件在交给 Seedance 前，仍需要可访问 URL、火山 Asset ID 或对象存储桥。
+- Seedance 仍要求 HTTPS 或 `asset://` 参考图。OpenDramaFlow 会自动用 Cloudflare Quick Tunnel 为当前本地图生成随机令牌、有效期一小时的 HTTPS 地址，不会公开整个素材库；如果当前网络阻断 Quick Tunnel，任务会安全等待，并可改用 `AI_DRAMA_ASSET_BRIDGE_BASE_URL` 或火山 `asset://` 地址。
 
 ## 当前能力边界
 
