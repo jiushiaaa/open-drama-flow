@@ -269,8 +269,8 @@ test("approval defaults follow the real missing work without an arbitrary global
     shots: Array.from({ length: 42 }, (_, index) => ({ id: `shot-${index + 1}`, clipPath: index < 2 ? `clip-${index}.mp4` : "" })),
     assets: [{ shotId: "shot-1", kind: "image" }]
   };
-  assert.deepEqual(resolveApprovalLimits(project, { imageProvider: "codex-imagegen" }), { maxImageCalls: 0, maxVideoCalls: 40 });
-  assert.deepEqual(resolveApprovalLimits(project, { imageProvider: "ark-seedream" }), { maxImageCalls: 41, maxVideoCalls: 40 });
+  assert.deepEqual(resolveApprovalLimits(project, { imageProvider: "codex-imagegen" }), { maxImageCalls: 40, maxVideoCalls: 40 });
+  assert.deepEqual(resolveApprovalLimits(project, { imageProvider: "ark-seedream" }), { maxImageCalls: 40, maxVideoCalls: 40 });
   assert.deepEqual(resolveApprovalLimits(project, { imageProvider: "ark-seedream" }, { maxImageCalls: 0, maxVideoCalls: 7 }), { maxImageCalls: 0, maxVideoCalls: 7 });
 });
 

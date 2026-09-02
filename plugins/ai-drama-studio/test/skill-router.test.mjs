@@ -72,6 +72,52 @@ for (const [request, expected] of naturalLanguageCases) {
   });
 }
 
+const commercialProductAdCases = [
+  "为一款无线耳机制作15秒竖屏电商广告，突出轻便和降噪，风格简洁、有科技感",
+  "想给降噪蓝牙耳机做一条 9:16 商品投放短片，不要真人口播，重点拍材质与佩戴轻盈感",
+  "没有品牌故事，直接把头戴式耳机做成十五秒产品广告，画面留白并突出降噪卖点"
+];
+
+for (const request of commercialProductAdCases) {
+  test(`routes commercial product ad language: ${request}`, async () => {
+    const result = await routeSkills(request, 5);
+    assert.equal(result.fallback, false);
+    assert.equal(result.selected[0].name, "minimax-minimalist-product-ad-generator");
+    assert.notEqual(result.confidence, "low");
+    assert.ok(result.selected[0].matchedSignals.length > 0);
+  });
+}
+
+const novelAdaptationCases = [
+  "我要把这部网文改编成AI漫剧，先整理世界观和角色设定，再做分镜并确保角色一致性",
+  "这本无限流小说要做动态漫，先锁定原作设定、人物关系和角色形象，再拆每集分镜",
+  "根据原著章节改编短剧，输出角色卡、场景设定和镜头表，人物前后不能变脸"
+];
+
+for (const request of novelAdaptationCases) {
+  test(`routes novel adaptation language: ${request}`, async () => {
+    const result = await routeSkills(request, 5);
+    assert.equal(result.fallback, false);
+    assert.equal(result.selected[0].name, "minimax-character-scene-storyboard");
+    assert.notEqual(result.confidence, "low");
+    assert.ok(result.selected[0].matchedSignals.length > 0);
+  });
+}
+
+const digitalProductPromoCases = [
+  "基于真实 SaaS 网页和操作录屏制作功能宣传片，突出三个核心卖点和最终 CTA",
+  "根据官网页面和产品录屏做一条 SaaS 发布视频，展示操作流程、功能卖点并在结尾加 CTA"
+];
+
+for (const request of digitalProductPromoCases) {
+  test(`keeps real SaaS promo routing: ${request}`, async () => {
+    const result = await routeSkills(request, 5);
+    assert.equal(result.fallback, false);
+    assert.equal(result.selected[0].name, "minimax-digital-product-promo-generator");
+    assert.notEqual(result.confidence, "low");
+  });
+}
+
 const adjacentConflictCases = [
   {
     request: "这个 SaaS 不讲品牌故事，只演示界面状态切换和卡片重组",

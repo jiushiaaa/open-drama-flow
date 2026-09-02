@@ -3,6 +3,7 @@ import fs from "node:fs";
 import fsp from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import { Readable } from "node:stream";
 import { fileURLToPath } from "node:url";
 import AdmZip from "adm-zip";
@@ -11,7 +12,7 @@ import { appendEvent, mutateState, readState } from "./store.mjs";
 import { clearArkKey, hasArkKey, saveArkKey } from "./secrets.mjs";
 import { getAssetBridgeStatus } from "./asset-bridge.mjs";
 import { getManagedSkill, importSkillFile, listManagedSkills, setManagedSkillEnabled } from "./skill-registry.mjs";
-import { appendCreationMessage, attachTaskRemoteUrl, claimTask, completeTask, createApproval, createAssetFolder, createCreation, createProject, createWorld, decideApproval, deleteAsset, deleteAssetFolder, deleteCreation, deleteProject, deleteWorld, promoteAsset, renameProject, resumeRealPipeline, setProjectPinned, startLocalRender, startRealPipeline, updateAsset, updateAssetFolder, updateCreation, updateWorld } from "./workflow.mjs";
+import { appendCreationMessage, attachTaskRemoteUrl, claimTask, completeTask, createApproval, createAssetFolder, createCreation, createProject, createWorld, deleteAsset, deleteAssetFolder, deleteCreation, deleteProject, deleteWorld, promoteAsset, renameProject, resumeRealPipeline, setProjectPinned, startLocalRender, updateAsset, updateAssetFolder, updateCreation, updateWorld } from "./workflow.mjs";
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8",
@@ -138,7 +139,7 @@ async function saveAssetContentVersion(projectId, assetId, content) {
   const payload = extension === ".docx" ? writeDocxText(await fsp.readFile(source), content) : Buffer.from(String(content || ""), "utf8");
   await fsp.writeFile(destination, payload);
   const now = new Date().toISOString();
-  const nextAsset = { ...asset, id: safeId("asset"), familyId: asset.familyId || asset.id, version, provider: "editor", localPath: destination, remoteUrl: "", bridge: null, size: payload.length, createdAt: now, updatedAt: now };
+  const nextAsset = { ...asset, id: safeId("asset"), familyId: asset.familyId || asset.id, version, provider: "editor", localPath: destination, remoteUrl: "", bridge: null, size: payload.length, sha256: createHash("sha256").update(payload).digest("hex"), createdAt: now, updatedAt: now };
   try {
     await mutateState(next => {
       const target = next.projects.find(item => item.id === projectId);
@@ -313,12 +314,10 @@ async function handleApi(req, res, url) {
     json(res, 202, { job: await resumeRealPipeline(segments[2]) }); return;
   }
   if (segments[0] === "api" && segments[1] === "approvals" && segments[2]) {
-    const approvalId = segments[2];
     if (req.method === "POST" && segments[3] === "decision") {
-      const body = await readJson(req);
-      json(res, 200, { approval: await decideApproval(approvalId, body.decision) }); return;
+      json(res, 410, { error: { code: "MCP_USER_CONFIRMATION_REQUIRED", message: "付费审批只能通过 Codex 的可信 MCP 用户确认完成。" } }); return;
     }
-    if (req.method === "POST" && segments[3] === "run") { json(res, 202, { job: await startRealPipeline(approvalId) }); return; }
+    if (req.method === "POST" && segments[3] === "run") { json(res, 410, { error: { code: "MCP_USER_CONFIRMATION_REQUIRED", message: "真实模型任务只能在可信 MCP 用户确认后启动。" } }); return; }
   }
   if (req.method === "POST" && url.pathname === "/api/assets/import") {
     const form = await parseMultipart(req);
@@ -343,10 +342,11 @@ async function handleApi(req, res, url) {
     if (versionOfAssetId && !previousVersion) throw new Error("ASSET_NOT_FOUND");
     const destination = path.join(dataRoot, "projects", projectId, "imports", `${safeId("import")}${extension}`);
     await fsp.mkdir(path.dirname(destination), { recursive: true });
-    await fsp.writeFile(destination, Buffer.from(await file.arrayBuffer()));
+    const payload = Buffer.from(await file.arrayBuffer());
+    await fsp.writeFile(destination, payload);
     const assetId = safeId("asset");
     const folder = folderId ? project.assetFolders.find(item => item.id === folderId) : null;
-    const asset = { id: assetId, familyId: previousVersion?.familyId || assetId, version: previousVersion ? Math.max(...project.assets.filter(item => item.familyId === previousVersion.familyId).map(item => Number(item.version || 1))) + 1 : 1, tags: previousVersion?.tags || [], projectId, shotId: previousVersion?.shotId || null, folderId, scope: folder?.scope || (creationId ? "creation" : worldId ? "world" : "project"), worldId: folder?.worldId || worldId, creationId: folder?.creationId || creationId, kind, provider: "import", localPath: destination, remoteUrl: "", originalName: file.name.slice(0, 180), size: file.size, createdAt: new Date().toISOString() };
+    const asset = { id: assetId, familyId: previousVersion?.familyId || assetId, version: previousVersion ? Math.max(...project.assets.filter(item => item.familyId === previousVersion.familyId).map(item => Number(item.version || 1))) + 1 : 1, tags: previousVersion?.tags || [], projectId, shotId: previousVersion?.shotId || null, folderId, scope: folder?.scope || (creationId ? "creation" : worldId ? "world" : "project"), worldId: folder?.worldId || worldId, creationId: folder?.creationId || creationId, kind, provider: "import", localPath: destination, remoteUrl: "", originalName: file.name.slice(0, 180), size: payload.length, sha256: createHash("sha256").update(payload).digest("hex"), createdAt: new Date().toISOString() };
     await mutateState(next => {
       const target = next.projects.find(item => item.id === projectId);
       target.assets.push(asset);
@@ -369,7 +369,7 @@ async function handleApi(req, res, url) {
     if (req.method === "POST" && segments[3] === "claim") { json(res, 200, { task: await claimTask(segments[2], "codex") }); return; }
     if (req.method === "POST" && segments[3] === "complete") {
       const body = await readJson(req);
-      json(res, 200, { task: await completeTask(segments[2], body.localPath, body.remoteUrl || "") }); return;
+      json(res, 200, { task: await completeTask(segments[2], body.localPath, body.remoteUrl || "", body.inspection || null) }); return;
     }
     if (req.method === "POST" && segments[3] === "remote-source") {
       const body = await readJson(req);

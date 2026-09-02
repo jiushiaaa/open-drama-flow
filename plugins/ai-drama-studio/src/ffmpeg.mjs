@@ -34,26 +34,35 @@ export async function assertFfmpeg() {
   await run("ffmpeg", ["-version"], process.cwd());
 }
 
-export async function createShotVideo(imagePath, outputPath, durationSeconds, index) {
+export async function createShotVideo(imagePath, outputPath, durationSeconds, index, dimensions = { width: 720, height: 1280 }) {
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
+  const width = Math.max(2, Math.round(Number(dimensions.width || 720) / 2) * 2);
+  const height = Math.max(2, Math.round(Number(dimensions.height || 1280) / 2) * 2);
   const frames = Math.max(48, Math.round(durationSeconds * 24));
   const panX = index % 2 === 0 ? "iw/2-(iw/zoom/2)" : "max(0,iw-iw/zoom)";
-  const filter = `scale=780:1387,crop=720:1280:x='(iw-ow)/2':y='(ih-oh)/2',zoompan=z='min(zoom+0.0007,1.055)':x='${panX}':y='ih/2-(ih/zoom/2)':d=${frames}:s=720x1280:fps=24,fade=t=in:st=0:d=0.22,fade=t=out:st=${Math.max(0.5, durationSeconds - 0.25)}:d=0.25,format=yuv420p`;
+  const scaledWidth = Math.round(width * 1.085 / 2) * 2;
+  const scaledHeight = Math.round(height * 1.085 / 2) * 2;
+  const filter = `scale=${scaledWidth}:${scaledHeight}:force_original_aspect_ratio=increase,crop=${width}:${height}:x='(iw-ow)/2':y='(ih-oh)/2',zoompan=z='min(zoom+0.0007,1.055)':x='${panX}':y='ih/2-(ih/zoom/2)':d=${frames}:s=${width}x${height}:fps=24,fade=t=in:st=0:d=0.22,fade=t=out:st=${Math.max(0.5, durationSeconds - 0.25)}:d=0.25,format=yuv420p`;
   await run("ffmpeg", ["-y", "-loop", "1", "-i", imagePath, "-t", String(durationSeconds), "-vf", filter, "-r", "24", "-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", outputPath], path.dirname(outputPath));
 }
 
-export async function normalizeVideoClip(inputPath, outputPath) {
+export async function normalizeVideoClip(inputPath, outputPath, dimensions = { width: 720, height: 1280 }, durationSeconds = null, audioPath = null) {
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
-  const filter = "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:color=black,fps=24,format=yuv420p";
+  const width = Math.max(2, Math.round(Number(dimensions.width || 720) / 2) * 2);
+  const height = Math.max(2, Math.round(Number(dimensions.height || 1280) / 2) * 2);
+  const filter = `scale=${width}:${height}:force_original_aspect_ratio=decrease,pad=${width}:${height}:(ow-iw)/2:(oh-ih)/2:color=black,fps=24,format=yuv420p`;
   const hasAudio = (await runCapture("ffprobe", ["-v", "error", "-select_streams", "a:0", "-show_entries", "stream=index", "-of", "csv=p=0", inputPath], path.dirname(inputPath))).trim().length > 0;
-  const inputs = hasAudio
-    ? ["-i", inputPath]
-    : ["-i", inputPath, "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo"];
-  const audioMap = hasAudio ? ["-map", "0:a:0"] : ["-map", "1:a:0"];
+  const inputs = audioPath
+    ? ["-i", inputPath, "-stream_loop", "-1", "-i", audioPath]
+    : hasAudio
+      ? ["-i", inputPath]
+      : ["-i", inputPath, "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo"];
+  const audioMap = audioPath || !hasAudio ? ["-map", "1:a:0"] : ["-map", "0:a:0"];
   await run("ffmpeg", [
     "-y", ...inputs, "-vf", filter, "-map", "0:v:0", ...audioMap,
     "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
     "-c:a", "aac", "-b:a", "128k", "-ar", "48000", "-ac", "2",
+    ...(Number.isFinite(Number(durationSeconds)) && Number(durationSeconds) > 0 ? ["-t", String(durationSeconds)] : []),
     "-shortest", "-movflags", "+faststart", outputPath
   ], path.dirname(outputPath));
   return outputPath;
@@ -64,6 +73,26 @@ export async function probeDuration(filePath) {
   const duration = Number.parseFloat(value.trim());
   if (!Number.isFinite(duration) || duration <= 0) throw new Error("MEDIA_DURATION_INVALID");
   return duration;
+}
+
+export async function probeMedia(filePath) {
+  const raw = await runCapture("ffprobe", ["-v", "error", "-show_streams", "-show_format", "-of", "json", filePath], path.dirname(filePath));
+  let payload;
+  try { payload = JSON.parse(raw); }
+  catch { throw new Error("MEDIA_PROBE_JSON_INVALID"); }
+  const video = (payload.streams || []).find(stream => stream.codec_type === "video");
+  if (!video) throw new Error("MEDIA_VIDEO_STREAM_MISSING");
+  const audio = (payload.streams || []).find(stream => stream.codec_type === "audio") || null;
+  const duration = Number.parseFloat(payload.format?.duration || video.duration || 0);
+  if (!Number.isFinite(duration) || duration <= 0) throw new Error("MEDIA_DURATION_INVALID");
+  const rate = String(video.avg_frame_rate || video.r_frame_rate || "0/1").split("/").map(Number);
+  const fps = rate.length === 2 && rate[1] ? rate[0] / rate[1] : 0;
+  return {
+    duration,
+    video: { codec: video.codec_name || "", width: Number(video.width || 0), height: Number(video.height || 0), fps: Number.isFinite(fps) ? fps : 0, pixelFormat: video.pix_fmt || "" },
+    audio: audio ? { codec: audio.codec_name || "", sampleRate: Number(audio.sample_rate || 0), channels: Number(audio.channels || 0) } : null,
+    format: payload.format?.format_name || ""
+  };
 }
 
 export async function renderFinal({ clips, subtitles, outputPath, workingDir }) {

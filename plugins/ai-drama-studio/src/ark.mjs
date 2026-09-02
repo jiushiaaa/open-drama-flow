@@ -9,7 +9,11 @@ function arkHeaders(apiKey) {
 function safeArkError(status, body) {
   const code = body?.error?.code || body?.code || "ARK_REQUEST_FAILED";
   const requestId = body?.request_id || body?.error?.request_id || "";
-  return new Error(`${code} (HTTP ${status})${requestId ? ` [${requestId}]` : ""}`);
+  const error = new Error(`${code} (HTTP ${status})${requestId ? ` [${requestId}]` : ""}`);
+  error.code = code;
+  error.httpStatus = status;
+  error.requestId = requestId;
+  return error;
 }
 
 async function arkFetch(url, options, timeoutMs = 120000) {
@@ -27,6 +31,22 @@ async function arkFetch(url, options, timeoutMs = 120000) {
   }
 }
 
+async function downloadBytes(url, timeoutMs = 5 * 60 * 1000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) {
+      const error = new Error(`PROVIDER_DOWNLOAD_FAILED_${response.status}`);
+      error.httpStatus = response.status;
+      throw error;
+    }
+    return Buffer.from(await response.arrayBuffer());
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function generateSeedreamImage({ apiKey, baseUrl, model, prompt, size = "2K", watermark = false, outputPath }) {
   if (!model) throw new Error("SEEDREAM_MODEL_REQUIRED");
   const body = await arkFetch(`${baseUrl.replace(/\/$/, "")}/images/generations`, {
@@ -36,9 +56,7 @@ export async function generateSeedreamImage({ apiKey, baseUrl, model, prompt, si
   }, 20 * 60 * 1000);
   const remoteUrl = body?.data?.[0]?.url;
   if (!remoteUrl) throw new Error("SEEDREAM_RESULT_URL_MISSING");
-  const response = await fetch(remoteUrl);
-  if (!response.ok) throw new Error(`SEEDREAM_DOWNLOAD_FAILED_${response.status}`);
-  const bytes = Buffer.from(await response.arrayBuffer());
+  const bytes = await downloadBytes(remoteUrl);
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
   await fs.writeFile(outputPath, bytes);
   return { outputPath, remoteUrl, usage: body.usage || null, model: body.model || model };
@@ -67,12 +85,13 @@ export async function getSeedanceTask({ apiKey, baseUrl, taskId }) {
   });
 }
 
-export async function waitForSeedanceTask({ apiKey, baseUrl, taskId, maxWaitMs = 30 * 60 * 1000, pollMs = 6000, onStatus }) {
+export async function waitForSeedanceTask({ apiKey, baseUrl, taskId, maxWaitMs = 30 * 60 * 1000, pollMs = 6000, onStatus, onPoll }) {
   const started = Date.now();
   let previous = "";
   while (Date.now() - started < maxWaitMs) {
     const task = await getSeedanceTask({ apiKey, baseUrl, taskId });
     const status = task.status || "unknown";
+    await onPoll?.(status, task);
     if (status !== previous) await onStatus?.(status, task);
     previous = status;
     if (status === "succeeded") return task;
@@ -85,9 +104,8 @@ export async function waitForSeedanceTask({ apiKey, baseUrl, taskId, maxWaitMs =
 export async function downloadSeedanceVideo(task, outputPath) {
   const remoteUrl = task?.content?.video_url || task?.video_url || task?.output?.video_url;
   if (!remoteUrl) throw new Error("SEEDANCE_RESULT_URL_MISSING");
-  const response = await fetch(remoteUrl);
-  if (!response.ok) throw new Error(`SEEDANCE_DOWNLOAD_FAILED_${response.status}`);
+  const bytes = await downloadBytes(remoteUrl);
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
-  await fs.writeFile(outputPath, Buffer.from(await response.arrayBuffer()));
+  await fs.writeFile(outputPath, bytes);
   return { outputPath, remoteUrl };
 }

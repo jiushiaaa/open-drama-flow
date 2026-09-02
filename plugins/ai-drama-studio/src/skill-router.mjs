@@ -21,13 +21,25 @@ const ROUTING_PROFILES = {
     all: [["参考视频", "原视频", "样片", "这条片子"], ["照着", "拆解", "反推", "复刻", "镜头节奏", "镜头顺序"]],
     aliases: ["按原片镜头顺序", "分析机位和节奏"]
   },
+  "minimax-character-scene-storyboard": {
+    all: [
+      ["小说", "网文", "原著", "原作", "章节"],
+      ["漫改", "改编", "做成漫剧", "改成漫剧", "ai漫剧", "动态漫", "短剧"],
+      ["世界观", "设定", "角色设定", "人物设定", "角色卡", "角色一致", "人物一致", "分镜", "镜头表"]
+    ],
+    aliases: ["小说改编成ai漫剧", "网文改编动态漫", "原著角色场景分镜"]
+  },
   "minimax-vox-style-video-generator": {
     all: [["vox", "视频论文", "解释型短纪录片"], ["文章", "研究", "知识", "旁白", "拼贴"]],
     aliases: ["vox那种", "混合媒介解释片"]
   },
   "minimax-minimalist-product-ad-generator": {
-    all: [["产品图", "产品照片", "商品图", "实物图"], ["留白", "细节特写", "高级感", "高质感", "极简"]],
-    aliases: ["白底产品广告", "材质细节广告"]
+    all: [
+      ["产品图", "产品照片", "商品图", "实物图", "实物", "耳机", "耳麦", "音箱", "手机", "手表", "相机"],
+      ["产品广告", "商品广告", "电商广告", "广告片", "产品短片", "商品短片", "投放短片"],
+      ["留白", "细节特写", "材质", "高级感", "高质感", "极简", "简洁", "科技感", "竖屏", "9:16", "15秒", "十五秒"]
+    ],
+    aliases: ["白底产品广告", "材质细节广告", "无线耳机广告", "蓝牙耳机广告"]
   },
   "minimax-brand-stream-mg": {
     all: [["logo", "标志", "品牌符号"], ["霓虹", "流线", "线条汇聚", "线条聚拢", "能量线"]],
@@ -138,6 +150,45 @@ function conflictAdjustment(name, normalizedRequest) {
   const digitalProduct = has("网站", "软件", "app", "saas", "数字产品", "网页", "录屏");
   if (productNarrative && digitalProduct && name === "minimax-digital-product-promo-generator") {
     adjust(45, "promo-over-ui-state");
+  }
+
+  const physicalProduct = has(
+    "耳机", "耳麦", "耳塞", "音箱", "手机", "手表", "相机", "香水", "护肤品", "鞋", "服装", "饮料", "咖啡", "实物"
+  ) || (has("产品", "商品") && !digitalProduct);
+  const commerceAd = has("电商", "商品广告", "产品广告", "广告片", "广告", "投放", "产品短片", "商品短片");
+  const polishedProductStyle = has(
+    "简洁", "极简", "科技感", "高级感", "质感", "轻奢", "留白", "细节", "材质", "棚拍", "竖屏", "9:16", "15秒", "十五秒"
+  );
+  const rejectsCreatorLed = has("不要真人口播", "不要口播", "不做口播", "无需口播", "没有口播", "非口播", "不做种草", "不是测评");
+  const creatorLed = !rejectsCreatorLed && has("种草", "开箱", "测评", "口播", "ugc", "koc", "用户体验", "真人实测", "手持实测");
+  const lipProduct = has("口红", "唇釉", "唇泥", "唇部");
+  const rejectsOfficialBrand = has("没有品牌故事", "不讲品牌故事", "不要品牌故事", "不是品牌官方", "非品牌官方");
+  const officialBrand = !rejectsOfficialBrand && has("品牌官方", "官方广告", "官方产品", "产品hero", "品牌故事", "品牌宣传", "logo", "工艺");
+  const polishedCommerceAd = physicalProduct && commerceAd && polishedProductStyle;
+  if (polishedCommerceAd && !creatorLed && !lipProduct && !officialBrand && name === "minimax-minimalist-product-ad-generator") {
+    adjust(62, "physical-product-commerce-ad");
+  }
+  if (polishedCommerceAd && !officialBrand && name === "minimax-brand-ad") {
+    adjust(-24, "commerce-ad-over-official-brand");
+  }
+  if (physicalProduct && commerceAd && officialBrand && name === "minimax-brand-ad") {
+    adjust(58, "official-brand-over-commerce-ad");
+  }
+  if (physicalProduct && commerceAd && officialBrand && name === "minimax-minimalist-product-ad-generator") {
+    adjust(-34, "official-brand-over-commerce-ad");
+  }
+
+  const sourceAdaptation =
+    has("小说", "网文", "原著", "原作", "章节") &&
+    has("漫改", "改编", "做成漫剧", "改成漫剧", "ai漫剧", "动态漫", "短剧");
+  const adaptationBible = has(
+    "世界观", "设定", "角色设定", "人物设定", "角色卡", "人物关系", "角色一致", "人物一致", "不能变脸", "分镜", "镜头表"
+  );
+  if (sourceAdaptation && adaptationBible && name === "minimax-character-scene-storyboard") {
+    adjust(70, "source-adaptation-story-bible");
+  }
+  if (sourceAdaptation && adaptationBible && name === "minimax-film-shot") {
+    adjust(24, "source-adaptation-shot-craft");
   }
 
   const poster = has("海报", "poster") && has("动起来", "动态", "微动", "做成视频");

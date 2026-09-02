@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "OpenDramaFlow — a Codex-native Windows desktop production harness for AI comic drama workflows.",
+  "description": "OpenDramaFlow — a Codex-native local production harness for general AI video workflows.",
   "scripts": {
     "start": "node src/http-server.mjs",
     "mcp": "node src/mcp-server.mjs",
     "test": "node --test",
-    "check": "node --check src/http-server.mjs && node --check src/mcp-server.mjs && node --check src/skill-catalog.mjs && node --check src/skill-router.mjs && node --check public/app.js"
+    "check": "node --check src/ark.mjs && node --check src/ffmpeg.mjs && node --check src/store.mjs && node --check src/project-memory.mjs && node --check src/prompt-compiler.mjs && node --check src/review-evidence.mjs && node --check src/production-harness.mjs && node --check src/workflow.mjs && node --check src/http-server.mjs && node --check src/mcp-server.mjs && node --check src/skill-catalog.mjs && node --check src/skill-router.mjs && node --check public/app.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.5",

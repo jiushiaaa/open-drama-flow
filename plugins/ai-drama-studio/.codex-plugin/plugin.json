@@ -1,6 +1,6 @@
 {
   "name": "ai-drama-studio",
-  "version": "0.1.0+codex.20260902skills3",
+  "version": "0.1.0+codex.20260902harness2",
   "description": "Codex-native local harness for AI comic-drama scripting, storyboards, media generation, approvals and FFmpeg editing.",
   "author": {
     "name": "OpenDramaFlow Contributors"
