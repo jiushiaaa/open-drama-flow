@@ -1,10 +1,12 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";
+import { shutdownSignal } from "./background-jobs.mjs";
 
 function run(command, args, cwd) {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { cwd, windowsHide: true, stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawn(command, args, { cwd, windowsHide: true, stdio: ["ignore", "pipe", "pipe"], signal: shutdownSignal, timeout: 30 * 60 * 1000 });
+    child.stdout.resume();
     let stderr = "";
     child.stderr.setEncoding("utf8");
     child.stderr.on("data", chunk => { stderr = `${stderr}${chunk}`.slice(-12000); });
@@ -18,13 +20,13 @@ function run(command, args, cwd) {
 
 function runCapture(command, args, cwd) {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { cwd, windowsHide: true, stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawn(command, args, { cwd, windowsHide: true, stdio: ["ignore", "pipe", "pipe"], signal: shutdownSignal, timeout: 5 * 60 * 1000 });
     let stdout = "";
     let stderr = "";
     child.stdout.setEncoding("utf8");
     child.stderr.setEncoding("utf8");
-    child.stdout.on("data", chunk => { stdout += chunk; });
-    child.stderr.on("data", chunk => { stderr += chunk; });
+    child.stdout.on("data", chunk => { stdout = (stdout + chunk).slice(-2000000); });
+    child.stderr.on("data", chunk => { stderr = (stderr + chunk).slice(-12000); });
     child.on("error", reject);
     child.on("close", code => code === 0 ? resolve(stdout) : reject(new Error(`MEDIA_PROBE_FAILED_${code}: ${stderr.slice(-500)}`)));
   });

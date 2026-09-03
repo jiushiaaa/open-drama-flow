@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:brand-stream-mg，根据我提供的素材与要求完成品牌流线 MG，并核验所需工具与交付结果。"
+  short_description: "把 Logo 与主题词制作成双色霓虹流线 MG 动效；适用于品牌片头、发布预热和标志动效。"
+  display_name: "品牌流线 MG"

@@ -1,0 +1,5 @@
+name: line-doodle-explainer-generator
+name-cn: "线条涂鸦科普"
+summary-cn: "把科学、人文或课程内容制作成极简线条涂鸦讲解视频；适用于知识点和教育短视频。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

@@ -1,0 +1,5 @@
+name: suspense-title-sequence-generator
+name-cn: "悬疑电影片头"
+summary-cn: "制作悬疑、犯罪、黑色电影或间谍风标题序列；适用于片名、卡司和复古节拍动效。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

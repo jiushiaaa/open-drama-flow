@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:video-deconstruct，根据我提供的素材与要求完成视频拆解与复刻，并核验所需工具与交付结果。"
+  short_description: "把参考视频、关键帧或详细描述拆成可验证镜头证据并编译复刻 Prompt；适用于逐镜反推结构。"
+  display_name: "视频拆解与复刻"

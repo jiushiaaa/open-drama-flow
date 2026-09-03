@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:micro-expression-video-generator，根据我提供的素材与要求完成人物微表情表演，并核验所需工具与交付结果。"
+  short_description: "把角色图、剧本片段或情绪短语转为微表情表演镜头；适用于克制而复杂的情绪变化。"
+  display_name: "人物微表情表演"

@@ -1,0 +1,5 @@
+name: promo-video
+name-cn: "产品宣传视频"
+summary-cn: "从文本、网页、视频或 PPT 资料制作 Hook—Body—CTA 产品宣传视频；适用于多平台发布。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

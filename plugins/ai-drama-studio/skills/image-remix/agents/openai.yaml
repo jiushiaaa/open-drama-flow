@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:image-remix，根据我提供的素材与要求完成图片灵感重混，并核验所需工具与交付结果。"
+  short_description: "提取参考图的构图、色彩、光影和氛围并生成内容不同的新图；适用于审美迁移而非复制主体。"
+  display_name: "图片灵感重混"

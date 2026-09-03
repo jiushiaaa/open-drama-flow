@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:silkscreen-decorative-illustration-short，根据我提供的素材与要求完成丝印装饰插画短片，并核验所需工具与交付结果。"
+  short_description: "制作高密度装饰线稿、宝石色和丝印质感的插画短片；适用于奢华感创意视觉。"
+  display_name: "丝印装饰插画短片"

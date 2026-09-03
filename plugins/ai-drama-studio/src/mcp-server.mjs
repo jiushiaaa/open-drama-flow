@@ -2,13 +2,19 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { hasArkKey } from "./secrets.mjs";
+import { VIDEO_INPUT_MODES, MEDIA_ROLES } from "./seedance-contract.mjs";
+import { drainBackgroundJobs, backgroundJobStatus, stopBackgroundJobs } from "./background-jobs.mjs";
+import { hasArkKey, hasSpeechKey } from "./secrets.mjs";
+import { speechCapabilities } from "./speech.mjs";
+import { requestSpeechJob, authorizeSpeechJob, getSpeechJob } from "./speech-workflow.mjs";
 import { listSkills, routeSkills } from "./skill-router.mjs";
 import { createManagedSkill, setManagedSkillEnabled } from "./skill-registry.mjs";
-import { readState } from "./store.mjs";
+import { readState, mutateState, appendEvent } from "./store.mjs";
+import { executionMode, confirmationOutcome } from "./execution-policy.mjs";
 import { startHttpServer } from "./http-server.mjs";
 import { closeAssetBridge, getAssetBridgeStatus } from "./asset-bridge.mjs";
 import { buildProductionStatus, getSeedanceCapabilityProfile } from "./production-harness.mjs";
+import { importLocalAsset, inspectAsset, prepareReferenceAsset, createAssetFolder, searchProjectMemory, readMemorySource, extractMemoryCandidates } from "./workflow.mjs";
 import { appendCreationMessage, attachTaskRemoteUrl, authorizeAndStartPipeline, claimTask, completeTask, createApproval, createCreation, createProject, createWorld, decideApproval, failTask, finalizeDelivery, getApprovalSummary, getContextPack, prepareQualityEvidence, promoteAsset, recordQualityReview, resumeRealPipeline, reviewMemory, startLocalRender, updateCreation, updateProjectPlan, upsertMemory } from "./workflow.mjs";
 
 const server = new McpServer({ name: "ai-drama-studio", version: "0.1.0" });
@@ -26,15 +32,24 @@ function result(value) {
   return { content: [{ type: "text", text: JSON.stringify(value, null, 2) }], structuredContent: value };
 }
 
+server.registerTool("drama_set_execution_mode", {
+  description: "Set product model execution policy only when requested by the user: automatic (default, no per-call popup) or manual (trusted confirmation for every frozen batch). This starts no job, does not change Codex host permissions, and never approves production memory. Existing scopes retain their original policy and may need re-preparation.",
+  inputSchema: { mode: z.enum(["automatic", "manual"]) }
+}, async ({ mode }) => result(await mutateState(state => {
+  state.settings.executionMode = mode;
+  appendEvent(state, "execution.policy_changed", mode === "automatic" ? "模型调用使用自动执行模式" : "模型调用使用逐批审批模式", { mode });
+  return { executionMode: mode, startedJobs: 0, memoryApprovalRequired: true };
+})));
+
 server.registerTool("drama_get_state", {
   description: "Read local video projects, current production gates, exact next actions, jobs, approvals and Codex media tasks. Secrets are never returned.",
   inputSchema: { projectId: z.string().optional().describe("Optional project ID to narrow the result"), creationId: z.string().optional().describe("Optional creation page for production guidance") }
 }, async ({ projectId, creationId }) => {
   const state = await readState();
   const projects = projectId ? state.projects.filter(project => project.id === projectId) : state.projects;
-  const credentialStatus = { arkConfigured: await hasArkKey() };
+  const credentialStatus = { arkConfigured: await hasArkKey(), speechConfigured: await hasSpeechKey() };
   const guidance = projectId ? buildProductionStatus(state, projectId, creationId || null, { credentialStatus }) : null;
-  return result({ workbench, credentialStatus, assetBridge: await getAssetBridgeStatus(), settings: state.settings, capabilities: { seedance: getSeedanceCapabilityProfile(state.settings) }, projects, guidance, jobs: state.jobs.filter(job => !projectId || job.projectId === projectId), approvals: state.approvals.filter(item => !projectId || item.projectId === projectId), tasks: state.tasks.filter(task => !projectId || task.projectId === projectId), providerCalls: (state.providerCalls || []).filter(call => !projectId || call.projectId === projectId), recentEvents: state.events.slice(0, 20) });
+return result({ workbench, credentialStatus, speech: speechCapabilities(credentialStatus.speechConfigured, state.settings), speechJobs: (state.speechJobs || []).filter(job => !projectId || job.projectId === projectId), assetBridge: await getAssetBridgeStatus(), settings: state.settings, capabilities: { seedance: getSeedanceCapabilityProfile(state.settings) }, projects, guidance, jobs: state.jobs.filter(job => !projectId || job.projectId === projectId), approvals: state.approvals.filter(item => !projectId || item.projectId === projectId), tasks: state.tasks.filter(task => !projectId || task.projectId === projectId), providerCalls: (state.providerCalls || []).filter(call => !projectId || call.projectId === projectId), recentEvents: state.events.slice(0, 20) });
 });
 
 server.registerTool("drama_get_next_actions", {
@@ -42,7 +57,8 @@ server.registerTool("drama_get_next_actions", {
   inputSchema: { projectId: z.string(), creationId: z.string().optional() }
 }, async ({ projectId, creationId }) => {
   const state = await readState();
-  return result(buildProductionStatus(state, projectId, creationId || null, { credentialStatus: { arkConfigured: await hasArkKey() } }));
+  const speechConfigured = await hasSpeechKey();
+  return result({ ...buildProductionStatus(state, projectId, creationId || null, { credentialStatus: { arkConfigured: await hasArkKey(), speechConfigured } }), speech: speechCapabilities(speechConfigured, state.settings) });
 });
 
 server.registerTool("drama_get_capabilities", {
@@ -51,8 +67,63 @@ server.registerTool("drama_get_capabilities", {
 }, async () => {
   const state = await readState();
   const arkConfigured = await hasArkKey();
-  return result({ image: { primary: state.settings.imageProvider, codexImageGen: true, seedream: state.settings.imageProvider === "ark-seedream" && arkConfigured }, video: getSeedanceCapabilityProfile(state.settings), deterministicEdit: { ffmpeg: true, concat: true, subtitles: true, audioPreservation: true }, unavailable: ["voice cloning", "managed TTS", "managed music generation", "3D scene editing", "professional NLE project export"] });
+  return result({ image: { primary: state.settings.imageProvider, codexImageGen: true, seedream: state.settings.imageProvider === "ark-seedream" && arkConfigured }, video: getSeedanceCapabilityProfile(state.settings), speech: speechCapabilities(await hasSpeechKey(), state.settings), deterministicEdit: { ffmpeg: true, concat: true, subtitles: true, audioPreservation: true }, unavailable: ["voice cloning", "managed music generation", "3D scene editing", "professional NLE project export"] });
 });
+
+server.registerTool("drama_request_speech_job", {
+  description: "Prepare exactly one pending ASR or TTS request. ASR uses a version-bound library audio/video segment (default 5 seconds); TTS uses up to 500 characters and a stock voice. No paid call. Requires the optional locally configured Doubao Speech key; otherwise use Seedance native sound and manual listening, not fake transcription.",
+  inputSchema: { projectId: z.string(), creationId: z.string().optional(), mode: z.enum(["asr", "tts"]), assetId: z.string().optional(), startSeconds: z.number().min(0).optional(), durationSeconds: z.number().min(0.2).max(120).optional(), text: z.string().min(1).max(500).optional(), expectedText: z.string().max(8000).optional() }
+}, async input => result({ job: await requestSpeechJob(input) }));
+
+server.registerTool("drama_authorize_speech_job", {
+  description: "Execute one frozen speech request automatically by default; in explicitly selected manual mode require trusted human confirmation. No automatic retry or extra calls. Query drama_get_speech_job for actual outcome. Transcripts are review evidence, never automatic quality passes or approved memory.",
+  inputSchema: { jobId: z.string() }
+}, async ({ jobId }) => result({ job: await authorizeSpeechJob(jobId, request => server.server.elicitInput(request), { background: true }) }));
+
+server.registerTool("drama_get_speech_job", {
+  description: "Read speech approval/call status, exact input/output versions, transcript and media evidence. For TTS, inspect the audio asset and explicitly bind its assetId as sourceAudioAssetId when revising the shot; never automatically replace approved audio.",
+  inputSchema: { jobId: z.string() }
+}, async ({ jobId }) => result({ job: await getSpeechJob(jobId) }));
+
+server.registerTool("drama_get_background_status", {
+  description: "Read owned background task counts and bounded failure codes. No task is started or cancelled.", inputSchema: {}
+}, async () => result(backgroundJobStatus()));
+
+server.registerTool("drama_import_asset", {
+  description: "Copy an explicit local media/document file into the project library with stable identity and content hash. Never uploads externally.",
+  inputSchema: { projectId: z.string(), localPath: z.string(), folderId: z.string().optional(), creationId: z.string().optional() }
+}, async ({ projectId, localPath, ...options }) => result({ asset: await importLocalAsset(projectId, localPath, options) }));
+
+server.registerTool("drama_create_asset_folder", {
+  description: "Create a library folder for original sources, references or production media. No model call.",
+  inputSchema: { projectId: z.string(), name: z.string().min(1).max(120), parentId: z.string().nullable().optional() }
+}, async ({ projectId, name, parentId }) => result({ folder: await createAssetFolder(projectId, name, parentId || null) }));
+
+server.registerTool("drama_inspect_asset", {
+  description: "Read a registered image/video/audio version, verify its bytes and Seedance constraints, prepare video frames and WAV listening evidence. Open/play the returned files before claiming semantic understanding; technical scans are not a quality verdict.",
+  inputSchema: { projectId: z.string(), assetId: z.string(), preparePlayback: z.boolean().optional() }
+}, async ({ projectId, assetId, ...options }) => result({ evidence: await inspectAsset(projectId, assetId, options) }));
+
+server.registerTool("drama_prepare_reference_asset", {
+  description: "Locally trim/transcode an existing library asset to MP4/PNG/WAV or extract audio from video. Creates a separate derived asset with source hash and time range; never edits the original or automatically changes an approved binding. Bind the returned asset only after checking compatibility.",
+  inputSchema: { projectId: z.string(), assetId: z.string(), kind: z.enum(["image", "video", "audio"]).optional(), startSeconds: z.number().min(0).optional(), durationSeconds: z.number().min(2).max(30).optional(), folderId: z.string().optional() }
+}, async ({ projectId, assetId, ...options }) => result(await prepareReferenceAsset(projectId, assetId, options)));
+
+server.registerTool("drama_read_memory_source", {
+  description: "Read library MD/TXT/CSV/JSON/DOCX as untrusted source text with a version hash for grounded memory extraction.",
+  inputSchema: { projectId: z.string(), assetId: z.string(), offset: z.number().int().min(0).optional(), maxChars: z.number().int().min(1).max(50000).optional() }
+}, async ({ projectId, assetId, ...options }) => result(await readMemorySource(projectId, assetId, options)));
+
+server.registerTool("drama_extract_memory_candidates", {
+  description: "Persist Codex-extracted claims only as candidates after checking exact quotations against a registered source version. Provenance is not truth; user approval is still mandatory before production.",
+  inputSchema: { projectId: z.string(), sourceAssetId: z.string(), scope: z.enum(["series", "volume", "creation"]), volumeId: z.string().optional(), creationId: z.string().optional(),
+    proposals: z.array(z.object({ title: z.string().min(1).max(500), content: z.string().min(1).max(4000), quote: z.string().min(4).max(4000), stableKey: z.string().max(500).optional(), kind: z.enum(["canon", "decision", "constraint", "continuity", "summary", "unresolved"]), tags: z.array(z.string()).max(30).optional() })).min(1).max(30) }
+}, async ({ projectId, sourceAssetId, proposals, ...options }) => result(await extractMemoryCandidates(projectId, sourceAssetId, proposals, options)));
+
+server.registerTool("drama_search_memory", {
+  description: "Search approved latest memory versions using Chinese/English terms and bounded source excerpts. Strictly scoped to series + current volume + current creation; candidates and unrelated scopes never enter results.",
+  inputSchema: { projectId: z.string(), query: z.string().min(1).max(1000), creationId: z.string().optional(), volumeId: z.string().optional(), maxTokens: z.number().int().min(0).max(10000).optional() }
+}, async ({ projectId, ...options }) => result(await searchProjectMemory(projectId, options)));
 
 server.registerTool("drama_route_skills", {
   description: "Automatically identify and load the most relevant OpenDramaFlow creative skills for a user request. Call this before planning any image, video, drama, ad, MV, explainer, dubbing or editing task so the user never has to choose skills manually.",
@@ -82,7 +153,7 @@ server.registerTool("drama_route_skills", {
 });
 
 server.registerTool("drama_list_skills", {
-  description: "List all Codex-adapted MiniMax creative skills available in OpenDramaFlow without loading their full instructions.",
+  description: "List all OpenDramaFlow creative skills available in Codex without loading their full instructions.",
   inputSchema: {}
 }, async () => {
   const skills = await listSkills();
@@ -153,7 +224,17 @@ server.registerTool("drama_upsert_memory", {
 server.registerTool("drama_review_memory", {
   description: "Explicitly approve, supersede or disable one exact candidate memory version. Only approved memory enters future context packs and paid approval snapshots.",
   inputSchema: { projectId: z.string(), memoryId: z.string().min(1).max(160), version: z.number().int().positive(), status: z.enum(["approved", "superseded", "disabled"]), notes: z.string().max(1000).optional() }
-}, async ({ projectId, memoryId, version, status, notes }) => result({ memory: await reviewMemory(projectId, memoryId, version, status, notes || "") }));
+}, async ({ projectId, memoryId, version, status, notes }) => {
+  if (status === "approved") {
+    const memory = (await readState()).projects.find(item => item.id === projectId)?.memories?.find(item => item.id === memoryId && item.version === version);
+    if (!memory) throw new Error("MEMORY_NOT_FOUND");
+    const response = await server.server.elicitInput({ mode: "form", message: `批准这条候选进入生产记忆？${memory.title}（v${version} / ${memory.scope}）\n${memory.content}\n批准后会影响后续生产，已有待执行审批可能失效。`, requestedSchema: { type: "object", properties: { confirm: { type: "boolean", title: "批准这条设定", default: false } }, required: ["confirm"] } });
+    if (response.action !== "accept" || response.content?.confirm !== true) return result({ status: "candidate", message: "未批准，未写入生产记忆。" });
+    const current = (await readState()).projects.find(item => item.id === projectId)?.memories?.find(item => item.id === memoryId && item.version === version);
+    if (JSON.stringify(current) !== JSON.stringify(memory)) throw new Error("MEMORY_CHANGED_DURING_CONFIRMATION");
+  }
+  return result({ memory: await reviewMemory(projectId, memoryId, version, status, notes || "") });
+});
 
 server.registerTool("drama_get_context_pack", {
   description: "Build a deterministic token-bounded context pack from approved current-creation, current-volume and series memory. Other projects, volumes and creation pages are strictly excluded.",
@@ -205,11 +286,15 @@ server.registerTool("drama_update_plan", {
       audioMode: z.enum(["provider-native", "source-asset", "post", "none"]).optional(),
       continuityFromShotId: z.string().max(80).nullable().optional(),
       continuityConstraints: z.array(z.string().max(300)).max(30).optional(), negativeConstraints: z.array(z.string().max(300)).max(30).optional(), qualityRisks: z.array(z.string().max(300)).max(30).optional(),
-      imagePrompt: z.string().max(3000).optional(), videoPrompt: z.string().max(3000).optional(), videoInputMode: z.literal("image-to-video").optional(),
+      imagePrompt: z.string().max(3000).optional(), videoPrompt: z.string().max(3000).optional(), videoInputMode: z.enum(VIDEO_INPUT_MODES).optional(),
+      mediaReferences: z.array(z.object({ assetId: z.string().max(120), role: z.enum(Object.keys(MEDIA_ROLES)), version: z.number().int().positive().optional() })).max(50).optional(),
+      videoParameters: z.object({ ratio: z.enum(["16:9", "4:3", "1:1", "3:4", "9:16", "21:9", "adaptive"]).optional(), resolution: z.enum(["480p", "720p"]).optional() }).strict().optional(),
+      continuation: z.object({ shotId: z.string().max(80), source: z.enum(["last-frame", "video"]) }).nullable().optional(),
+      edit: z.object({ startSeconds: z.number().min(0), endSeconds: z.number().positive(), instruction: z.string().min(1).max(1500), preserve: z.array(z.string().max(300)).max(30).optional() }).nullable().optional(),
       action: z.string().max(1200).optional(), subtitle: z.string().optional(), audio: z.string().max(1000).optional(),
       generationMode: z.enum(["auto", "seedance", "static-motion", "uploaded-video"]).optional(),
       sourceVideoAssetId: z.string().max(120).optional(), sourceAudioAssetId: z.string().max(120).optional(),
-      referenceAssetIds: z.array(z.string()).max(20).optional(),
+      referenceAssetIds: z.array(z.string()).max(30).optional(),
       acceptanceCriteria: z.array(z.string().max(300)).max(20).optional()
     })).max(300).optional()
   }
@@ -221,10 +306,12 @@ server.registerTool("drama_request_paid_batch", {
 }, async ({ projectId, ...limits }) => result({ approval: await createApproval(projectId, limits) }));
 
 server.registerTool("drama_authorize_and_start_paid_batch", {
-  description: "Ask the human for a trusted MCP confirmation, then atomically approve and start exactly one paid batch. Never call this as a substitute for user consent; the server itself presents the frozen scope and cost caps.",
+  description: "Atomically start one frozen, capped batch for the user's task. Automatic policy (default) needs no product popup; explicitly selected manual policy requires trusted MCP confirmation. Does not bypass Codex host permissions, input hashes, budgets or duplicate-call protection.",
   inputSchema: { approvalId: z.string() }
 }, async ({ approvalId }) => {
   const summary = await getApprovalSummary(approvalId);
+  if (summary.executionMode === "automatic") return result({ approvalId, executionMode: "automatic", job: await authorizeAndStartPipeline(approvalId, { method: "automatic-policy", action: "start" }) });
+  if (executionMode((await readState()).settings) !== "manual") throw new Error("EXECUTION_MODE_CHANGED_PREPARE_NEW_SCOPE");
   const referenceSummary = summary.inputAssets.length
     ? summary.inputAssets.slice(0, 8).map(item => `${item.shotId}:${item.assetId}@v${item.version}`).join("、")
     : "无已锁定参考图（缺图镜头会按所选图片能力生成）";
@@ -235,7 +322,7 @@ server.registerTool("drama_authorize_and_start_paid_batch", {
   try {
     elicited = await server.server.elicitInput({
       mode: "form",
-      message: `确认启动真实模型批次？项目：${summary.projectTitle}；目标：${summary.objective || "未填写"}；方案修订：v${summary.planRevision}；镜头：${summary.shotCount}；最多图片调用：${summary.maxImageCalls}（${imageProviderSummary}）；最多视频调用：${summary.maxVideoCalls}（${summary.model || "未配置"}）；画幅/清晰度：${summary.ratio || "未配置"} / ${summary.resolution || "未配置"}；生成音频：${summary.generateAudio ? "是" : "否"}；水印：${summary.watermark ? "是" : "否"}；参考素材：${referenceSummary}；${summary.warning}`,
+      message: `确认启动真实模型批次？项目：${summary.projectTitle}；目标：${summary.objective || "未填写"}；方案修订：v${summary.planRevision}；镜头：${summary.shotCount}；最多图片调用：${summary.maxImageCalls}（${imageProviderSummary}）；最多视频调用：${summary.maxVideoCalls}（${summary.model || "未配置"}）；逐镜头模式/时长/参数/声音/输入角色：${JSON.stringify(summary.videoRequests)}；水印：${summary.watermark ? "是" : "否"}；参考素材：${referenceSummary}；${summary.warning}`,
       requestedSchema: {
         type: "object",
         properties: {
@@ -251,7 +338,7 @@ server.registerTool("drama_authorize_and_start_paid_batch", {
     const approval = await decideApproval(approvalId, "rejected", { method: "mcp-elicitation", action: "decline" });
     return result({ approval, job: null });
   }
-  if (elicited.action !== "accept" || elicited.content?.confirm !== true) return result({ approval: summary, job: null, status: "pending", message: "用户未确认，批次保持待审批且没有产生模型调用。" });
+  if (!confirmationOutcome(elicited).confirmed) return result({ approval: summary, job: null, status: "pending", confirmation: confirmationOutcome(elicited), message: "未收到有效确认，批次保持待审批且没有产生模型调用。" });
   return result({ approvalId, job: await authorizeAndStartPipeline(approvalId, { method: "mcp-elicitation", action: "accept" }) });
 });
 
@@ -296,7 +383,7 @@ server.registerTool("drama_attach_image_remote_url", {
 }, async ({ taskId, remoteUrl }) => result({ task: await attachTaskRemoteUrl(taskId, remoteUrl) }));
 
 server.registerTool("drama_prepare_quality_evidence", {
-  description: "Extract a deterministic start/middle/end and shot-boundary JPEG evidence pack from the current rendered MP4. This prepares evidence only and never claims that visual review passed.",
+  description: "Prepare current MP4 review evidence: frames, shot spans, full-video playback path, WAV listening track and freeze/black/silence signals. Read temporal.requirements; actually play/listen before recording each observation. No automatic semantic acceptance.",
   inputSchema: { projectId: z.string(), creationId: z.string().nullable().optional(), outputId: z.string() }
 }, async ({ projectId, creationId, outputId }) => result({ evidence: await prepareQualityEvidence(projectId, creationId || null, outputId) }));
 
@@ -307,6 +394,10 @@ server.registerTool("drama_record_quality_review", {
     checks: z.object({ visual: z.enum(["passed", "failed"]), continuity: z.enum(["passed", "failed", "not-applicable"]), subtitles: z.enum(["passed", "failed", "not-applicable"]), audio: z.enum(["passed", "failed", "not-applicable"]), brandAccuracy: z.enum(["passed", "failed", "not-applicable"]) }),
     criteriaResults: z.array(z.object({ criterion: z.string().min(1).max(500), status: z.enum(["passed", "failed", "not-applicable"]), evidence: z.string().max(2000) })).max(200).optional(),
     inspectedFrameSha256s: z.array(z.string().regex(/^[a-f0-9]{64}$/)).min(1).max(25),
+    playbackSourceSha256: z.string().regex(/^[a-f0-9]{64}$/),
+    listenedAudioSha256: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+    observations: z.array(z.object({ shotId: z.string(), start: z.number().min(0), end: z.number().positive(), notes: z.string().min(1).max(2000),
+      motion: z.enum(["passed", "failed", "not-applicable"]), identity: z.enum(["passed", "failed", "not-applicable"]), continuity: z.enum(["passed", "failed", "not-applicable"]), audio: z.enum(["passed", "failed", "not-applicable"]), dialogue: z.enum(["passed", "failed", "not-applicable"]), subtitles: z.enum(["passed", "failed", "not-applicable"]), editPreservation: z.enum(["passed", "failed", "not-applicable"]), heardDialogue: z.string().max(2000).optional(), observedSubtitles: z.string().max(2000).optional() })).max(500),
     notes: z.string().min(1).max(5000)
   }
 }, async ({ projectId, creationId, outputId, ...review }) => result({ review: await recordQualityReview(projectId, creationId || null, outputId, review) }));
@@ -319,11 +410,19 @@ server.registerTool("drama_finalize_delivery", {
 const transport = new StdioServerTransport();
 await server.connect(transport);
 
-function closeOwnedWorkbench() {
+async function closeOwnedWorkbench() {
+  stopBackgroundJobs();
+  await drainBackgroundJobs();
   if (ownedWorkbenchServer?.listening) ownedWorkbenchServer.close();
   closeAssetBridge();
 }
 
-process.stdin.once("end", closeOwnedWorkbench);
-process.once("SIGINT", closeOwnedWorkbench);
-process.once("SIGTERM", closeOwnedWorkbench);
+let closing = false;
+function shutdown() {
+  if (closing) return;
+  closing = true;
+  void closeOwnedWorkbench().catch(() => { process.exitCode = 1; });
+}
+process.stdin.once("end", shutdown);
+process.once("SIGINT", shutdown);
+process.once("SIGTERM", shutdown);

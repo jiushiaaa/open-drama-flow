@@ -1,0 +1,5 @@
+name: backrooms-dreamcore
+name-cn: "后室梦核"
+summary-cn: "把人物、宠物、物体或场景参考转为后室/梦核空间叙事；适用于诡异熟悉感、循环空间与环境氛围创作。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

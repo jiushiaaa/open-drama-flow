@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:clip-studio-craft，根据我提供的素材与要求完成剪辑判断与精修，并核验所需工具与交付结果。"
+  short_description: "对现有视频时间线做节奏、剪切、转场、字幕、颜色和速度判断；适用于已经进入剪辑阶段的项目。"
+  display_name: "剪辑判断与精修"

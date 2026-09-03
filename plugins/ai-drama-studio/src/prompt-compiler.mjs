@@ -1,13 +1,14 @@
 import { createHash } from "node:crypto";
+import { shotInputMode, validateSeedanceRequest, MEDIA_ROLES } from "./seedance-contract.mjs";
 
-export const PROMPT_COMPILER_VERSION = "shot-prompt-compiler/2";
+export const PROMPT_COMPILER_VERSION = "shot-prompt-compiler/3";
 
 const PROMPT_LIMIT = 3000;
 const SOURCE_PROMPT_LIMIT = 30000;
 const supportedContractVersions = new Set([1, 2]);
 const supportedModes = new Set(["auto", "seedance", "static-motion", "uploaded-video"]);
 const supportedAudioModes = new Set(["none", "provider-native", "source-asset", "post"]);
-const supportedReferenceRoles = new Set(["first-frame", "subject", "scene", "style"]);
+const supportedReferenceRoles = new Set(["first-frame", "subject", "scene", "style", ...Object.keys(MEDIA_ROLES)]);
 const supportedImageProviders = new Set(["codex-imagegen", "ark-seedream"]);
 
 function cleanText(value) {
@@ -120,6 +121,10 @@ export function normalizeShotContract(shot = {}) {
     legacyPrompt: text(shot.prompt, SOURCE_PROMPT_LIMIT),
     promptContractVersion: exactEnumValue(shot.promptContractVersion, 1),
     generationMode: exactEnumValue(shot.generationMode, "auto"),
+    videoInputMode: shotInputMode(shot),
+    videoParameters: shot.videoParameters || {},
+    edit: shot.edit || null,
+    continuation: shot.continuation || null,
     duration: Number(shot.duration ?? 0)
   };
 }
@@ -239,7 +244,7 @@ function normalizeInputAssetBinding(inputAssetBinding) {
     if (!isSha256(upstreamRequestDigest)) errors.push({ code: "VIDEO_UPSTREAM_DIGEST_INVALID", field: "inputAssetBinding.upstreamRequestDigest" });
     return {
       provided: true,
-      binding: errors.length ? null : { source: "upstream-image-request", referenceRole, upstreamRequestDigest: upstreamRequestDigest.toLowerCase() },
+      binding: errors.length ? null : { source: inputAssetBinding.source || "upstream-image-request", referenceRole, upstreamRequestDigest: upstreamRequestDigest.toLowerCase(), ...(inputAssetBinding.upstreamShotId ? { upstreamShotId: inputAssetBinding.upstreamShotId, result: inputAssetBinding.result } : {}) },
       errors
     };
   }
@@ -250,7 +255,7 @@ function normalizeInputAssetBinding(inputAssetBinding) {
   if (!assetId) errors.push({ code: "VIDEO_INPUT_ASSET_ID_REQUIRED", field: "inputAssetBinding.assetId" });
   if (!Number.isInteger(version) || version < 1) errors.push({ code: "VIDEO_INPUT_ASSET_VERSION_REQUIRED", field: "inputAssetBinding.version" });
   if (!isSha256(sha256)) errors.push({ code: "VIDEO_INPUT_ASSET_HASH_REQUIRED", field: "inputAssetBinding.sha256" });
-  if (kind !== "image") errors.push({ code: "VIDEO_INPUT_ASSET_KIND_INVALID", field: "inputAssetBinding.kind" });
+  if (kind !== (MEDIA_ROLES[referenceRole] || "image")) errors.push({ code: "VIDEO_INPUT_ASSET_KIND_INVALID", field: "inputAssetBinding.kind" });
   return {
     provided: true,
     binding: errors.length ? null : compactObject({
@@ -315,20 +320,23 @@ function imageRequestFor(contract, settings, prompt) {
   };
 }
 
-function videoRequestFor(contract, settings, prompt, inputBinding) {
+function videoRequestFor(contract, settings, prompt, inputBindings) {
+  const nativeAudio = contract.audioModeDeclared ? contract.audioMode === "provider-native" : settings.generateAudio === true;
+  const operationPrompt = contract.videoInputMode === "video-extend" ? "延长参考视频，承接参考视频结束时的动作与声音；输出后续的新内容。 " : contract.videoInputMode === "video-edit" ? "编辑参考视频，保留未指定修改的内容。 " : "";
+  const editPrompt = contract.edit ? ` 仅修改 ${contract.edit.startSeconds}–${contract.edit.endSeconds} 秒：${contract.edit.instruction}。保持：${(contract.edit.preserve || []).join("；")}。` : "";
   return {
     kind: "seedance-video",
     model: text(settings.seedanceModel, 160),
-    prompt,
-    inputMode: "image-to-video",
-    inputs: inputBinding ? [{ ...inputBinding, providerRole: "reference_image" }] : [],
+    prompt: operationPrompt + prompt + editPrompt,
+    inputMode: contract.videoInputMode,
+    inputs: inputBindings.map(binding => ({ ...binding, providerRole: binding.referenceRole === "first-frame" ? "first_frame" : MEDIA_ROLES[binding.referenceRole] ? binding.referenceRole : "reference_image" })),
     parameters: compactObject({
-      ratio: text(settings.ratio, 20),
+      ratio: text(contract.videoParameters.ratio || settings.ratio, 20),
       duration: contract.duration,
       watermark: settings.watermark === true,
       return_last_frame: true,
-      resolution: text(settings.resolution, 30),
-      generate_audio: settings.generateAudio === true ? true : null
+      resolution: text(contract.videoParameters.resolution || settings.resolution, 30),
+      generate_audio: nativeAudio
     })
   };
 }
@@ -343,13 +351,15 @@ function promptTruncationWarning(field, compilation) {
   };
 }
 
-export function compileShotRequests({ shot = {}, settings = {}, inputAssetBinding = null, videoInputMode = null } = {}) {
+export function compileShotRequests({ shot = {}, settings = {}, inputAssetBinding = null, inputAssetBindings = null, videoInputMode = null } = {}) {
   const validation = validateShotContract(shot);
   const contract = validation.contract;
+  contract.videoInputMode = videoInputMode || contract.videoInputMode;
   const videoGenerationRequired = ["auto", "seedance"].includes(contract.generationMode);
-  const imageGenerationApplicable = contract.generationMode !== "uploaded-video";
-  const suppliedBinding = normalizeInputAssetBinding(inputAssetBinding);
-  const imageGenerationRequired = imageGenerationApplicable && suppliedBinding.binding?.source !== "asset";
+  const imageGenerationApplicable = contract.generationMode === "static-motion" || (contract.generationMode !== "uploaded-video" && contract.videoInputMode === "image-to-video" && !contract.continuation);
+  const suppliedBindings = (inputAssetBindings || (inputAssetBinding ? [inputAssetBinding] : [])).map(normalizeInputAssetBinding);
+  const suppliedBinding = suppliedBindings[0] || normalizeInputAssetBinding(null);
+  const imageGenerationRequired = imageGenerationApplicable && !suppliedBindings.some(value => value.binding?.source === "asset");
   const nativeAudio = contract.audioMode === "provider-native"
     || (contract.promptContractVersion === 1 && !contract.audioModeDeclared && settings.generateAudio === true);
 
@@ -359,17 +369,21 @@ export function compileShotRequests({ shot = {}, settings = {}, inputAssetBindin
   const effectiveBinding = suppliedBinding.binding || (!suppliedBinding.provided && imageRequestDigest
     ? { source: "upstream-image-request", referenceRole: "first-frame", upstreamRequestDigest: imageRequestDigest }
     : null);
+  const effectiveBindings = suppliedBindings.length ? suppliedBindings.map(value => value.binding).filter(Boolean) : effectiveBinding ? [effectiveBinding] : [];
   const videoCompilation = compileVideoPrompt(contract, {
-    motionFirst: effectiveBinding?.referenceRole === "first-frame",
+    motionFirst: ["first-frame", "first_frame"].includes(effectiveBinding?.referenceRole),
     nativeAudio
   });
   const videoRequest = videoGenerationRequired
-    ? videoRequestFor(contract, settings, videoCompilation.prompt, effectiveBinding)
+    ? videoRequestFor(contract, settings, videoCompilation.prompt, effectiveBindings)
     : null;
 
   const errors = [...validation.errors];
   const warnings = [...validation.warnings];
-  const capabilityErrors = [...suppliedBinding.errors];
+  const capabilityErrors = suppliedBindings.flatMap(value => value.errors);
+  for (const key of Object.keys(contract.videoParameters)) {
+    if (!["ratio", "resolution"].includes(key)) capabilityErrors.push({ code: "SEEDANCE_PARAMETER_UNSUPPORTED", field: `videoParameters.${key}` });
+  }
   if (imageCompilation.truncated) warnings.push(promptTruncationWarning("imagePrompt", imageCompilation));
   if (videoCompilation.truncated) warnings.push(promptTruncationWarning("videoPrompt", videoCompilation));
 
@@ -379,14 +393,8 @@ export function compileShotRequests({ shot = {}, settings = {}, inputAssetBindin
     capabilityErrors.push({ code: "VIDEO_UPSTREAM_DIGEST_MISMATCH", field: "inputAssetBinding.upstreamRequestDigest" });
   }
   if (videoGenerationRequired) {
-    if (videoInputMode !== "image-to-video") capabilityErrors.push({ code: videoInputMode ? "VIDEO_INPUT_MODE_UNSUPPORTED" : "VIDEO_INPUT_MODE_REQUIRED", field: "videoInputMode" });
-    if (!effectiveBinding) capabilityErrors.push({ code: "VIDEO_INPUT_BINDING_REQUIRED", field: "inputAssetBinding" });
     if (!text(settings.seedanceModel, 160)) capabilityErrors.push({ code: "SEEDANCE_MODEL_REQUIRED", field: "settings.seedanceModel" });
-    if (!Number.isInteger(contract.duration) || contract.duration < 4 || contract.duration > 15) capabilityErrors.push({ code: "SEEDANCE_DURATION_UNSUPPORTED", field: "duration", minimum: 4, maximum: 15, integerSeconds: true });
-    if (!text(settings.ratio, 20)) capabilityErrors.push({ code: "SEEDANCE_RATIO_REQUIRED", field: "settings.ratio" });
-    if (!text(settings.resolution, 30)) capabilityErrors.push({ code: "SEEDANCE_RESOLUTION_REQUIRED", field: "settings.resolution" });
-    if (contract.promptContractVersion === 2 && contract.audioMode === "provider-native" && settings.generateAudio !== true) capabilityErrors.push({ code: "SEEDANCE_NATIVE_AUDIO_DISABLED", field: "settings.generateAudio" });
-    if (contract.promptContractVersion === 2 && contract.audioMode !== "provider-native" && settings.generateAudio === true) capabilityErrors.push({ code: "SEEDANCE_NATIVE_AUDIO_UNREQUESTED", field: "settings.generateAudio" });
+    capabilityErrors.push(...validateSeedanceRequest({ ...videoRequest, edit: contract.edit }));
   }
   if (imageGenerationRequired && !imageCompilation.prompt) errors.push({ code: "SHOT_IMAGE_PROMPT_REQUIRED", field: "imagePrompt" });
   if (videoGenerationRequired && !videoCompilation.prompt) errors.push({ code: "SHOT_VIDEO_PROMPT_REQUIRED", field: "videoPrompt" });

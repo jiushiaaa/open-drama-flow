@@ -1,4 +1,8 @@
 import { compileShotRequests } from "./prompt-compiler.mjs";
+import { seedanceProfile, shotInputMode, shotMediaReferences, shotNeedsImage, MEDIA_ROLES, validateSeedanceRequest } from "./seedance-contract.mjs";
+import { validatePlaybackReview } from "./quality-contract.mjs";
+import { hasExecutionAuthorization } from "./execution-policy.mjs";
+import { canonicalSkillNames } from "./skill-identifiers.mjs";
 
 const allowedAspectRatios = new Set(["16:9", "4:3", "1:1", "3:4", "9:16", "21:9", "adaptive"]);
 const allowedGenerationModes = new Set(["auto", "seedance", "static-motion", "uploaded-video"]);
@@ -63,6 +67,9 @@ function expectedQualityCriteria(brief, shots) {
 }
 
 function completeReviewEvidence(review, brief, shots, output) {
+  if (output?.reviewEvidence?.temporal) {
+    try { validatePlaybackReview(review || {}, output.reviewEvidence, shots, "passed"); } catch { return false; }
+  }
   const checks = review?.checks || {};
   const criteriaByName = new Map((review?.criteriaResults || []).map(item => [text(item?.criterion, 500), item]));
   const criteriaComplete = expectedQualityCriteria(brief, shots).every(criterion => {
@@ -171,18 +178,24 @@ export function normalizeProductionBrief(input = {}, current = {}, fallback = {}
 }
 
 export function getSeedanceCapabilityProfile(settings = {}) {
+  const profile = seedanceProfile(settings.seedanceModel);
   return {
     provider: "volcengine-ark",
     model: text(settings.seedanceModel, 120),
-    adapter: "OpenDramaFlow single-reference image-to-video",
-    acceptedInputs: ["text", "image_url:https", "image_url:asset"],
-    maxReferenceImages: 1,
-    supportedRatios: [text(settings.ratio, 20) || "9:16"],
-    supportedResolutions: [text(settings.resolution, 30) || "720p"],
-    duration: { integerSeconds: true, minimum: 4, maximum: 15 },
+    adapter: "OpenDramaFlow multimodal Seedance",
+    acceptedInputs: ["text", "image_url:https", "image_url:asset", "video_url:https", "video_url:asset", "audio_url:https", "audio_url:asset"],
+    modes: profile.modes,
+    maxReferenceImages: profile.maxImages,
+    maxReferenceVideos: profile.maxVideos,
+    maxReferenceAudios: profile.maxAudios,
+    supportedRatios: profile.ratios,
+    supportedResolutions: profile.resolutions,
+    duration: { integerSeconds: true, minimum: profile.minimum, maximum: profile.maximum },
     generateAudio: Boolean(settings.generateAudio),
     returnsLastFrame: true,
-    unsupportedByAdapter: ["multiple reference inputs", "reference video", "reference audio", "first/last-frame continuation chain", "in-place video editing"]
+    accountVerified: false,
+    editing: "prompt-guided temporal edits; new version, not destructive in-place or guaranteed pixel masks",
+    unsupportedByAdapter: ["guaranteed pixel-exact masked edits", "managed voice cloning", "professional NLE project export"]
   };
 }
 
@@ -219,7 +232,14 @@ export function validateSeedanceShots(shots = [], settings = {}, brief = {}) {
       errors.push({ shotId: shot.id, code: "SEEDANCE_REFERENCE_LIMIT_EXCEEDED", message: `镜头 ${shot.id} 提供了 ${referenceAssetIds.length} 张参考图，当前适配器最多支持 ${profile.maxReferenceImages} 张` });
     }
     const duration = Number(shot.duration || 0);
-    const compiled = compileShotRequests({ shot, settings, inputAssetBinding: referenceAssetIds.length ? { assetId: referenceAssetIds[0] } : null, videoInputMode: "image-to-video" });
+    const compiled = compileShotRequests({ shot, settings, inputAssetBinding: referenceAssetIds.length ? { assetId: referenceAssetIds[0] } : null, videoInputMode: shotInputMode(shot) });
+    const inputs = shotMediaReferences(shot).map(ref => ({ role: ref.role }));
+    if (shot.continuation) inputs.unshift({ role: shot.continuation.source === "last-frame" ? "first_frame" : "reference_video" });
+    if (!inputs.length && shotInputMode(shot) === "image-to-video") inputs.push({ role: "first_frame" }); // Missing image is a separate gate.
+    for (const issue of validateSeedanceRequest({ model: settings.seedanceModel, inputMode: shotInputMode(shot), inputs, parameters: compiled.requests.video?.parameters, edit: shot.edit })) {
+      errors.push({ shotId: shot.id, ...issue, message: `镜头 ${shot.id} 输入合同不兼容：${issue.code}` });
+    }
+    for (const issue of compiled.validation.capabilityErrors.filter(item => item.code === "SEEDANCE_PARAMETER_UNSUPPORTED")) errors.push({ shotId: shot.id, ...issue });
     if (!text(compiled.videoPrompt, 3000)) errors.push({ shotId: shot.id, code: "SHOT_VIDEO_PROMPT_REQUIRED", message: "Seedance 镜头缺少可执行的运动 Prompt" });
     for (const issue of compiled.validation.errors) {
       errors.push({ shotId: shot.id, code: issue.code, message: `镜头 ${shot.id} 的结构化镜头合同不完整：${issue.field}` });
@@ -236,8 +256,8 @@ export function validateSeedanceShots(shots = [], settings = {}, brief = {}) {
       errors.push({ shotId: shot.id, code: "SEEDANCE_DURATION_EXCEEDS_ADAPTER", message: `镜头 ${shot.id} 为 ${duration}s，当前适配器单次最多 ${profile.duration.maximum}s；请拆分镜头` });
       continue;
     }
-    const providerDuration = Math.min(profile.duration.maximum, Math.max(profile.duration.minimum, Math.round(duration)));
-    if (providerDuration !== duration) warnings.push({ shotId: shot.id, code: "SEEDANCE_DURATION_WILL_BE_TRIMMED", message: `供应商将生成 ${providerDuration}s，本地剪辑按 ${duration}s 使用` });
+    const providerDuration = duration;
+    if (!Number.isInteger(duration) || duration < profile.duration.minimum) errors.push({ shotId: shot.id, code: "SEEDANCE_DURATION_UNSUPPORTED", message: "生成时长必须为模型范围内整数；不自动改写已审批时长" });
     normalized.push({ shotId: shot.id, requestedDuration: duration, providerDuration });
   }
   return { compatible: errors.length === 0, profile, errors, warnings, normalized };
@@ -268,7 +288,7 @@ export function buildProductionStatus(state, projectId, creationId = null, optio
     objective: production.logline || production.script?.premise || "",
     aspectRatio: state.settings?.ratio || "9:16"
   });
-  const selectedSkills = Array.isArray(production.selectedSkills) ? production.selectedSkills.filter(Boolean) : [];
+  const selectedSkills = canonicalSkillNames(Array.isArray(production.selectedSkills) ? production.selectedSkills : []);
   const planRevision = Number(production.planRevision || 0);
   const projectAssets = project.assets || [];
   const harnessProfile = getProductionHarnessProfile();
@@ -291,6 +311,7 @@ export function buildProductionStatus(state, projectId, creationId = null, optio
       expectedVersion: null
     }))),
     ...shots.flatMap(shot => [
+      ...(shot.mediaReferences || []).map(ref => ({ assetId: ref.assetId, ownerType: "shot-media", ownerId: shot.id, expectedKind: MEDIA_ROLES[ref.role], expectedVersion: ref.version || null })),
       ...(shot.referenceAssetIds || []).map(assetId => ({ assetId: text(assetId, 120), ownerType: "shot-reference", ownerId: text(shot.id, 80) || null, expectedKind: "image", expectedVersion: null })),
       shot.sourceVideoAssetId ? { assetId: text(shot.sourceVideoAssetId, 120), ownerType: "shot-video", ownerId: text(shot.id, 80) || null, expectedKind: "video", expectedVersion: null } : null,
       shot.sourceAudioAssetId ? { assetId: text(shot.sourceAudioAssetId, 120), ownerType: "shot-audio", ownerId: text(shot.id, 80) || null, expectedKind: "audio", expectedVersion: null } : null
@@ -343,11 +364,11 @@ export function buildProductionStatus(state, projectId, creationId = null, optio
     .find(Boolean) || scopedAssets.find(asset => asset.shotId === shot.id && asset.kind === "image") || null;
   const compiledShots = shots.map(shot => ({
     shot,
-    compiled: compileShotRequests({ shot, settings: state.settings || {}, inputAssetBinding: imageFor(shot) ? { assetId: imageFor(shot).id } : null, videoInputMode: ["static-motion", "uploaded-video"].includes(shot.generationMode) ? null : "image-to-video" })
+    compiled: compileShotRequests({ shot, settings: state.settings || {}, inputAssetBinding: imageFor(shot) ? { assetId: imageFor(shot).id } : null, videoInputMode: shotInputMode(shot) })
   }));
   const missingPrompts = compiledShots.filter(({ shot, compiled }) => {
     if (shot.generationMode === "uploaded-video") return false;
-    if (!compiled.imagePrompt && !shot.clipPath) return true;
+    if (shotNeedsImage(shot) && !compiled.imagePrompt && !shot.clipPath) return true;
     return !["static-motion"].includes(shot.generationMode) && !shot.clipPath && !compiled.videoPrompt;
   }).map(({ shot }) => shot.id);
   const invalidPromptContracts = compiledShots
@@ -366,7 +387,7 @@ export function buildProductionStatus(state, projectId, creationId = null, optio
   const invalidGenerationModes = shots.filter(shot => !allowedGenerationModes.has(shot.generationMode || "auto")).map(shot => shot.id || "unknown");
   const invalidShotDurations = shots.filter(shot => !Number.isFinite(Number(shot.duration)) || Number(shot.duration) <= 0).map(shot => shot.id);
   const invalidShots = [...new Set([...invalidShotIds, ...duplicateShotIds, ...invalidGenerationModes, ...invalidShotDurations, ...invalidPromptContracts.map(item => item.shotId)])];
-  const missingImages = shots.filter(shot => !shot.clipPath && shot.generationMode !== "uploaded-video" && !imageFor(shot)).map(shot => shot.id);
+  const missingImages = shots.filter(shot => !shot.clipPath && shotNeedsImage(shot) && !imageFor(shot) && !shotMediaReferences(shot).some(ref => MEDIA_ROLES[ref.role] === "image")).map(shot => shot.id);
   const missingUploadedVideos = shots.filter(shot => !shot.clipPath && shot.generationMode === "uploaded-video" && !sourceVideoFor(shot)).map(shot => shot.id);
   const missingGeneratedVideos = shots.filter(shot => !shot.clipPath && !["static-motion", "uploaded-video"].includes(shot.generationMode)).map(shot => shot.id);
   const missingVideos = [...missingUploadedVideos, ...missingGeneratedVideos];
@@ -377,7 +398,8 @@ export function buildProductionStatus(state, projectId, creationId = null, optio
   const currentJobs = (state.jobs || []).filter(item => item.projectId === projectId && (item.creationId || null) === scopeCreationId && Number(item.planRevision || 0) === planRevision);
   const boundJob = approval?.jobId ? currentJobs.find(item => item.id === approval.jobId && item.approvalId === approval.id && item.type === "real-pipeline") || null : null;
   const job = boundJob;
-  const approvalAuthorized = Boolean(approval?.authorization?.method === "mcp-elicitation");
+  const approvalAuthorized = hasExecutionAuthorization(approval);
+  const automaticScope = approval?.scopeSnapshot?.executionMode === "automatic";
   const approvalTrusted = Boolean(approvalScopeRecorded && approval?.status === "approved" && approvalAuthorized && boundJob);
   const localRenderJob = latestFor(currentJobs, item => item.type === "local-render" && ["queued", "running"].includes(item.status));
   const shotVersions = new Map(shots.map(shot => [shot.id, Number(shot.promptVersion || 1)]));
@@ -414,6 +436,7 @@ export function buildProductionStatus(state, projectId, creationId = null, optio
   const durationMismatch = Boolean(shots.length && brief.durationSeconds > 0 && (invalidShotDurations.length || Math.abs(plannedDurationSeconds - brief.durationSeconds) > 0.01));
   const currentProviderCalls = (state.providerCalls || []).filter(call =>
     call.projectId === projectId
+    && call.provider !== "doubao-speech"
     && (call.creationId || null) === scopeCreationId
     && Number(call.planRevision || 0) === planRevision
   );
@@ -428,7 +451,7 @@ export function buildProductionStatus(state, projectId, creationId = null, optio
     const videoAsset = scopedAssets.find(asset => asset.kind === "video" && asset.shotId === shot.id && hasVerifiedAudio(asset));
     const providerAudio = currentProviderCalls.some(call => call.shotId === shot.id && call.status === "succeeded" && hasVerifiedAudio(call));
     const clipAudio = hasVerifiedAudio(shot);
-    const modelWillGenerateAudio = audioMode === "provider-native" && Boolean(state.settings?.generateAudio) && !shot.clipPath && !["static-motion", "uploaded-video"].includes(shot.generationMode);
+    const modelWillGenerateAudio = audioMode === "provider-native" && !shot.clipPath && !["static-motion", "uploaded-video"].includes(shot.generationMode);
     return !sourceAudio && !videoAsset && !providerAudio && !clipAudio && !modelWillGenerateAudio;
   }).map(shot => shot.id);
   const reviewEvidence = output?.reviewEvidence || null;
@@ -446,7 +469,7 @@ export function buildProductionStatus(state, projectId, creationId = null, optio
     statusNode("references", "素材引用", referencesValid ? "completed" : "blocked", referencesValid ? `${referenceRequests.length} 个显式素材引用有效` : `${referenceIssues.length} 个素材引用不存在、失效、类型错误或版本不匹配`, ["storyboard"]),
     statusNode("capability", "模型能力检查", seedance.compatible ? "completed" : "blocked", seedance.compatible ? "当前 Seedance 适配器参数兼容" : `${seedance.errors.length} 个能力冲突`, ["references"]),
     statusNode("images", "图片与参考素材", !missingImages.length ? "completed" : (queuedTasks.length || claimedTasks.length ? "waiting" : "blocked"), `${missingImages.length} 个镜头缺图`, ["references"]),
-    statusNode("approval", "付费调用审批", !paidWorkMissing ? "skipped" : approvalTrusted ? "completed" : approvalScopeRecorded && approval?.status === "pending" ? "waiting" : "blocked", approvalTrusted ? `审批 ${approval.id}: 已记录可信用户确认` : approvalCurrent ? `审批 ${approval.id}: ${approval.status}，范围快照或用户授权证据不完整` : approval ? `审批 ${approval.id} 已因方案修订失效` : "尚无覆盖缺失镜头的审批", ["capability"]),
+    statusNode("approval", "模型调用范围", !paidWorkMissing ? "skipped" : approvalTrusted ? "completed" : approvalScopeRecorded && approval?.status === "pending" ? "waiting" : "blocked", approvalTrusted ? `范围 ${approval.id}: ${automaticScope ? "已记录自动执行策略" : "已记录可信用户确认"}` : approvalCurrent ? `范围 ${approval.id}: ${approval.status}，等待按执行策略启动` : approval ? `范围 ${approval.id} 已因方案修订失效` : "尚无覆盖缺失镜头的调用范围", ["capability"]),
     statusNode("videos", "视频镜头", !missingVideos.length ? "completed" : job && ["queued", "running", "waiting"].includes(job.status) ? "waiting" : "blocked", `${missingVideos.length} 个镜头缺少视频`, ["images", "approval"]),
     statusNode("audio", "声音素材", !missingAudio.length ? "completed" : "blocked", missingAudio.length ? `${missingAudio.length} 个镜头只有声音意图，没有可验证音源` : "声音要求已有来源或生成模式证据", ["videos"]),
     statusNode("edit", "确定性剪辑", outputIsLocalMp4 ? "completed" : localRenderJob ? "waiting" : "blocked", output?.localPath ? `当前输出不是可交付的本地 MP4：${output.localPath}` : localRenderJob ? `本地剪辑任务 ${localRenderJob.id} 正在 ${localRenderJob.stage}` : "尚无本地成片", ["videos", "audio"]),
@@ -469,7 +492,7 @@ export function buildProductionStatus(state, projectId, creationId = null, optio
   else if (!shots.length || missingPrompts.length || invalidShots.length || durationMismatch) action("drama_update_plan", invalidShotIds.length ? "为每个镜头补齐唯一稳定 ID" : duplicateShotIds.length ? `修正重复镜头 ID：${duplicateShotIds.join("、")}` : invalidGenerationModes.length ? `修正非法生成模式：${invalidGenerationModes.join("、")}` : invalidShotDurations.length ? `修正无效镜头时长：${invalidShotDurations.join("、")}` : invalidPromptContracts.length ? `补齐结构化镜头合同：${invalidPromptContracts.map(item => `${item.shotId}(${item.errors.map(error => error.field).join("、")})`).join("；")}` : durationMismatch ? `调整镜头时长：当前合计 ${plannedDurationSeconds}s，简报要求 ${brief.durationSeconds}s` : "补齐有序镜头合同，并分别编译静帧 Prompt 与运动 Prompt", "agent", scopeInput());
   else if (!referencesValid) action("drama_update_plan", `修复当前镜头、角色或创作页的显式素材引用：${referenceIssues.map(issue => `${issue.assetId}(${issue.code})`).join("、")}`, "agent", scopeInput());
   else if (missingUploadedVideos.length) action("drama_update_plan", `为 uploaded-video 镜头绑定真实视频素材：${missingUploadedVideos.join("、")}`, "agent", scopeInput());
-  else if (missingAudio.length) action("drama_update_plan", `为镜头绑定 sourceAudioAssetId、提供已证实带音频的视频，或选择真实可用的音频生成模式：${missingAudio.join("、")}`, "agent", scopeInput());
+  else if (missingAudio.length) action("drama_update_plan", `为镜头绑定 sourceAudioAssetId、提供已证实带音频的视频，或选择真实可用的音频生成模式：${missingAudio.join("、")}。${options.credentialStatus?.speechConfigured ? "如需独立旁白/补录，可先用 drama_request_speech_job 准备 TTS，按执行模式调用并试听后显式绑定返回资产。" : "未配置豆包语音时，优先将有声音意图的待生成镜头明确设为 provider-native；无声镜头保持 none。不能把无声的既有视频标成有声。"}`, "agent", scopeInput());
   else if (!seedance.compatible) action("drama_update_plan", seedance.errors.map(item => item.message).join("；"), "agent", scopeInput());
   else if (queuedTasks.length) action("drama_claim_image_task", `领取 ${queuedTasks.length} 个排队中的 Codex Image Gen 任务`, "agent", { taskId: queuedTasks[0].id });
   else if (claimedTasks.length) action("drama_complete_image_task", `生成、目检并回填已领取任务 ${claimedTasks[0].id}`, "agent-after-visual-inspection", { taskId: claimedTasks[0].id });
@@ -481,14 +504,14 @@ export function buildProductionStatus(state, projectId, creationId = null, optio
     else action("wait", "供应商提交结果不确定且没有可查询任务 ID；必须先由用户或供应商侧核对，禁止自动重提", "user-provider-reconciliation", { jobId: job.id });
   }
   else if (!job && currentProviderCalls.some(call => ["submitting", "uncertain", "submitted", "running", "processing", "download-pending"].includes(call.status))) action("wait", "存在未绑定到可恢复任务的供应商调用；必须先人工核对供应商状态，禁止自动重提", "user-provider-reconciliation", scopeInput());
-  else if (job?.status === "waiting" && job.stage === "approval-cap") action("drama_request_paid_batch", "原审批调用上限已用尽，剩余工作需要新的用户批准", "agent", scopeInput());
+  else if (job?.status === "waiting" && job.stage === "approval-cap") action("wait", "本次调用上限已用尽；需要用户追加额度，不能用新批次绕过上限", "user-budget-change", scopeInput());
   else if (paidWorkMissing) {
     if (!approvalCurrent || !["pending", "approved"].includes(approval?.status)) action("drama_request_paid_batch", "为当前缺失的真实图片和视频创建费用上限明确的审批", "agent", scopeInput());
     else if (!approvalScopeRecorded) action("drama_request_paid_batch", "现有审批缺少完整范围摘要，不能执行；请为当前修订创建新审批", "agent", scopeInput());
-    else if (approval.status === "pending") action("drama_authorize_and_start_paid_batch", "由 MCP 直接向用户展示冻结范围与调用上限，并在确认后原子启动", "user-explicit-approval", { approvalId: approval.id });
+    else if (approval.status === "pending") action("drama_authorize_and_start_paid_batch", automaticScope ? "自动启动已冻结范围，保留调用上限和版本追踪" : "由 MCP 直接向用户展示冻结范围与调用上限，并在确认后原子启动", automaticScope ? "agent" : "user-explicit-approval", { approvalId: approval.id });
     else if (!approvalTrusted && approval.jobId) action("drama_request_paid_batch", "现有任务没有可信用户授权证据，不能续跑；请创建新的明确范围审批", "agent", scopeInput());
-    else if (!approvalTrusted) action("drama_authorize_and_start_paid_batch", "审批状态缺少可信用户确认；必须重新向用户展示冻结范围并确认", "user-explicit-approval", { approvalId: approval.id });
-    else if (approval.status === "approved" && !approval.jobId) action("drama_authorize_and_start_paid_batch", "审批记录尚未绑定任务，需要重新进行可信确认", "user-explicit-approval", { approvalId: approval.id });
+    else if (!approvalTrusted) action("drama_authorize_and_start_paid_batch", "按冻结的执行模式验证授权并启动", automaticScope ? "agent" : "user-explicit-approval", { approvalId: approval.id });
+    else if (approval.status === "approved" && !approval.jobId) action("drama_authorize_and_start_paid_batch", "范围记录尚未绑定任务，按执行模式验证后启动", automaticScope ? "agent" : "user-explicit-approval", { approvalId: approval.id });
     else if (job?.status === "queued") action("drama_resume_paid_batch", "任务仍在排队态；安全启动或接管同一个已审批任务", "agent", { jobId: job.id });
     else if (leaseActive) action("wait", `任务 ${job.id} 正在 ${job.stage}`, "system", { jobId: job.id });
     else if (job?.status === "running") action("drama_resume_paid_batch", "任务租约已过期或缺失；安全接管并续跑原任务", "agent", { jobId: job.id });

@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:cinematic-title-sequence，根据我提供的素材与要求完成电影片头与概念预告，并核验所需工具与交付结果。"
+  short_description: "制作电影/剧集片头、卡司序列或单条影视概念预告；适用于片名、人物行动和悬念收束。"
+  display_name: "电影片头与概念预告"

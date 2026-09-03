@@ -151,7 +151,7 @@
 
       <section id="project-guide-view" class="route-view document-view" hidden>
         <p class="eyebrow">OFFICIAL GUIDE</p><h1>项目新手指引</h1><p>这是独立的正式操作说明，不会写入项目数据。</p>
-        <ol class="guide-steps"><li><span>01</span><div><strong>创建项目</strong><p>在项目库建立空白项目，只保存你主动创建的内容。</p></div></li><li><span>02</span><div><strong>让 Codex 编剧与拆镜</strong><p>说明题材、时长、风格和受众，Codex 自动匹配 Skill 并建立创作页。</p></div></li><li><span>03</span><div><strong>批准真实生成批次</strong><p>图片资产完成后自动建立临时 HTTPS 参考地址，再提交 Seedance。</p></div></li><li><span>04</span><div><strong>剪辑与验片</strong><p>成片由本机 FFmpeg 合成真实镜头、声音和字幕，可下载继续精修。</p></div></li></ol>
+<ol class="guide-steps"><li><span>01</span><div><strong>创建项目</strong><p>在项目库建立空白项目，只保存你主动创建的内容。</p></div></li><li><span>02</span><div><strong>让 Codex 规划创作</strong><p>说明目标、风格和参考资料，Codex 自动匹配 Skill；只制作图片时，无需先建立视频分镜或填写视频时长。</p></div></li><li><span>03</span><div><strong>内置工具生成候选图</strong><p>默认使用当前 Codex 会话的内置图片生成工具（image2），在会话里展示候选图，暂不写入项目素材库。只有内置工具不可用、执行失败或你明确指定时，才启用项目图片模型，并说明原因。</p></div></li><li><span>04</span><div><strong>你验收通过后才入库</strong><p>确认具体候选图后，Codex 才将该版本写回指定项目素材库。未通过的图不入库、不替换母版，也不用作 Seedance 参考；全访问权限和自动执行不等于自动验收。</p></div></li><li><span>05</span><div><strong>生成视频、剪辑与验片</strong><p>使用已验收素材按限定批次调用 Seedance，再由本机 FFmpeg 合成真实镜头、声音和字幕，核验后交付成片。</p></div></li></ol>
       </section>
     </main>
   </div>
@@ -169,12 +169,23 @@
   <dialog id="delete-dialog" class="modal danger-modal"><form id="delete-form" method="dialog"><header><div><p class="eyebrow">LOCAL DELETE</p><h2 id="delete-dialog-title">删除项目？</h2></div><button class="icon-button" type="button" data-close-dialog="delete-dialog"><img src="/icons/x.svg" alt=""></button></header><p id="delete-dialog-copy"><span id="delete-target-kind">项目</span>删除后无法从界面恢复，项目删除会保留在本机回收目录。确认删除“<strong id="delete-target-name"></strong>”吗？</p><footer><button class="button subtle" type="button" data-close-dialog="delete-dialog">取消</button><button id="delete-submit" class="button danger" type="submit">删除项目</button></footer></form></dialog>
 
   <dialog id="settings-dialog" class="modal settings-modal">
-    <form id="credential-form" method="dialog">
-      <header><div><p class="eyebrow">LOCAL CREDENTIAL VAULT</p><h2>API Key</h2></div><button class="icon-button" type="button" data-close-dialog="settings-dialog"><img src="/icons/x.svg" alt=""></button></header>
-      <section class="credential-block"><div class="credential-heading"><div><strong>火山方舟 API Key</strong><p>经 Windows DPAPI 加密，重启后继续使用；页面不会回显明文。</p></div><span id="credential-chip" class="status-chip">读取中</span></div><label for="ark-api-key">API Key</label><div class="secret-field"><input id="ark-api-key" type="password" autocomplete="off" spellcheck="false"><button id="secret-toggle" class="button subtle" type="button">显示</button></div><p id="ark-key-error" class="field-error"></p></section>
-      <section class="capability-block"><strong>系统已接入</strong><dl><div><dt>图片资产</dt><dd>Codex Image Gen</dd></div><div><dt>视频镜头</dt><dd>Seedance 2.5</dd></div><div><dt>本地图片桥</dt><dd id="bridge-status">按需自动连接</dd></div></dl></section>
-      <footer><button id="clear-key-button" class="button danger-ghost" type="button">清除密钥</button><span></span><button class="button subtle" type="button" data-close-dialog="settings-dialog">取消</button><button id="save-key-button" class="button primary" type="submit">安全保存</button></footer>
-    </form>
+    <div class="credential-vault">
+      <header><div><p class="eyebrow">LOCAL CREDENTIAL VAULT</p><h2>API Key</h2></div><button class="icon-button" type="button" aria-label="关闭 API Key 配置" data-close-dialog="settings-dialog"><img src="/icons/x.svg" alt=""></button></header>
+      <p class="vault-description">密钥仅在本机经 Windows DPAPI 加密保存，不进入项目或 Git 仓库。更换电脑后请重新配置。</p>
+      <form id="credential-form" class="credential-block">
+        <div class="credential-heading"><div><strong>火山方舟 API Key</strong><p>用于 Seedance 2.5 视频与原生声音生成。</p></div><span id="credential-chip" class="status-chip">读取中</span></div>
+        <label for="ark-api-key">方舟密钥</label><div class="secret-field"><input id="ark-api-key" type="password" autocomplete="off" spellcheck="false" minlength="12" maxlength="512" required><button id="secret-toggle" class="button subtle" type="button" aria-label="显示方舟密钥" aria-pressed="false">显示</button></div><p id="ark-key-error" class="field-error" role="status"></p>
+        <div class="credential-actions"><button id="clear-key-button" class="button danger-ghost" type="button">清除方舟密钥</button><button id="save-key-button" class="button primary" type="submit">安全保存</button></div>
+      </form>
+      <form id="speech-credential-form" class="credential-block">
+        <div class="credential-heading"><div><strong>豆包语音 API Key <span class="optional-label">可选</span></strong><p>用于 ASR 对白识别与 TTS 旁白 / 补录；不是方舟密钥。</p></div><span id="speech-credential-chip" class="status-chip">读取中</span></div>
+        <label for="speech-api-key">豆包语音密钥</label><div class="secret-field"><input id="speech-api-key" type="password" autocomplete="off" spellcheck="false" minlength="12" maxlength="512" required><button id="speech-secret-toggle" class="button subtle" type="button" aria-label="显示豆包语音密钥" aria-pressed="false">显示</button></div><p id="speech-key-error" class="field-error" role="status"></p>
+        <div class="credential-actions"><button id="clear-speech-key-button" class="button danger-ghost" type="button">清除语音密钥</button><button id="save-speech-key-button" class="button primary" type="submit">安全保存</button></div>
+      </form>
+      <section class="capability-block sound-strategy" aria-live="polite"><strong id="sound-strategy-title">声音方案</strong><p id="sound-strategy-description"></p><small>保存不等于服务开通；ASR / TTS 默认自动执行，仅在你要求时逐项审批。未配置时无需补填，也不影响 Seedance 原生声音创作。</small></section>
+      <section class="capability-block"><dl><div><dt>图片资产</dt><dd>Codex Image Gen</dd></div><div><dt>视频镜头</dt><dd>Seedance 2.5</dd></div><div><dt>素材桥</dt><dd id="bridge-status">按需自动连接</dd></div></dl></section>
+      <footer><button class="button subtle" type="button" data-close-dialog="settings-dialog">完成</button></footer>
+    </div>
   </dialog>
 
   <dialog id="skill-import-dialog" class="modal skill-import-modal">
@@ -199,11 +210,11 @@
 
   <div id="asset-context-menu" class="popover asset-context-menu" role="menu" hidden></div>
 
-  <dialog id="asset-preview-dialog" class="modal asset-preview-dialog">
+  <dialog id="asset-preview-dialog" class="modal asset-preview-dialog" aria-labelledby="asset-preview-title">
     <div class="asset-preview-shell">
-      <header><div><p id="asset-preview-type" class="eyebrow">PROJECT ASSET</p><h2 id="asset-preview-title"></h2><p id="asset-preview-meta"></p></div><button class="icon-button" type="button" data-close-dialog="asset-preview-dialog"><img src="/icons/x.svg" alt=""></button></header>
+      <header><div><p id="asset-preview-type" class="eyebrow">PROJECT ASSET</p><h2 id="asset-preview-title"></h2><p id="asset-preview-meta"></p></div><button class="icon-button" type="button" aria-label="关闭预览" data-close-dialog="asset-preview-dialog"><img src="/icons/x.svg" alt=""></button></header>
       <div id="asset-preview-body" class="asset-preview-body"></div>
-      <footer><button id="asset-preview-reveal" class="button subtle" type="button">在文件资源管理器中打开</button><span></span><button id="asset-preview-edit" class="button primary" type="button">编辑文档</button><button class="button subtle" type="button" data-close-dialog="asset-preview-dialog">关闭</button></footer>
+      <footer><button id="asset-preview-reveal" class="button subtle" type="button">在文件资源管理器中打开</button><a id="asset-preview-original" class="button subtle" target="_blank" rel="noopener noreferrer">查看原文件</a><span></span><button id="asset-preview-edit" class="button primary" type="button">编辑文档</button><button class="button subtle" type="button" data-close-dialog="asset-preview-dialog">关闭</button></footer>
     </div>
   </dialog>
 

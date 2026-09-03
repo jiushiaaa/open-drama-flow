@@ -1,0 +1,5 @@
+name: transcript-broll-planner
+name-cn: "口播 B-roll 规划"
+summary-cn: "把逐字稿、配音稿或数据讲稿转为可审片 B-roll 计划；适用于知识、产品和市场分析视频。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

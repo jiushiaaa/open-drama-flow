@@ -1,0 +1,5 @@
+name: brand-promo-video-generator
+name-cn: "品牌宣传短片"
+summary-cn: "根据已授权品牌、产品、网站或 App 资料制作宣传短片；适用于新品发布、官网展示和社交推广。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

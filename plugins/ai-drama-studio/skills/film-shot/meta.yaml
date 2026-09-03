@@ -1,0 +1,5 @@
+name: film-shot
+name-cn: "电影镜头与角色卡"
+summary-cn: "用专业景别、机位、光影和调度设计影视镜头与角色卡；适用于漫剧分镜和角色一致性。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

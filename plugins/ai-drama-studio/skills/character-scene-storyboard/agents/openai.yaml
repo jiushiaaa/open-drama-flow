@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:character-scene-storyboard，根据我提供的素材与要求完成角色场景分镜板，并核验所需工具与交付结果。"
+  short_description: "把角色参考、场景设定和剧情节点整合为专业角色场景分镜文档；适用于影视与漫剧前期设定。"
+  display_name: "角色场景分镜板"

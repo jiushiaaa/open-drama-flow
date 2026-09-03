@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:live-sketch-motion，根据我提供的素材与要求完成实景手绘显影，并核验所需工具与交付结果。"
+  short_description: "把实景照片或文字场景制作成笔尖同步手绘显影视频；适用于彩铅、蜡笔和空间遮挡效果。"
+  display_name: "实景手绘显影"

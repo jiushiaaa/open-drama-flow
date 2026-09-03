@@ -12,6 +12,8 @@ Never treat a prior chat promise, UI label or old revision as stronger than curr
 
 ## Production graph
 
+The graph below is for video production. Standalone image assets follow [the image asset contract](image-asset-contract.md), not a fabricated MP4/duration gate. Read approved source context without activating unapproved memory. For every generated image, the user must accept the displayed candidate before library import, task completion or downstream reference use; this result gate remains in automatic mode.
+
 The required control loop is:
 
 1. Read `drama_get_state`, then fetch `drama_get_context_pack` for the exact active project, creation and purpose.
@@ -20,7 +22,7 @@ The required control loop is:
 4. Persist the complete brief, subjects/characters/products and ordered shot contracts.
 5. Call `drama_get_next_actions` and resolve its blockers in order.
 6. Freeze a paid-batch scope with `drama_request_paid_batch` when model calls are required.
-7. Ask through `drama_authorize_and_start_paid_batch`; only an accepted MCP form starts paid work.
+7. Execute through `drama_authorize_and_start_paid_batch`: automatic by default, trusted MCP form only in explicitly selected manual mode. Respect independent host permissions in both modes.
 8. Generate, inspect, complete/fail tasks, poll recorded provider tasks, and resume the same waiting job when necessary.
 9. Render deterministic inputs locally with `drama_render_project`.
 10. Run `drama_prepare_quality_evidence`, open and inspect its returned frames, and perform applicable full-video motion/audio/subtitle checks.
@@ -38,8 +40,8 @@ Call `drama_get_next_actions` again after any plan edit, completed task, resumed
 | Route | selected professional Skills persisted on the current plan revision |
 | Subjects | stable, version-aware character/product/scene definitions and source asset bindings |
 | Storyboard | ordered shot ID, duration, framing, action, generation mode, prompt, audio/subtitle intent and acceptance criteria |
-| Approval | immutable scope snapshot plus call caps, confirmed through the MCP form |
-| Images | inspected local master bound to the approved shot revision; provider-accessible reference only when needed downstream |
+| Execution | immutable scope snapshot plus call caps and recorded automatic-policy authorization, or trusted MCP confirmation in manual mode |
+| Images | displayed candidate explicitly accepted by the user, then imported with exact hash/version and shot binding; Agent inspection alone is insufficient |
 | Videos | recorded provider task reached `succeeded` and its local clip exists, or an explicit uploaded/static-motion treatment applies |
 | Edit | ordered input bindings and successful FFmpeg/local render job |
 | Review evidence | evidence pack generated for the current rendered bytes and every returned frame actually opened |

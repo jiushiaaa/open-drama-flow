@@ -1,0 +1,5 @@
+name: paper-collage-explainer-generator
+name-cn: "纸拼贴讲解动画"
+summary-cn: "用半调纸拼贴与触感停格表现观点、故事或知识点；适用于口播配画和抽象概念解释。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

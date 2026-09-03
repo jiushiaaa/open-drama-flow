@@ -3,6 +3,8 @@ import { createReadStream } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";
+import { scanMediaSignals, extractReviewAudio } from "./media-inspection.mjs";
+import { reviewRequirements } from "./quality-contract.mjs";
 
 const PACK_SCHEMA = "ai-drama-review-evidence/v1";
 const MANIFEST_NAME = "review-evidence.json";
@@ -232,7 +234,7 @@ async function replaceDirectory(stagingDir, outputDir, hadExistingOutput) {
  * Create an evidence-only JPEG pack for human/Codex inspection. The function
  * deliberately records no automated visual pass/fail decision.
  */
-export async function createReviewEvidencePack({ inputPath, outputDir, shots = [], runner = runProcess } = {}) {
+export async function createReviewEvidencePack({ inputPath, outputDir, shots = [], runner = runProcess, includeTemporal = false } = {}) {
   if (typeof runner !== "function") throw new Error("REVIEW_RUNNER_REQUIRED");
   if (!inputPath) throw new Error("REVIEW_INPUT_PATH_REQUIRED");
   if (!outputDir) throw new Error("REVIEW_OUTPUT_DIR_REQUIRED");
@@ -247,7 +249,7 @@ export async function createReviewEvidencePack({ inputPath, outputDir, shots = [
   const outputState = await outputDirectoryState(resolvedOutput);
   if (!outputState.owned) throw new Error("REVIEW_OUTPUT_DIR_NOT_OWNED");
   const existing = await validExistingPack({ state: outputState, outputDir: resolvedOutput, source, shots });
-  if (existing) return existing;
+  if (existing && !includeTemporal) return existing;
 
   const media = await probeMedia(resolvedInput, runner);
   const framePlan = buildReviewFramePlan(media.duration, shots);
@@ -279,6 +281,14 @@ export async function createReviewEvidencePack({ inputPath, outputDir, shots = [
       });
     }
 
+    let temporal = null;
+    if (includeTemporal) {
+      temporal = { signals: await scanMediaSignals(resolvedInput, media), playbackPath: resolvedInput, requirements: reviewRequirements(shots), audioPlayback: null, semanticReview: "pending-actual-playback" };
+      if (media.audio) {
+        temporal.audioPlayback = await extractReviewAudio(resolvedInput, path.join(stagingDir, "listen.wav"));
+        temporal.audioPlayback.path = path.join(resolvedOutput, "listen.wav");
+      }
+    }
     const afterStat = await fs.stat(resolvedInput);
     if (afterStat.size !== source.bytes || afterStat.mtimeMs !== inputStat.mtimeMs || await digestFile(resolvedInput) !== source.sha256) {
       throw new Error("REVIEW_SOURCE_CHANGED_DURING_EXTRACTION");
@@ -294,6 +304,7 @@ export async function createReviewEvidencePack({ inputPath, outputDir, shots = [
       framePlanDigest: digestJson(framePlan),
       frames
     };
+    if (temporal) manifest.temporal = temporal;
     const manifestTemp = path.join(stagingDir, `${MANIFEST_NAME}.tmp`);
     await fs.writeFile(manifestTemp, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
     await fs.rename(manifestTemp, path.join(stagingDir, MANIFEST_NAME));

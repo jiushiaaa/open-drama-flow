@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:education-studio，根据我提供的素材与要求完成教育内容工作室，并核验所需工具与交付结果。"
+  short_description: "制作课程、知识讲解、练习、讲义和教学视频；适用于明确的教学、学习或评量目标。"
+  display_name: "教育内容工作室"

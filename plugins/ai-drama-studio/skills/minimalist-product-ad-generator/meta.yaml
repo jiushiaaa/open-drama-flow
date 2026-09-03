@@ -1,0 +1,5 @@
+name: minimalist-product-ad-generator
+name-cn: "极简产品广告"
+summary-cn: "把实体产品图制作成留白、细节特写和高质感节奏的极简广告；适用于电商与新品发布。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

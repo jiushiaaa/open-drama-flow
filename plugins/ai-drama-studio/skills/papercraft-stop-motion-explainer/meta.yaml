@@ -1,0 +1,5 @@
+name: papercraft-stop-motion-explainer
+name-cn: "纸艺定格科普"
+summary-cn: "用剪纸、纸雕、立体书或微缩纸艺制作知识讲解；适用于科学、教育与泛知识视频。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:brand-ad，根据我提供的素材与要求完成品牌官方广告，并核验所需工具与交付结果。"
+  short_description: "制作 15 秒内由品牌官方或产品主角表达的轻量广告；适用于材质、工艺、Logo 过程和产品 Hero。"
+  display_name: "品牌官方广告"

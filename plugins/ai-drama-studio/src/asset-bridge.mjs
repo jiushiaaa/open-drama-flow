@@ -9,7 +9,8 @@ import { appendEvent, mutateState, readState } from "./store.mjs";
 
 const bridgeTtlMs = 60 * 60 * 1000;
 const mimeTypes = new Map([
-  [".png", "image/png"], [".jpg", "image/jpeg"], [".jpeg", "image/jpeg"], [".webp", "image/webp"]
+  [".png", "image/png"], [".jpg", "image/jpeg"], [".jpeg", "image/jpeg"], [".webp", "image/webp"],
+  [".mp4", "video/mp4"], [".mov", "video/quicktime"], [".mp3", "audio/mpeg"], [".wav", "audio/wav"]
 ]);
 
 let bridgeServer = null;
@@ -62,15 +63,31 @@ async function bridgeHandler(req, res) {
     const stat = await fsp.stat(filePath);
     const type = mimeTypes.get(path.extname(filePath).toLowerCase());
     if (!type || !stat.isFile()) throw new Error("ASSET_BRIDGE_FILE_UNSUPPORTED");
-    res.writeHead(200, {
+    let start = 0;
+    let end = stat.size - 1;
+    if (req.headers.range) {
+      const match = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range);
+      if (!match || (!match[1] && !match[2])) { res.writeHead(416, { "Content-Range": `bytes */${stat.size}` }); res.end(); return; }
+      start = match[1] ? Number(match[1]) : Math.max(0, stat.size - Number(match[2]));
+      end = match[1] && match[2] ? Math.min(Number(match[2]), stat.size - 1) : stat.size - 1;
+      if (start > end || start >= stat.size) { res.writeHead(416, { "Content-Range": `bytes */${stat.size}` }); res.end(); return; }
+    }
+    res.writeHead(req.headers.range ? 206 : 200, {
       "Content-Type": type,
-      "Content-Length": stat.size,
+      "Content-Length": end - start + 1,
+      "Accept-Ranges": "bytes",
+      ...(req.headers.range ? { "Content-Range": `bytes ${start}-${end}/${stat.size}` } : {}),
       "Cache-Control": "private, max-age=60",
       "X-Content-Type-Options": "nosniff",
       "X-Robots-Tag": "noindex, nofollow, noarchive"
     });
     if (req.method === "HEAD") res.end();
-    else fs.createReadStream(filePath).pipe(res);
+    else {
+      const stream = fs.createReadStream(filePath, { start, end });
+      stream.on("error", () => res.destroy());
+      res.on("close", () => stream.destroy());
+      stream.pipe(res);
+    }
   } catch {
     res.writeHead(404, { "Cache-Control": "no-store" }); res.end();
   }
@@ -225,9 +242,13 @@ export async function ensureAssetRemoteUrl(projectId, assetId) {
   const project = before.projects.find(item => item.id === projectId);
   const asset = project?.assets.find(item => item.id === assetId);
   if (!asset?.localPath) throw new Error("ASSET_BRIDGE_LOCAL_FILE_REQUIRED");
+  if (!mimeTypes.has(path.extname(asset.localPath).toLowerCase())) throw new Error("ASSET_BRIDGE_FILE_UNSUPPORTED");
   if (isSupportedReferenceUrl(asset.remoteUrl) && asset.remoteSource !== "local-bridge") return asset.remoteUrl;
   await fsp.access(safeLocalAssetPath(asset.localPath));
   const baseUrl = await ensureAssetBridgePublicUrl();
+  // Do not revoke a URL that an already submitted task may still be fetching.
+  const current = (await readState()).projects.find(item => item.id === projectId)?.assets.find(item => item.id === assetId);
+  if (current?.bridge?.origin === baseUrl && Date.parse(current.bridge.expiresAt) > Date.now() + 5 * 60 * 1000) return current.remoteUrl;
   const token = randomBytes(32).toString("base64url");
   const expiresAt = new Date(Date.now() + bridgeTtlMs).toISOString();
   const remoteUrl = `${baseUrl}/a/${token}`;
@@ -237,7 +258,7 @@ export async function ensureAssetRemoteUrl(projectId, assetId) {
     target.remoteUrl = remoteUrl;
     target.remoteSource = "local-bridge";
     target.bridge = { token, expiresAt, origin: baseUrl };
-    appendEvent(state, "asset.bridge_ready", "本地图片已获得受控 HTTPS 参考地址", { projectId, assetId, expiresAt });
+    appendEvent(state, "asset.bridge_ready", "本地素材已获得受控 HTTPS 参考地址", { projectId, assetId, expiresAt });
   });
   return remoteUrl;
 }

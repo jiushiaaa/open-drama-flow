@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:vox-style-video-generator，根据我提供的素材与要求完成Vox 风格解释视频，并核验所需工具与交付结果。"
+  short_description: "把知识主题、文章或研究资料转为混合媒介解释视频；适用于短纪录片、教育视频论文和旁白驱动叙事。"
+  display_name: "Vox 风格解释视频"

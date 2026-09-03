@@ -3,6 +3,7 @@ import path from "node:path";
 import AdmZip from "adm-zip";
 import { dataRoot, pluginRoot, userSkillsRoot } from "./config.mjs";
 import { specializedSkills } from "./skill-catalog.mjs";
+import { canonicalSkillName, canonicalSkillFile, migrateSkillSettings } from "./skill-identifiers.mjs";
 
 const builtInSkillsRoot = path.join(pluginRoot, "skills");
 const registryPath = path.join(dataRoot, "skill-registry.json");
@@ -65,7 +66,7 @@ async function readRegistry() {
   await fs.mkdir(userSkillsRoot, { recursive: true });
   try {
     const parsed = JSON.parse(await fs.readFile(registryPath, "utf8"));
-    return { enabled: parsed.enabled || {} };
+    return { ...parsed, enabled: migrateSkillSettings(parsed.enabled || {}) };
   } catch (error) {
     if (error?.code !== "ENOENT") throw error;
     return { enabled: {} };
@@ -126,6 +127,9 @@ async function enumerateFiles(root, current = root, depth = 0) {
 }
 
 export async function getManagedSkill(name, requestedFile = "SKILL.md") {
+  const legacy = name !== canonicalSkillName(name);
+  name = canonicalSkillName(name);
+  if (legacy) requestedFile = canonicalSkillFile(requestedFile);
   const skill = (await listManagedSkills()).find(item => item.name === name);
   if (!skill) throw new Error("SKILL_NOT_FOUND");
   const directory = skillDirectory(skill);
@@ -143,6 +147,7 @@ export async function getManagedSkill(name, requestedFile = "SKILL.md") {
 }
 
 export async function setManagedSkillEnabled(name, enabled) {
+  name = canonicalSkillName(name);
   if (!(await listManagedSkills()).some(item => item.name === name)) throw new Error("SKILL_NOT_FOUND");
   const registry = await readRegistry();
   registry.enabled[name] = Boolean(enabled);
@@ -161,7 +166,7 @@ async function installSkillFiles(files) {
   const skillEntry = files.find(item => item.relative.toLowerCase() === "skill.md");
   if (!skillEntry) throw new Error("SKILL_FILE_REQUIRED");
   const meta = parseFrontmatter(skillEntry.buffer.toString("utf8"));
-  if (builtInCatalog().some(skill => skill.name === meta.name)) throw new Error("SKILL_BUILT_IN_CONFLICT");
+  if (builtInCatalog().some(skill => skill.name === canonicalSkillName(meta.name))) throw new Error("SKILL_BUILT_IN_CONFLICT");
   const destination = path.join(userSkillsRoot, meta.name);
   try { await fs.access(destination); throw new Error("SKILL_ALREADY_EXISTS"); }
   catch (error) { if (error?.message === "SKILL_ALREADY_EXISTS") throw error; if (error?.code !== "ENOENT") throw error; }

@@ -1,0 +1,5 @@
+name: micro-expression-video-generator
+name-cn: "人物微表情表演"
+summary-cn: "把角色图、剧本片段或情绪短语转为微表情表演镜头；适用于克制而复杂的情绪变化。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

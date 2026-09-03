@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:digital-product-promo-generator，根据我提供的素材与要求完成数字产品宣传片，并核验所需工具与交付结果。"
+  short_description: "把真实网页、前端项目、截图或录屏转成数字产品宣传片；适用于功能发布和界面叙事。"
+  display_name: "数字产品宣传片"

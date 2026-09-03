@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:papercraft-stop-motion-explainer，根据我提供的素材与要求完成纸艺定格科普，并核验所需工具与交付结果。"
+  short_description: "用剪纸、纸雕、立体书或微缩纸艺制作知识讲解；适用于科学、教育与泛知识视频。"
+  display_name: "纸艺定格科普"

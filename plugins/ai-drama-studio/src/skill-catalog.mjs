@@ -3,7 +3,6 @@ export const specializedSkills = [
     "slug": "3d-animation-short-generator",
     "label": "3D 动画短片",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "把故事创意制作成连续的风格化 3D 动画短片；适用于角色、场景、镜头和声音需要统一规划的 3D 叙事。",
     "keywords": [
       "3d动画",
@@ -24,7 +23,7 @@ export const specializedSkills = [
       "镜头衔接保留动作方向与空间关系",
       "不把孤立炫技镜头冒充完整短片"
     ],
-    "name": "minimax-3d-animation-short-generator"
+    "name": "3d-animation-short-generator"
   },
   {
     "slug": "backrooms-dreamcore",
@@ -52,13 +51,12 @@ export const specializedSkills = [
       "透视、重复结构和光源逻辑统一",
       "避免无意的恐怖血腥化"
     ],
-    "name": "minimax-backrooms-dreamcore"
+    "name": "backrooms-dreamcore"
   },
   {
     "slug": "brand-promo-video-generator",
     "label": "品牌宣传短片",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "根据已授权品牌、产品、网站或 App 资料制作宣传短片；适用于新品发布、官网展示和社交推广。",
     "keywords": [
       "品牌宣传片",
@@ -81,13 +79,12 @@ export const specializedSkills = [
       "每个卖点都有可见证据",
       "不得虚构产品功能或品牌背书"
     ],
-    "name": "minimax-brand-promo-video-generator"
+    "name": "brand-promo-video-generator"
   },
   {
     "slug": "brand-stream-mg",
     "label": "品牌流线 MG",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "把 Logo 与主题词制作成双色霓虹流线 MG 动效；适用于品牌片头、发布预热和标志动效。",
     "keywords": [
       "品牌流线",
@@ -109,7 +106,7 @@ export const specializedSkills = [
       "流线运动有明确起点、汇聚与收束",
       "不让装饰粒子遮挡品牌识别"
     ],
-    "name": "minimax-brand-stream-mg"
+    "name": "brand-stream-mg"
   },
   {
     "slug": "browser-game-demo-maker",
@@ -138,13 +135,12 @@ export const specializedSkills = [
       "角色与关卡状态和真实 Demo 一致",
       "不生成无法在本地页面复现的功能"
     ],
-    "name": "minimax-browser-game-demo-maker"
+    "name": "browser-game-demo-maker"
   },
   {
     "slug": "character-scene-storyboard",
     "label": "角色场景分镜板",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "把角色参考、场景设定和剧情节点整合为专业角色场景分镜文档；适用于影视与漫剧前期设定。",
     "keywords": [
       "角色场景分镜",
@@ -166,13 +162,12 @@ export const specializedSkills = [
       "场景轴线和相对位置可用于后续生成",
       "版面是制作证据而非装饰拼贴"
     ],
-    "name": "minimax-character-scene-storyboard"
+    "name": "character-scene-storyboard"
   },
   {
     "slug": "co-op-game-intro-generator",
     "label": "双人游戏开场",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "制作双人合作游戏主菜单与开场动画；适用于角色卡、装备配置、加载与进入世界的连续演示。",
     "keywords": [
       "双人游戏开场",
@@ -194,13 +189,12 @@ export const specializedSkills = [
       "屏幕文字来自用户输入",
       "UI 状态变化前后可追踪"
     ],
-    "name": "minimax-co-op-game-intro-generator"
+    "name": "co-op-game-intro-generator"
   },
   {
     "slug": "digital-product-promo-generator",
     "label": "数字产品宣传片",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "把真实网页、前端项目、截图或录屏转成数字产品宣传片；适用于功能发布和界面叙事。",
     "keywords": [
       "数字产品宣传片",
@@ -222,13 +216,12 @@ export const specializedSkills = [
       "功能演示顺序与真实产品一致",
       "不虚构不存在的交互或效果"
     ],
-    "name": "minimax-digital-product-promo-generator"
+    "name": "digital-product-promo-generator"
   },
   {
     "slug": "dot-matrix-brand-wordmark-motion",
     "label": "点阵品牌字形动效",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "把已有 Logo、品牌名或标语制作成点阵/字形动态图形；适用于品牌片头和字标展示。",
     "keywords": [
       "点阵品牌",
@@ -250,7 +243,7 @@ export const specializedSkills = [
       "品牌色和背景体系一致",
       "不凭外部知识补全品牌名或 slogan"
     ],
-    "name": "minimax-dot-matrix-brand-wordmark-motion"
+    "name": "dot-matrix-brand-wordmark-motion"
   },
   {
     "slug": "film-reference-prompt-writer",
@@ -278,13 +271,12 @@ export const specializedSkills = [
       "避免只写电影名或空泛高级感",
       "提示词包含主体、镜头、环境、运动与避让项"
     ],
-    "name": "minimax-film-reference-prompt-writer"
+    "name": "film-reference-prompt-writer"
   },
   {
     "slug": "film-shot",
     "label": "电影镜头与角色卡",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "用专业景别、机位、光影和调度设计影视镜头与角色卡；适用于漫剧分镜和角色一致性。",
     "keywords": [
       "电影镜头",
@@ -306,13 +298,12 @@ export const specializedSkills = [
       "镜头设计服务剧情而非堆术语",
       "景别与动作在时长内可执行"
     ],
-    "name": "minimax-film-shot"
+    "name": "film-shot"
   },
   {
     "slug": "fpv-tour-video-generator",
     "label": "FPV 穿越短片",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "基于场景参考规划第一人称 FPV 一镜到底飞行；适用于建筑、文旅、室内与空间展示。",
     "keywords": [
       "fpv",
@@ -335,41 +326,43 @@ export const specializedSkills = [
       "速度变化有呼吸而非全程冲刺",
       "只有真实支持时才安排贴水或穿缝"
     ],
-    "name": "minimax-fpv-tour-video-generator"
+    "name": "fpv-tour-video-generator"
   },
   {
-    "slug": "h3-prompt-expert",
-    "label": "H3 提示词迁移专家",
+    "slug": "seedance-prompt-expert",
+    "label": "Seedance 多模态提示词专家",
+    "routingLabels": [
+      "多模态提示词专家"
+    ],
     "origin": "user",
-    "author": "MiniMax Design",
-    "description": "审阅 MiniMax H3 多模态提示词并迁移为 Seedance 2.5/Codex 工作流；适用于旧 H3 Prompt 或参考素材映射。",
+    "description": "为 Seedance 2.5 编译多图、视频、音频、首尾帧、续写与编辑提示词；适用于输入模式、素材职责和声音约束的专项规划。",
     "keywords": [
-      "h3提示词",
-      "minimax h3",
-      "h3 prompt",
-      "迁移h3",
-      "h3转seedance"
+      "Seedance多模态提示词",
+      "Seedance 2.5提示词",
+      "多参考提示词",
+      "首尾帧提示词",
+      "视频编辑提示词",
+      "续写提示词"
     ],
     "excludes": [
       "完整制片"
     ],
     "focus": [
-      "识别原 H3 输入模式、主体映射和保留项",
-      "将模型专属字段转换为 Seedance 可执行的连续自然语言",
-      "保留参考素材职责、关键帧、对白和编辑意图"
+      "先选正确输入模式，再按 assetId 与版本绑定参考职责",
+      "把导演意图编译为可观察的动作、运镜、终态与声音",
+      "核验首尾帧、编辑范围、延长方式及当前模型参数"
     ],
     "quality": [
-      "不把 H3 私有字段直接发送给 Seedance",
-      "明确指出无法等价迁移的能力",
-      "输出可审阅提示词后再进入付费审批"
+      "不把其他供应商的私有字段发送给 Seedance",
+      "不把参考约束描述成精确锁定或已验证的模型保证",
+      "只写提示词时不生成；制作任务按总控 automatic 执行"
     ],
-    "name": "minimax-h3-prompt-expert"
+    "name": "seedance-prompt-expert"
   },
   {
     "slug": "handdrawn-live-video-generator",
     "label": "手绘实拍融合",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "制作手绘角色与实拍空间发生物理互动的短片；适用于触碰、显形、变形与手持追拍。",
     "keywords": [
       "手绘实拍融合",
@@ -391,13 +384,12 @@ export const specializedSkills = [
       "笔触媒介全程一致",
       "手绘主体转换前后保持身份"
     ],
-    "name": "minimax-handdrawn-live-video-generator"
+    "name": "handdrawn-live-video-generator"
   },
   {
     "slug": "image-remix",
     "label": "图片灵感重混",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "提取参考图的构图、色彩、光影和氛围并生成内容不同的新图；适用于审美迁移而非复制主体。",
     "keywords": [
       "图片重混",
@@ -420,13 +412,12 @@ export const specializedSkills = [
       "新内容与参考图有实质差异",
       "构图、色彩与光线迁移可被解释"
     ],
-    "name": "minimax-image-remix"
+    "name": "image-remix"
   },
   {
     "slug": "ip-toy-grid-motion",
     "label": "IP 潮玩六宫格动态海报",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "把单个 IP 角色转为六宫格静态与动态海报；适用于吉祥物、潮玩和角色宣传。",
     "keywords": [
       "ip六宫格",
@@ -448,13 +439,12 @@ export const specializedSkills = [
       "布局、圆角和背景色不漂移",
       "避免动态阶段新增未确认道具"
     ],
-    "name": "minimax-ip-toy-grid-motion"
+    "name": "ip-toy-grid-motion"
   },
   {
     "slug": "line-doodle-explainer-generator",
     "label": "线条涂鸦科普",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "把科学、人文或课程内容制作成极简线条涂鸦讲解视频；适用于知识点和教育短视频。",
     "keywords": [
       "线条科普",
@@ -476,13 +466,12 @@ export const specializedSkills = [
       "图解与旁白时间对齐",
       "不让装饰动画干扰理解"
     ],
-    "name": "minimax-line-doodle-explainer-generator"
+    "name": "line-doodle-explainer-generator"
   },
   {
     "slug": "lip-product-ad-generator",
     "label": "唇部彩妆广告",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "制作口红、唇釉、唇泥等唇部产品广告；适用于模特、产品静物和质地特写的组合。",
     "keywords": [
       "口红广告",
@@ -505,13 +494,12 @@ export const specializedSkills = [
       "唇妆颜色不在镜头间漂移",
       "不生成不真实的涂抹或吞咽动作"
     ],
-    "name": "minimax-lip-product-ad-generator"
+    "name": "lip-product-ad-generator"
   },
   {
     "slug": "live-sketch-motion",
     "label": "实景手绘显影",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "把实景照片或文字场景制作成笔尖同步手绘显影视频；适用于彩铅、蜡笔和空间遮挡效果。",
     "keywords": [
       "实景手绘显影",
@@ -533,13 +521,12 @@ export const specializedSkills = [
       "笔尖位置与新增笔触一致",
       "主体显影前中后都保持生命感"
     ],
-    "name": "minimax-live-sketch-motion"
+    "name": "live-sketch-motion"
   },
   {
     "slug": "micro-expression-video-generator",
     "label": "人物微表情表演",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "把角色图、剧本片段或情绪短语转为微表情表演镜头；适用于克制而复杂的情绪变化。",
     "keywords": [
       "微表情",
@@ -562,13 +549,12 @@ export const specializedSkills = [
       "避免夸张抽搐或五官漂移",
       "镜头距离足以看清所描述细节"
     ],
-    "name": "minimax-micro-expression-video-generator"
+    "name": "micro-expression-video-generator"
   },
   {
     "slug": "minimalist-product-ad-generator",
     "label": "极简产品广告",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "把实体产品图制作成留白、细节特写和高质感节奏的极简广告；适用于电商与新品发布。",
     "keywords": [
       "极简产品广告",
@@ -593,13 +579,12 @@ export const specializedSkills = [
       "一镜一卖点且文案克制",
       "不以廉价光效掩盖真实材质"
     ],
-    "name": "minimax-minimalist-product-ad-generator"
+    "name": "minimalist-product-ad-generator"
   },
   {
     "slug": "music-video-subtitle-generator",
     "label": "音乐 MV 动态字幕",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "制作随节拍和歌词变化的 AI MV 与空间字幕；适用于音乐视觉、歌词贴字和情绪短片。",
     "keywords": [
       "动态字幕mv",
@@ -621,13 +606,12 @@ export const specializedSkills = [
       "字体运动不遮挡人物关键表演",
       "长作品按真实音乐结构切分而非任意等分"
     ],
-    "name": "minimax-music-video-subtitle-generator"
+    "name": "music-video-subtitle-generator"
   },
   {
     "slug": "paper-collage-explainer-generator",
     "label": "纸拼贴讲解动画",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "用半调纸拼贴与触感停格表现观点、故事或知识点；适用于口播配画和抽象概念解释。",
     "keywords": [
       "纸拼贴讲解",
@@ -649,13 +633,12 @@ export const specializedSkills = [
       "每次运动保留手工停格节奏",
       "默认不加入未要求的复杂字幕系统"
     ],
-    "name": "minimax-paper-collage-explainer-generator"
+    "name": "paper-collage-explainer-generator"
   },
   {
     "slug": "papercraft-stop-motion-explainer",
     "label": "纸艺定格科普",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "用剪纸、纸雕、立体书或微缩纸艺制作知识讲解；适用于科学、教育与泛知识视频。",
     "keywords": [
       "纸艺定格",
@@ -677,13 +660,12 @@ export const specializedSkills = [
       "纸材、切边和层级全片一致",
       "避免出现塑料感或普通 2D 矢量质感"
     ],
-    "name": "minimax-papercraft-stop-motion-explainer"
+    "name": "papercraft-stop-motion-explainer"
   },
   {
     "slug": "poster-motion-generator",
     "label": "海报动态生成",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "把已有海报锁版为文字可读、版式稳定的动态海报；适用于一镜到底的精致动效。",
     "keywords": [
       "动态海报",
@@ -705,13 +687,12 @@ export const specializedSkills = [
       "主体运动不破坏原海报阅读顺序",
       "首尾帧都可作为干净海报使用"
     ],
-    "name": "minimax-poster-motion-generator"
+    "name": "poster-motion-generator"
   },
   {
     "slug": "pov-short-film-generator",
     "label": "第一视角剧情短片",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "制作悬疑、生存、恋爱、职场等题材的沉浸式第一视角剧情短片；适用于眼睛视角叙事。",
     "keywords": [
       "第一视角短片",
@@ -734,13 +715,12 @@ export const specializedSkills = [
       "第一视角相机高度和运动连贯",
       "悬念来自叙事而非无逻辑抖动"
     ],
-    "name": "minimax-pov-short-film-generator"
+    "name": "pov-short-film-generator"
   },
   {
     "slug": "promo-video",
     "label": "产品宣传视频",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "从文本、网页、视频或 PPT 资料制作 Hook—Body—CTA 产品宣传视频；适用于多平台发布。",
     "keywords": [
       "产品宣传片",
@@ -762,13 +742,12 @@ export const specializedSkills = [
       "平台安全区和时长符合目标",
       "不把素材缺口用虚构功能补齐"
     ],
-    "name": "minimax-promo-video"
+    "name": "promo-video"
   },
   {
     "slug": "silkscreen-decorative-illustration-short",
     "label": "丝印装饰插画短片",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "制作高密度装饰线稿、宝石色和丝印质感的插画短片；适用于奢华感创意视觉。",
     "keywords": [
       "丝印插画短片",
@@ -790,19 +769,21 @@ export const specializedSkills = [
       "不引入写实 3D 光泽",
       "局部特写仍能识别关键元素"
     ],
-    "name": "minimax-silkscreen-decorative-illustration-short"
+    "name": "silkscreen-decorative-illustration-short"
   },
   {
     "slug": "skill-creator",
-    "label": "MiniMax Skill 迁移创建",
+    "label": "创作技能编写与迁移",
+    "routingLabels": [
+      "创作工作流迁移创建"
+    ],
     "origin": "user",
-    "author": "MiniMax Design",
-    "description": "把 MiniMax 或其他工作流沉淀为项目内 Codex Skill；适用于新增、迁移或改造可重复创作能力。",
+    "description": "把已有创作工作流沉淀为项目内 Codex Skill；适用于新增、迁移或改造可重复创作能力。",
     "keywords": [
       "迁移skill",
       "创建创作skill",
       "复刻skill",
-      "minimax skill",
+      "工作流转skill",
       "沉淀技能"
     ],
     "excludes": [
@@ -818,13 +799,12 @@ export const specializedSkills = [
       "描述足够窄以避免误触发",
       "引用文件和脚本必须真实存在"
     ],
-    "name": "minimax-skill-creator"
+    "name": "skill-creator"
   },
   {
     "slug": "skill-reviewer",
     "label": "创作 Skill 审查",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "只读审查项目内创作 Skill 的结构、触发描述和工作流质量；适用于发布或安装前验收。",
     "keywords": [
       "审查skill",
@@ -849,13 +829,12 @@ export const specializedSkills = [
       "区分结构合规与实际行为质量",
       "不把关键词堆叠当成可靠路由"
     ],
-    "name": "minimax-skill-reviewer"
+    "name": "skill-reviewer"
   },
   {
     "slug": "suspense-title-sequence-generator",
     "label": "悬疑电影片头",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "制作悬疑、犯罪、黑色电影或间谍风标题序列；适用于片名、卡司和复古节拍动效。",
     "keywords": [
       "悬疑片头",
@@ -877,13 +856,12 @@ export const specializedSkills = [
       "人物使用已授权或原创身份",
       "片头是标题序列而非剧情摘要混剪"
     ],
-    "name": "minimax-suspense-title-sequence-generator"
+    "name": "suspense-title-sequence-generator"
   },
   {
     "slug": "transcript-broll-planner",
     "label": "口播 B-roll 规划",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "把逐字稿、配音稿或数据讲稿转为可审片 B-roll 计划；适用于知识、产品和市场分析视频。",
     "keywords": [
       "b-roll规划",
@@ -905,13 +883,12 @@ export const specializedSkills = [
       "B-roll 不重复旁白字面而是补充理解",
       "时间码与语速可落地"
     ],
-    "name": "minimax-transcript-broll-planner"
+    "name": "transcript-broll-planner"
   },
   {
     "slug": "video-prompting",
     "label": "视频模型提示词",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "为 Seedance 等指定图像/视频模型撰写或优化提示词；适用于单镜头、参考图、关键帧和编辑指令。",
     "keywords": [
       "视频提示词",
@@ -933,13 +910,12 @@ export const specializedSkills = [
       "一个提示词对应一个清晰镜头合同",
       "先审阅提示词，再触发真实调用"
     ],
-    "name": "minimax-video-prompting"
+    "name": "video-prompting"
   },
   {
     "slug": "vox-style-video-generator",
     "label": "Vox 风格解释视频",
     "origin": "user",
-    "author": "MiniMax Design",
     "description": "把知识主题、文章或研究资料转为混合媒介解释视频；适用于短纪录片、教育视频论文和旁白驱动叙事。",
     "keywords": [
       "vox风格",
@@ -961,13 +937,12 @@ export const specializedSkills = [
       "视觉隐喻不篡改论点",
       "旁白、字幕、BGM 和镜头节奏一致"
     ],
-    "name": "minimax-vox-style-video-generator"
+    "name": "vox-style-video-generator"
   },
   {
     "slug": "anime-game-pv",
     "label": "二次元漫画/游戏 PV",
     "origin": "core",
-    "author": "MiniMax Design",
     "description": "制作 15 秒内二次元漫画、游戏角色、群像或世界观 PV；适用于角色觉醒、战斗、抽卡和活动宣传。",
     "keywords": [
       "二次元pv",
@@ -991,13 +966,12 @@ export const specializedSkills = [
       "角色身份与技能特征一致",
       "不把九宫格预览当成最终视频参考"
     ],
-    "name": "minimax-anime-game-pv"
+    "name": "anime-game-pv"
   },
   {
     "slug": "brand-ad",
     "label": "品牌官方广告",
     "origin": "core",
-    "author": "MiniMax Design",
     "description": "制作 15 秒内由品牌官方或产品主角表达的轻量广告；适用于材质、工艺、Logo 过程和产品 Hero。",
     "keywords": [
       "品牌官方广告",
@@ -1021,13 +995,12 @@ export const specializedSkills = [
       "产品和 Logo 不被生成器改形",
       "超过轻量短片范围时交回总导演拆分"
     ],
-    "name": "minimax-brand-ad"
+    "name": "brand-ad"
   },
   {
     "slug": "cinematic-title-sequence",
     "label": "电影片头与概念预告",
     "origin": "core",
-    "author": "MiniMax Design",
     "description": "制作电影/剧集片头、卡司序列或单条影视概念预告；适用于片名、人物行动和悬念收束。",
     "keywords": [
       "电影片头",
@@ -1051,13 +1024,12 @@ export const specializedSkills = [
       "参考图职责明确且不越权",
       "不把普通图生视频误路由成影视片头"
     ],
-    "name": "minimax-cinematic-title-sequence"
+    "name": "cinematic-title-sequence"
   },
   {
     "slug": "cool-music-video",
     "label": "复古潮流短 MV",
     "origin": "core",
-    "author": "MiniMax Design",
     "description": "制作 15 秒内复古拼贴、说唱或时尚表演型音乐短片；适用于音乐和人物表演主导的单条 MV。",
     "keywords": [
       "说唱mv",
@@ -1080,13 +1052,12 @@ export const specializedSkills = [
       "人物表演连续且不串脸",
       "超过 15 秒或完整歌曲转长流程"
     ],
-    "name": "minimax-cool-music-video"
+    "name": "cool-music-video"
   },
   {
     "slug": "education-studio",
     "label": "教育内容工作室",
     "origin": "core",
-    "author": "MiniMax Design",
     "description": "制作课程、知识讲解、练习、讲义和教学视频；适用于明确的教学、学习或评量目标。",
     "keywords": [
       "教育视频",
@@ -1111,14 +1082,13 @@ export const specializedSkills = [
       "每个视觉服务一个学习目标",
       "教育题材附件本身不构成自动触发"
     ],
-    "name": "minimax-education-studio"
+    "name": "education-studio"
   },
   {
-    "slug": "h3-visual-design",
+    "slug": "seedance-visual-design",
     "label": "单点动态视觉包装",
     "origin": "core",
-    "author": "MiniMax Design",
-    "description": "迁移字体/Logo 动态版式、主体追踪和实拍手绘互动等 H3 单点技法到 Seedance 工作流。",
+    "description": "用 Seedance 2.5 设计字体与 Logo 动态版式、主体追踪和实拍手绘互动；适用于单镜头动态视觉包装。",
     "keywords": [
       "动态视觉包装",
       "字体动效",
@@ -1133,7 +1103,7 @@ export const specializedSkills = [
     ],
     "focus": [
       "先识别字体版式、追踪视觉或手绘互动路线",
-      "把平台专属 H3 表达转为可见运动与约束",
+      "把视觉设计转为可见运动、参考绑定与保留约束",
       "以单点技法增强现有镜头，不接管完整叙事"
     ],
     "quality": [
@@ -1141,13 +1111,12 @@ export const specializedSkills = [
       "文字和 Logo 保持准确",
       "追踪元素与主体运动同步"
     ],
-    "name": "minimax-h3-visual-design"
+    "name": "seedance-visual-design"
   },
   {
     "slug": "koc-video",
     "label": "KOC / UGC 视频",
     "origin": "core",
-    "author": "MiniMax Design",
     "description": "制作产品种草、创作者口播、专家分享、证言、无脸 POV 或手部实测；适用于社交平台转化内容。",
     "keywords": [
       "koc视频",
@@ -1171,13 +1140,15 @@ export const specializedSkills = [
       "产品主张有实物或资料支持",
       "不伪造用户证言"
     ],
-    "name": "minimax-koc-video"
+    "name": "koc-video"
   },
   {
     "slug": "ui-motion",
-    "label": "UI Motion",
+    "label": "界面交互动效",
+    "routingLabels": [
+      "UI Motion"
+    ],
     "origin": "core",
-    "author": "MiniMax Design",
     "description": "基于真实品牌界面制作 App、SaaS 或网页 UI 动效；适用于状态变化、交互、卡片重组和界面演示。",
     "keywords": [
       "ui motion",
@@ -1201,13 +1172,12 @@ export const specializedSkills = [
       "光标行为与界面响应一致",
       "没有真实品牌资料时先补齐而非套模板"
     ],
-    "name": "minimax-ui-motion"
+    "name": "ui-motion"
   },
   {
     "slug": "video-deconstruct",
     "label": "视频拆解与复刻",
     "origin": "core",
-    "author": "MiniMax Design",
     "description": "把参考视频、关键帧或详细描述拆成可验证镜头证据并编译复刻 Prompt；适用于逐镜反推结构。",
     "keywords": [
       "视频拆解",
@@ -1233,13 +1203,12 @@ export const specializedSkills = [
       "不声称像素级复制不可控生成结果",
       "版权或身份敏感内容先确认授权"
     ],
-    "name": "minimax-video-deconstruct"
+    "name": "video-deconstruct"
   },
   {
     "slug": "clip-studio-craft",
     "label": "剪辑判断与精修",
     "origin": "plugin",
-    "author": "MiniMax Design",
     "description": "对现有视频时间线做节奏、剪切、转场、字幕、颜色和速度判断；适用于已经进入剪辑阶段的项目。",
     "keywords": [
       "剪辑精修",
@@ -1262,7 +1231,7 @@ export const specializedSkills = [
       "字幕不遮挡主体并匹配语音",
       "每次修改后复看受影响时间段"
     ],
-    "name": "minimax-clip-studio-craft"
+    "name": "clip-studio-craft"
   }
 ];
 

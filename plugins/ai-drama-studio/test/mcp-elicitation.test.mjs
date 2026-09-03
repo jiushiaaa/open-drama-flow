@@ -38,7 +38,7 @@ async function callTool(client, name, args = {}) {
   return toolValue(await client.callTool({ name, arguments: args }));
 }
 
-async function openMcp({ onElicitation, supportsElicitation = true } = {}) {
+async function openMcp({ onElicitation, supportsElicitation = true, mode = "manual" } = {}) {
   const dataRoot = await fs.mkdtemp(path.join(os.tmpdir(), "ai-drama-mcp-elicitation-"));
   const port = await freePort();
   const transport = new StdioClientTransport({
@@ -65,6 +65,7 @@ async function openMcp({ onElicitation, supportsElicitation = true } = {}) {
   }
   try {
     await client.connect(transport);
+    if (mode === "manual") await callTool(client, "drama_set_execution_mode", { mode });
   } catch (error) {
     await transport.close().catch(() => {});
     await fs.rm(dataRoot, { recursive: true, force: true });
@@ -102,7 +103,7 @@ async function createPendingStaticBatch(client, title) {
       deliverables: ["竖屏 MP4"],
       acceptanceCriteria: ["产品外观准确"]
     },
-    selectedSkills: ["minimax-minimalist-product-ad-generator"],
+    selectedSkills: ["minimalist-product-ad-generator"],
     premise: "用产品特写表现轻便与降噪",
     shots: [{
       id: "shot-1",
@@ -127,6 +128,65 @@ async function createPendingStaticBatch(client, title) {
 
 async function stateFor(client, projectId) {
   return callTool(client, "drama_get_state", { projectId });
+}
+
+test("default automatic MCP starts one bounded batch without forms, but still gates memory", async () => {
+  const session = await openMcp({ mode: "automatic", supportsElicitation: false });
+  try {
+    const initial = await callTool(session.client, "drama_get_state");
+    assert.equal(initial.settings.executionMode, "automatic");
+    assert.equal(initial.speech.requiresPaidApproval, false);
+    const { project, creation, approval } = await createPendingStaticBatch(session.client, "Automatic fixture");
+    const guidance = await callTool(session.client, "drama_get_next_actions", { projectId: project.id, creationId: creation.id });
+    assert.equal(guidance.nextActions[0].tool, "drama_authorize_and_start_paid_batch");
+    assert.equal(guidance.nextActions[0].authority, "agent");
+    const first = await callTool(session.client, "drama_authorize_and_start_paid_batch", { approvalId: approval.id });
+    const second = await callTool(session.client, "drama_authorize_and_start_paid_batch", { approvalId: approval.id });
+    assert.equal(first.job.id, second.job.id);
+    const state = await stateFor(session.client, project.id);
+    assert.equal(state.jobs.length, 1);
+    assert.equal(state.providerCalls.length, 0); // only a Codex image task is queued, no model invoked
+    assert.equal(state.approvals[0].authorization.method, "automatic-policy");
+    assert.equal(state.approvals[0].authorization.scopeDigest, state.approvals[0].scopeDigest);
+    const { memory } = await callTool(session.client, "drama_upsert_memory", { projectId: project.id, scope: "series", kind: "canon", title: "Candidate", content: "Unapproved setting" });
+    const review = await session.client.callTool({ name: "drama_review_memory", arguments: { projectId: project.id, memoryId: memory.id, version: memory.version, status: "approved" } });
+    assert.equal(review.isError, true);
+  } finally { await session.close(); }
+});
+
+test("policy setter starts nothing, validates modes and invalidates old pending scopes", async () => {
+  const session = await openMcp({ mode: "automatic", supportsElicitation: false });
+  try {
+    const { project, approval } = await createPendingStaticBatch(session.client, "Mode change fixture");
+    const changed = await callTool(session.client, "drama_set_execution_mode", { mode: "manual" });
+    assert.equal(changed.startedJobs, 0);
+    const state = await stateFor(session.client, project.id);
+    assert.equal(state.jobs.length, 0);
+    assert.equal(state.speech.requiresPaidApproval, true);
+    const start = await session.client.callTool({ name: "drama_authorize_and_start_paid_batch", arguments: { approvalId: approval.id } });
+    assert.equal(start.isError, true);
+    assert.match(toolError(start), /MANUAL_APPROVAL_REQUIRED/);
+    const invalid = await session.client.callTool({ name: "drama_set_execution_mode", arguments: { mode: "unlimited" } });
+    assert.equal(invalid.isError, true);
+    assert.equal((await stateFor(session.client, project.id)).providerCalls.length, 0);
+  } finally { await session.close(); }
+});
+
+for (const action of ["accept", "cancel", "decline"]) {
+  test(`memory activation requires trusted MCP confirmation: ${action}`, { timeout: 30_000 }, async () => {
+    const requests = [];
+    const session = await openMcp({ onElicitation: request => { requests.push(request); return { action, content: { confirm: true } }; } });
+    try {
+      const { project } = await callTool(session.client, "drama_create_project", { title: "Isolated memory approval test" });
+      const { memory } = await callTool(session.client, "drama_upsert_memory", { projectId: project.id, scope: "series", kind: "canon", title: "Identity", content: "The approved hero wears a blue coat." });
+      await callTool(session.client, "drama_review_memory", { projectId: project.id, memoryId: memory.id, version: memory.version, status: "approved" });
+      assert.equal(requests.length, 1);
+      assert.match(requests[0].params.message, /blue coat/);
+      const state = await stateFor(session.client, project.id);
+      assert.equal(state.projects[0].memories[0].status, action === "accept" ? "approved" : "candidate");
+      assert.deepEqual(state.providerCalls, []);
+    } finally { await session.close(); }
+  });
 }
 
 test("MCP protocol exposes stable media bindings and persists contextual Skill routing", { timeout: 30_000 }, async () => {

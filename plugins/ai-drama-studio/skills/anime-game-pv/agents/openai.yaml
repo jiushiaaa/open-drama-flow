@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:anime-game-pv，根据我提供的素材与要求完成二次元漫画/游戏 PV，并核验所需工具与交付结果。"
+  short_description: "制作 15 秒内二次元漫画、游戏角色、群像或世界观 PV；适用于角色觉醒、战斗、抽卡和活动宣传。"
+  display_name: "二次元漫画/游戏 PV"

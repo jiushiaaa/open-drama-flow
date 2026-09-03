@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:music-video-subtitle-generator，根据我提供的素材与要求完成音乐 MV 动态字幕，并核验所需工具与交付结果。"
+  short_description: "制作随节拍和歌词变化的 AI MV 与空间字幕；适用于音乐视觉、歌词贴字和情绪短片。"
+  display_name: "音乐 MV 动态字幕"

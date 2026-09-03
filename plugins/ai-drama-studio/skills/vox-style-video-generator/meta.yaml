@@ -1,0 +1,5 @@
+name: vox-style-video-generator
+name-cn: "Vox 风格解释视频"
+summary-cn: "把知识主题、文章或研究资料转为混合媒介解释视频；适用于短纪录片、教育视频论文和旁白驱动叙事。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

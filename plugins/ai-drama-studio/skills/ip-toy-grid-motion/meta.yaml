@@ -1,0 +1,5 @@
+name: ip-toy-grid-motion
+name-cn: "IP 潮玩六宫格动态海报"
+summary-cn: "把单个 IP 角色转为六宫格静态与动态海报；适用于吉祥物、潮玩和角色宣传。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

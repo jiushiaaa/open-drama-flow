@@ -1,0 +1,1445 @@
+{
+  "schemaVersion": 2,
+  "runtime": "OpenDramaFlow / Codex / Seedance 2.5",
+  "generatedBy": "scripts/sync-skill-manifest.mjs",
+  "skillCount": 45,
+  "skills": [
+    {
+      "name": "ai-drama-producer",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "4149ea6b913a1d638440235cbef58d47758139ca31d1a7ca31f086eb3dea222f"
+        },
+        {
+          "path": "references/execution-contract.md",
+          "sha256": "4dd366ba5b6c2144e731cbb6368de1f65b9d766c8d83fc737fc0f7a366132941"
+        },
+        {
+          "path": "references/image-asset-contract.md",
+          "sha256": "d7837549ca3f7dab3dad7e0900c2d780fd85da3d991b46cf2b5d7c53f0434fdf"
+        },
+        {
+          "path": "references/prompt-contract.md",
+          "sha256": "ec2caeb7be0c80916f1e89b51447205611775fb3126247f7fa19b24e003828db"
+        },
+        {
+          "path": "references/provider-contract.md",
+          "sha256": "84a2f2432c4e13b5223c5c57ec26c69a74a91807e2f3ba2cd48fecb6fd7ec56e"
+        },
+        {
+          "path": "references/routing-contract.md",
+          "sha256": "065ad92e21d90a6043a3b1abadb8317100e7fd676a3447ca9dd0e14ea9505466"
+        },
+        {
+          "path": "references/seedance-prompting.md",
+          "sha256": "7879b8b4a1d75e17b47f4f6c2b19b86ba8fa572e8769f23eb85f0db83a36d985"
+        },
+        {
+          "path": "references/workflow-contract.md",
+          "sha256": "b6fe01a69c700a821838123dac30eaebe9c7553a00d892f126ab86a69559c979"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "ebfac015dc8facc206482c1339fa7c7cddb155ae51ec8cc3c52772ddceccc91e"
+        }
+      ]
+    },
+    {
+      "name": "3d-animation-short-generator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "c4ccc33fcf3335343746b040af35852f3e5499173d10355d68fd23f0c32d98cc"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "5b5721235c65b6f3c7dc56bb0c9d81929b0bcef27f78948c475029e8498c4aac"
+        },
+        {
+          "path": "references/fallback-policy.md",
+          "sha256": "6034b17cc333529b891f3eec1bee4dd73727efaa719fcbf5cf04b5b0bfc21744"
+        },
+        {
+          "path": "references/model-selection.md",
+          "sha256": "8f649e87dbb27562b0d7144e4d508a7e0cba1c1b70ca52b34256ad8c15113241"
+        },
+        {
+          "path": "references/qc-checklist.md",
+          "sha256": "140aa4b4060b037d912fedaa6643c923c90b0c878f3cb84fc84df28a702d2728"
+        },
+        {
+          "path": "references/shot-table-spec.md",
+          "sha256": "f88eb2aaaba36b3f7b25234b43fc26b6b9621c86adc99dc7882822cd9c245b58"
+        },
+        {
+          "path": "references/storyboard-guidelines.md",
+          "sha256": "966efe582588ec404c8e2ce370eaa06d73a3ec899f8d5f80ba5f876f421df36c"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "d9e0d5570082b30105512e5899b2b690bdc02d7db63f11807162eb9afc5353e5"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "8d9f2b58f77cc03db14bfecb9d2f2f7432eaf09faa83da779a6763bc2cbf4c40"
+        }
+      ]
+    },
+    {
+      "name": "backrooms-dreamcore",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "ecc512f93563657be4dc4cfd7a6b13a14ec9a14ce95ab92e750a8cc3008d67d4"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "88684a5cd1f9347836b9d636c6cead8e90764beef7c3f3445baef55f1b3298c3"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "5a6a6b57990953aedb05c9ddaf19b730a86ec41dbfe30b9a5449cd6499566829"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "3eadbbe9abfbb127246bdca6d178d5e66c6137ef174017bed95b08acc9575b34"
+        }
+      ]
+    },
+    {
+      "name": "brand-promo-video-generator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "21dbe653f9a373477190c9606679d39887c2d0082b37edf393ef75dbb3d683ac"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "054ab6abbf7645fe97b2a8b02ed7d45b4ba9190a4b3d9f8e379715ee5e47f6db"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "0beb8f366b8dc23c2f7771a74fdfc280e202ff60c0a9d916fa41c7e670f69255"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "91ed58df30dd8e231729e4fbdc29929d51003dfd5eb5bb9d3bbb228293d2a6fa"
+        }
+      ]
+    },
+    {
+      "name": "brand-stream-mg",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "8d68bcc86d78a0f150ebec43a2f154485a584f42dd146eaff378831d1d008a0e"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "ee285c4313749c063d0e8ca2f9b35aea7dc52a7c349ae9f676bc9a2bf584c9ce"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "0e71f13963e67a9696db2ee8d0d99c63f28db9404db36c13848460dc49470afc"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "030cd8872cb585dde3f753c254048b0886a100e207f361d938ef5db60ff26cfd"
+        }
+      ]
+    },
+    {
+      "name": "browser-game-demo-maker",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "3ec7abac01ff3f38db27be6e47f995e39622ef27c6426395b65e5d0b8df1f6b3"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "79c9520e3c55eea16fe6e172a6c40d1fcf40a58eed317b1c06190b4def746375"
+        },
+        {
+          "path": "references/image-prompt.txt",
+          "sha256": "b94e94d66ede9221eb9d6b3026b13db63cf1fccdce7e01ccb9b3deb6d88a0f5b"
+        },
+        {
+          "path": "references/user-prompt.txt",
+          "sha256": "13542bca54980346e024324a465df28c8f11564dec35f95215df1412855bf9f0"
+        },
+        {
+          "path": "references/video-prompt.txt",
+          "sha256": "584f328f9c3dc683b22bd4840613aef228914d8bf3ab75623e1c48f14c7ce702"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "2c6ab67b67bc62f1c3104b100008428135227b5b1566c455a19a070d8bdd05e7"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "7de52f251225b25e24ea861679c13e2ae102011905bb58f76fb2b22a9e86a8fe"
+        }
+      ]
+    },
+    {
+      "name": "character-scene-storyboard",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "8fc1ecaec5cdfc28d5146155549c4ea5be7e75f13aee9e59179fb37e69781d51"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "36a74aa984bb7a1397159b0893764997581b41fa0bf4514fa31e305b94c5c226"
+        },
+        {
+          "path": "references/brief-template.md",
+          "sha256": "ecb2b29a6429653b4e207cd5bd969bf2b96573414f120ce7dbfd0bd72f49aa91"
+        },
+        {
+          "path": "references/prompt-template.md",
+          "sha256": "6a6876b7e337c1c8fd7c334251cddae5a0317b773420f4de555e8bd052b91282"
+        },
+        {
+          "path": "references/style-dictionary.md",
+          "sha256": "9cd2f6a1c2ee8c26ca672ba52d7c3f490aab9079fba39812afe4ec1f326638af"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "e428adfc6fa84d94b42d71010515403e6202d5fae1b9b20cfd1170677c1f3c2f"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "a9e4f9b72d5596e9436f8a1c23d14877d1c90b0139b3a36d6da5411d39d607b0"
+        }
+      ]
+    },
+    {
+      "name": "co-op-game-intro-generator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "7607b355950733ecf9a72ffbf4ae14c5485da2125f5e63439de0d83d4a968468"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "8624ff355e7d4095169a433a010c39c91f13b671602c39a4342f8696e4e5e189"
+        },
+        {
+          "path": "references/seedance-confirmation-image-template.md",
+          "sha256": "9e97ba4d6acf2619a586db6e0bf4e73462d3ea6d740e81010be176a05634f4e3"
+        },
+        {
+          "path": "references/seedance-video-prompt-template.md",
+          "sha256": "a49c07bbb9e48c16ddb764fa3ca58f5b8daa393076e8d068d07132e32a7c9aa1"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "ea79829ee049a7e89b5814749aa9a9acce8c63c022fb6bdb8e972125f65903fe"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "7b1430793ae84b4077b7c0f8a829151e06de7406c63e025a2211e32313c3334a"
+        }
+      ]
+    },
+    {
+      "name": "digital-product-promo-generator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "1856910698de21bd3994c3c4e63bfb6321e29f8dc2f8beaf3485fb67c92b3c7f"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "eeaa98007129668f5606b103c340c13f2a61a4ca21b0d8e460780f2a6964be9b"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "b5aeed74f714b243597255ff337c01c0846500cb7722708d8c81db6fe1c10ffb"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "f19de87c56685083886fe383970b62fba09b1e96101cdf94acd6e2fc882fc71c"
+        }
+      ]
+    },
+    {
+      "name": "dot-matrix-brand-wordmark-motion",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "efebf732167e62b8e6e36fb52e2d5e9b68764c753d9f7d7210e9f7f8fee15f76"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "2c64d9c02e3301042117b0420674585f4d856e1d7bb1b040b4a016ad9914a296"
+        },
+        {
+          "path": "references/chinese-prompts.md",
+          "sha256": "624485e1b382d18ec48a68d1e1a693793bd4971619bfedec28e9b4ca30047dbe"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "b1782fb3f3aaba27f9f42700edde4e1f13b91291a10e9106d844ac810825b27f"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "5acf75e6056e8cda35cffb2fe86d73cdda7827ced38b0ff2d904e23703f045b7"
+        }
+      ]
+    },
+    {
+      "name": "film-reference-prompt-writer",
+      "files": [
+        {
+          "path": ".gitkeep",
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+        },
+        {
+          "path": "agents/.gitkeep",
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+        },
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "7e80b12ea57b6c26154896142651cdae3715294c538e9aa4d259ad5acf2fe689"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "b31882ef1eb14d2dbae39d30c6e72b0447f03b0b57fe492a9f74331adffe79d4"
+        },
+        {
+          "path": "references/.gitkeep",
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+        },
+        {
+          "path": "references/camera-movement.md",
+          "sha256": "3641281602f8c4721c510f646275a5ff4dbae47e7398cd0c2dabba0496f8ee0a"
+        },
+        {
+          "path": "references/prompt-and-output.md",
+          "sha256": "9840c91e7b85becc9f9dc671b2ed0eea85f674e6df8a3543aeb4208a29996a33"
+        },
+        {
+          "path": "references/visual-analysis.md",
+          "sha256": "0bf8fe42a01711fc96861537368588159f56504c912c210821794d4f4e6806de"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "8778fa17223e6de12ae37501a82f3fa77b2f09de9ef979188d575cf702135c9f"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "25f9423e9e78b3de712ecf42cf283f165bc43641a2da2f1c9a53da3023f1b220"
+        }
+      ]
+    },
+    {
+      "name": "film-shot",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "e39dd99e43de8cba3da1dd15c88b2b67db837caa8091dbdebc4ee276be62da13"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "61ee5f3edf6d180e9314d377917bfc00c3c857cb278f54c32cb4d7b9a6c6df20"
+        },
+        {
+          "path": "references/character-sheet-formats.md",
+          "sha256": "d397640afbd4e15d2bce8cb79b7e9ee895b0c434a128ea7195fcd243a44d59b9"
+        },
+        {
+          "path": "references/shot-language.md",
+          "sha256": "f18a4c2f5382d6e512631f5b8768e170066cab06d3f1eb682f26b95931cdc871"
+        },
+        {
+          "path": "references/visual-styles.md",
+          "sha256": "47b5b880ee89b67cc36851bf9c0b95944a83e66e89c3f563d7fbf35b0c815172"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "2d22ea45a5006f0f9181ae466a21fc33532ce38fd45432d69236b45064632598"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "684eca3637e5c2ef40708e532f65ff4a6658aa8525c0f9bd609dd226f9e898f0"
+        }
+      ]
+    },
+    {
+      "name": "fpv-tour-video-generator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "0f6a6fe25b00aa0417c585a3bf855751397d0eb4cdb64ee50f17fd468487e84f"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "fe7f063f96d5720b7358c655b6eaeb833998a99bd29630a7bb592f5c0fe346d9"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "90a4ba8bb4171f9b76b7dd0f1436bcfc00305ddc66ec2186240421e1d4a765e2"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "6d8fd421a18d3d4b1e3256ab0eb5c89e831f5daa7057d073bfe0d413b66b4b92"
+        }
+      ]
+    },
+    {
+      "name": "seedance-prompt-expert",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "96e2bde9a10e65cb0a44d571d10bcc9e65566f725eb7895867e1c754dc15089c"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "a946128d165e18aa1d7556364d8d45d615954fe5894d20173961efdc10fd017d"
+        },
+        {
+          "path": "references/audio-dialogue.md",
+          "sha256": "094ccec6eb1e3bf19bfde2d031e10db87e0f75a43cc12bdda1f4fcfbbcd32e46"
+        },
+        {
+          "path": "references/clarification-routing.md",
+          "sha256": "4ef4fd5e6ee2ba7a33f4ddde90679b7a1be6578724d904b3e7367b6345e11256"
+        },
+        {
+          "path": "references/core-workflow.md",
+          "sha256": "c5eef592a0836df8198e5fdb439ce146eb0701e0777b6448f09a195651b6ded1"
+        },
+        {
+          "path": "references/editing-preservation.md",
+          "sha256": "7a45413845345b4e8253dbe49ddbc874a1ecb2c9bfbc858208b5b18c74eb32fd"
+        },
+        {
+          "path": "references/first-last-frame.md",
+          "sha256": "3686a7d22e7d1a9732d6a91144734504779f75dcf8220b08784de20c7350adce"
+        },
+        {
+          "path": "references/image-to-video.md",
+          "sha256": "196a509ecbaeac760070819dbd88711525b833a1be49fb20ecc21d93ef6a1c09"
+        },
+        {
+          "path": "references/last-frame-boundary.md",
+          "sha256": "dbadf9fedf14ee9ea44c74db0c971ae18d922d1bfdae41c18403fa19c7ed9091"
+        },
+        {
+          "path": "references/modes-all-purpose-reference.md",
+          "sha256": "6200ddf0f9953cdd340be121af3c34a65aafaf9640a73eacfb11e07bc1e7753b"
+        },
+        {
+          "path": "references/pattern-grammars.md",
+          "sha256": "e7bb6fc1c9acd05092775e8587fc66b833932e1519c878784367cc1cdaa31c59"
+        },
+        {
+          "path": "references/text-to-video.md",
+          "sha256": "1fe94d2b58fc98e1ddcd44094f148c5d1782a8655b20ec02f806433a1c463852"
+        },
+        {
+          "path": "references/text-ui-layout.md",
+          "sha256": "93c4539a178c205ab66a8716ec30cd291a2362783d04b436bb12434f21360252"
+        },
+        {
+          "path": "references/video-extend.md",
+          "sha256": "da0a699c5e98c6a4d651c8f62220e56419945f82be119a91dd7d1a6f100a675e"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "709ae83095ce0bf9c274a2a397638588adf313d870acb05bc5cbfa1f9f2d5e9c"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "8561e2f75ed66e7c0a354ec4c2f7d7e4f3b30c4855152ecd216a21d10b2b7207"
+        }
+      ]
+    },
+    {
+      "name": "handdrawn-live-video-generator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "3836cf7c1e34e954c418ec2080e0961c2ce2e3dd4b7498dfe96c704382bacd0d"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "8a0620e855476c35cf486e07e93577e9ba38f27fbf4fb3702479d556763582c1"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "07e8344fd077ee095b617819b1a03e58174ad9705cbf8bc7b0016ba21831ac96"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "313d5ff15ec56104a7050f8b7a99a728e46d247d1fc95b927857bd0eacb478eb"
+        }
+      ]
+    },
+    {
+      "name": "image-remix",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "43072ccb34c90754254efb35f4b6f9484e9a4e3cbfa15b1bf7455277a44e2410"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "21196bf378ad5c7cd368b31a24a456e5030b9a690764aae47bcf5c0b81c45b52"
+        },
+        {
+          "path": "references/analysis-example.md",
+          "sha256": "04a38acac55d23138df7f75368facd2fcaeee801ef83c0a3b1a140b451dca69d"
+        },
+        {
+          "path": "references/model-fingerprints.md",
+          "sha256": "06cb254f6ac152f1c481dd1825cfe37f6f96a5d53a3e3566c8bd8a90ac7d7085"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "c9e77fb4ae51ff1487cb3f6ffd104fa4e43a86c7d4641c93af0916727aebd5b9"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "ef631bf2d04838f71b8fdf972f63b91f78c3eebb4090300d7b0117b99fd72218"
+        }
+      ]
+    },
+    {
+      "name": "ip-toy-grid-motion",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "1ce6bff6dccb67f29976849e948c4f28f9a423ef5d153714db8744cafe7f4a91"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "6d7c1c9d5ace061a666e049d8e11f12fd463c28a70b896066b2bfadecd9fc226"
+        },
+        {
+          "path": "references/motion-six-grid-prompt-template.cn.md",
+          "sha256": "e342c161bcede42e8b1087104302638a514f0f1fdbb7c557d7c6d3b6d2f9546b"
+        },
+        {
+          "path": "references/prompt-fidelity-rules.cn.md",
+          "sha256": "e56c1195369bc3128c2866ae02a23f99d0d6fcc00f92d7d2e0935ece1cc3d3cc"
+        },
+        {
+          "path": "references/static-six-grid-prompt-template.cn.md",
+          "sha256": "8b8067243d7940293041e8d880c0bb105772cdf0caacfd472806e4840f430558"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "29cb3a2fd2e2842a827fa161d078bbc733fe64c97a508860d6e174634cc17d8c"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "4b3733a9892fa82d6bf0f3fcdab7fc0d6777986ce14ba17b81bd8e9d84024347"
+        }
+      ]
+    },
+    {
+      "name": "line-doodle-explainer-generator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "7ec730ae098c1f4bac6d2c8871455ecbbecfd8b4d72b28feddfd0518633c78ca"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "11574d63a2479e57409280518e3a6ff49f7834f9b64e85a459f15fc932b0d945"
+        },
+        {
+          "path": "references/interaction-cards.cn.md",
+          "sha256": "974b35ac35d4e7dde6f98c20ab49299951c4ef2230974912f669ab918cbeaeb7"
+        },
+        {
+          "path": "references/interaction-cards.md",
+          "sha256": "dc722247cae1b9fcefaaf7a6164210e91286e8fe3d7bfd260ad2e15117a9caef"
+        },
+        {
+          "path": "references/output-format.cn.md",
+          "sha256": "c5d233e95b43aab4aa78a7f943992cca418f5a2079af29d3bfb671b0ad866392"
+        },
+        {
+          "path": "references/output-format.md",
+          "sha256": "365331cedc17a0ef87a6b95e29930ebc98fcbc932298386d186c58bccf0d4b92"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "3556198524fcfccf19aa8ba3d22885fc0778f2dae0408b519b3c8916f0af973a"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "ab11127d60b531d7157801b571230f6ed30ed7656967822150ff35a751d0b23d"
+        }
+      ]
+    },
+    {
+      "name": "lip-product-ad-generator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "822565fc717514f0590419933c076d12837aeccaa2a26cd027bab7413fe27ecd"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "5745fc524beb7d079a1193878fc1b13d0758963572820c8c95b6907fc4a69a54"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "b283f880d5d9d59975efd5f213fdeb30682f810e73768c982a13d4d1de1a32d2"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "57355fa10706c3cd05e3923793d73519782bf5f40e41c6bb27579752618c8aba"
+        }
+      ]
+    },
+    {
+      "name": "live-sketch-motion",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "c341b54c5897db3edf097b2f4e2da0f02cf5b8b8ea62c981598f02b4bb1e6a1d"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "ae91de6e51d1fc18eb7727ed2bbe8e693d206e6a9bc1e5751f5147d2e2dae193"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "dec99a9c62b0e36cc0b8d64af21081d53f7b8c5192fe6dbb0447653a564a17a1"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "95a03c9ba8094dd12db106773f554577968360dbe0701427de262e1b9275f20a"
+        }
+      ]
+    },
+    {
+      "name": "micro-expression-video-generator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "f19a71e3e083c99a4bf1530f9c626ba4389274458379bb119cca8986fa96cece"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "35babd6235e3230a973d845ae82be3cd081667e8cd21f7d75e7197b2d13bdde6"
+        },
+        {
+          "path": "references/climax-reset-patterns.md",
+          "sha256": "7a5f1741878d5cd25e9f8a493c36e371f774bbf5b3fe365c1382aa39610454d7"
+        },
+        {
+          "path": "references/emotion-route-library.md",
+          "sha256": "0c26d39c52532549bffe19593e20573bc14c3e35f53c3be8e34855621c8dc453"
+        },
+        {
+          "path": "references/muscle-dispatch-library.md",
+          "sha256": "88247a493ec6ff75e4979c6f8ee66a17266d3a3c88413c0dc169869eb895800c"
+        },
+        {
+          "path": "references/performance-prototype-library.md",
+          "sha256": "ff33696c410987600d895b2e1567c5bbea701cd897fcd971fb0162481d405981"
+        },
+        {
+          "path": "references/source-notes.md",
+          "sha256": "5ece285cc8dc61586519a4850b3c2ed26dee3a7730d762a0097a11d778b857fc"
+        },
+        {
+          "path": "references/tempo-density-guide.md",
+          "sha256": "46b0f0da26907612520e55100371e878fa1bfe270c92cfe16bfde336bb8a283e"
+        },
+        {
+          "path": "references/video-prompt-guardrails.md",
+          "sha256": "04d05fa45acc60642e29cdbda4f0827d78833d310eb65f273f8001169d450916"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "accf7d5e71f3c0def0eb3a52560655af1bf16e6298eb1efa6c6afd47d8401692"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "e93182ca8fdaf86ea3c6d1b2d7289b8df6ccadf622ca14b47b5d34615adfe05c"
+        }
+      ]
+    },
+    {
+      "name": "minimalist-product-ad-generator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "3536ed37f58df56f3399b819ddb8ca665ed3e7834b8c6e6b48b5e362e624931c"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "7b36eb29da371ec12ac99a999e6491d97f40c4a048c54d961c17ff189f3c0c94"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "5319ab0e5910bf875fe673f7db25e08d844a72ffe969fd25d5e207d1d8d7bf47"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "49e77da17ab2c5bacb16c5b18f57230b9a55184e5372a4dd8328eb911e5df871"
+        }
+      ]
+    },
+    {
+      "name": "music-video-subtitle-generator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "4da4505fa6daa79735c2b321c1984d09321b9e5846a91b81882116a2d7f670ac"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "8e090fd8a7bbd3a5f702c471ce4b039095e94541d2c64d8f331654bdf7fb8c02"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "1e22a7e9ce6ce2ebf61c5ffed1b4bbf582440ce7dde46bee774e255a2bd013d2"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "e6792fab4b18a70d51e762ac25077f11d9b1bfcf6145bd1aad0cfbd425d7813f"
+        }
+      ]
+    },
+    {
+      "name": "paper-collage-explainer-generator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "08a7be4ecc0e1f4de657e221fbfc39ea7aa035a27c5fb55299e4d40578ec49b6"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "cded60c6853a548755e9a3a9799b86dc60042edb5639b9908445563a0805be8e"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "baf2129a3e806d8a3adab4569e053c332bbd9addfa298e6c4a5dc5c90d4954ae"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "3586124cc8461af8c431d0e01e32ca3cd52a25ceaf35072b4cf49a8f1f63026b"
+        }
+      ]
+    },
+    {
+      "name": "papercraft-stop-motion-explainer",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "fd0211be60f1ab6081091255070e8e2c99a9a2e599c84d072dd6e9bb6d23d41f"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "fc3e99e708805f94a9300a2c6b4116de8cb8c2ebe107226f48e1f1bb804e66d5"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "e8eb7d875aa6b66c68309c02c16730b054183b8b6dc1e65235979194fc95b07c"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "d3ca331ce6eff4eb6c4fb01cecf9b74229a3df42f0c909ae2c79788f23d49b3d"
+        }
+      ]
+    },
+    {
+      "name": "poster-motion-generator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "d847bb2bd1c6aa0b0043d25fcd5c793e4a875245505f80c4f3abbeb1408f9ecd"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "d842ea6a2a466926d6049985de3a6705d906f5261dfea72da188e0030568a831"
+        },
+        {
+          "path": "references/v08-motion-reference.cn.md",
+          "sha256": "1124230fec0e539866b0ab54cf2cd915ac8c312b8b107d9f92de6d7d43a46428"
+        },
+        {
+          "path": "references/v08-motion-reference.md",
+          "sha256": "34cd9280b715774fb7644e4e5c74efa460878e87107b21d51a7d998463a131d0"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "55d439a000acb6f34f316ea1edcfafeb903fef8f5444ac176e391a242c7e983a"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "c59df2d0647ed8ce89ea923de6035d1e0733be36c0ce1bf442a9828d5211894e"
+        }
+      ]
+    },
+    {
+      "name": "pov-short-film-generator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "f2b984d7fc4df60cdd199ec5c1da5616f45422f1f7c8fa3517a10733c91a8404"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "fd36743101796c2abc7cf66a10f0152da5d607fd6f31f4b4d3422a6686b158bc"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "ea4a28a4df6244e2ea027bb21b17328759c1c78791477337485a5af196e2b6cf"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "d0d8ed9ba1e8e95906ce2a993e63598a0cc7246eb7b93041e6cbdfda00ce22de"
+        }
+      ]
+    },
+    {
+      "name": "promo-video",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "23a6b18b9cf0b37013f759ba1bb09a900a25ce3dbf0d59e2ad146de0862b44a9"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "6bf533e972beb627fcc54b8a411cebe1b687c22f2b7d6e7a4de8371b5f0fb9ad"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "6f2385839b1854dd2e70fc0f54a861fdb28c6711e37a666fef606ecad3fbad1a"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "72b9d63011bcd11fe8bdedddb53424bc6f15ccadde9b7b972f4ea591fc80f587"
+        }
+      ]
+    },
+    {
+      "name": "silkscreen-decorative-illustration-short",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "89c9823516e25eb85b62eee80668f2fb1e65e655da92ebcd0c9d9bf2ef08ebba"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "a8790e34a730a0478ec4b5a78806aed47ef66915c7afd885f5307da1d286ccfe"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "57363773445977620ed453efd18276a10d16d86b076ec1cda36ce34c3eb01ed5"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "6e991eaf402b4131b6a4467550de3526545c3ba2a97a14b91c7d6e650390362b"
+        }
+      ]
+    },
+    {
+      "name": "skill-creator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "2ec8c29fb85df9aae3bfd7edd62aa71c28f8caf886e0ddd492dbbfb3f9da1dfc"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "66bf24856cbac3b46076f04458c4f14e0af4af26212489fed51e8276f337bfb1"
+        },
+        {
+          "path": "references/NAMING.cn.md",
+          "sha256": "bfee2a137fa074c4dda739c30d42900d4d0d233c696ae8d8dbe6bef085c096d8"
+        },
+        {
+          "path": "references/NAMING.md",
+          "sha256": "d14c9132779a0d9b30aa6412b9a8fe031614edc6229fdca5ad9baf53c08f9732"
+        },
+        {
+          "path": "references/SKILL-TEMPLATE.md",
+          "sha256": "6a003ccdf067c616bcc6cf2523a31f8e48bd32a0512db06a3f291d8d08a48dff"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "38f9f62a73b4468128e1b7bd1813220df55bc039f344e88df0255ec8db7787f5"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "55916a9bfe0bb09f282ab4f0ac711f9827272bb448b641489f4b9fa7ef5587d1"
+        }
+      ]
+    },
+    {
+      "name": "skill-reviewer",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "4494a6f22b6ff7c6c9f4a5290f44ceb598e2426476ceb8f5e1998d01bc54f0ba"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "44c42b39baf777e37a29a4eca26cdc9c9f2c4a46de3c3b1755794a674ea928a2"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "05e06f17d8219079439fbc5c598bd8832fda217d73327d198270e97554ac2b92"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "ea1a79db760d6e1d734b366c91f4547b23c57efd523784d27fac52ec1b427468"
+        }
+      ]
+    },
+    {
+      "name": "suspense-title-sequence-generator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "f615f1a7ae119c2d08d4469c59039b3bb79d8d27ff02f4eab8f8cae43a498018"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "2d4f5528167d0930df2d31336166e77410e1c13b8f7b30cee407d6fe4d74b2a6"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "4800b9597f3c77bc2509331f9b0cafbf3bd8e03302a3990f275170f7510efec6"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "c3f02987ce8228ce4432da7d7530f318e42e71e2dcdfdbd350fd8a0003c9300c"
+        }
+      ]
+    },
+    {
+      "name": "transcript-broll-planner",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "8b5a50e87fd81725983ee17bdc3fce74856499e1ce8ece963cb0bbf73caf8a07"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "2b39574fa970b4e1d6fc7306a1fdd674b691ffa56edf332a6e34bfc20014a6e1"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "a4c22378ead1aed7b79439ffbf9b113ad61384e947741b78888d058cf1e0d3a6"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "97f5f22c47dcd6c4a838c3b0a47519bc8e3c27f449ac068f9fc4c2a3b87f86b0"
+        }
+      ]
+    },
+    {
+      "name": "video-prompting",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "47abe4fb23b77b93bfb59ad7e913efd9863babb88ecc4d727ba0e7996bca3719"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "31aa14339fd28ad21a94791cc913d1da8ea20b4505fe3e3229a9756b5c31cece"
+        },
+        {
+          "path": "references/models/image-models/prompting.md",
+          "sha256": "2609fbbc13c35f791cb495d02fa6cc4892b4e6a392a588b357f5cae2cc235bf5"
+        },
+        {
+          "path": "references/models/kling/prompting.md",
+          "sha256": "692908cf1458a0593ac46316babfe08677bde93601e5b26d20569ea152561cf8"
+        },
+        {
+          "path": "references/models/seedance/prompting.md",
+          "sha256": "280d7fcd3701b27fd453a24bb01db2afb1e98e47edd8750b5e46294d37b213be"
+        },
+        {
+          "path": "references/models/veo3/prompting.md",
+          "sha256": "31091d59021dabab7191c7189610a985c0d674a834f587669b09afd0e16090cc"
+        },
+        {
+          "path": "references/models/wan/prompting.md",
+          "sha256": "afc86d7528529c5c0ad84f0dbf2aa0626f9cd4cf72b65efbcd7fad8f86317fa0"
+        },
+        {
+          "path": "references/workflows/character-sheets.md",
+          "sha256": "6987b493915a436507e4d588d8160782cd1cb2b7900d748cc956d468d4d57a58"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "d04bf0bfc32377789e17f455001355ea72cd04c8c2996ff1469408c16973174e"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "78b26edd2d1e7585140e9119658778ed316ee4410de49b830b92f9037b8858d3"
+        }
+      ]
+    },
+    {
+      "name": "vox-style-video-generator",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "d6b76e2f95f9b10e0ffdef434b4ae416b88bfcd89cb0b8796d15349c354cf5a6"
+        },
+        {
+          "path": "LICENSE",
+          "sha256": "0fcdd8bb116755037edd1f07f49ae2ebeeff49a14c7c8b5bc10aa8bce7b7a8fa"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "621a952ddfa42c4480f66f3d938a101d498a2b76595a6db08205dd7819980563"
+        },
+        {
+          "path": "README.md",
+          "sha256": "4b0ca64b7d80c0f1fc12280889dcf5cb87adb55eb2f0382da5ecf53ee1764c76"
+        },
+        {
+          "path": "references/ffmpeg-assembly.md",
+          "sha256": "b35a56b8e77309445bb4ffbe2dc6e74a8b2344e9a68b5dc48323ad48269adccd"
+        },
+        {
+          "path": "references/runtime-tools-contract.md",
+          "sha256": "6662128de6341b126694dc6c0cab5c6f375ee6d6f63d30afcede75cfec4c2c2e"
+        },
+        {
+          "path": "references/vox-style-guide.md",
+          "sha256": "67c4104a8a2869ee851e12d9b4d0fe2a41faa8df7a7c48271b97a27f8c26d6ad"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "45996cce0e0480a98778677b171b70d7d57b7379d30651ef18f48f76e0895fee"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "fb06340a7a05d90a9aaa9e9d21de1f6b07ec4ac22cf478d6d44bf7bf0ffd348b"
+        }
+      ]
+    },
+    {
+      "name": "anime-game-pv",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "5bfcfb24c02bb48c7a50bc23618c594b5cfeba30d1eaf9bce2485ca45566ac4c"
+        },
+        {
+          "path": "references/audio-direction.md",
+          "sha256": "1df2f9a46d2d11f260d29b3eb1d7cf9a4a1cae22db552a93610c3e4f889307b7"
+        },
+        {
+          "path": "references/prompt-rules.md",
+          "sha256": "969d747c52157896f2e0881414df208a2f36f7384ca02e78ce40741807fb4851"
+        },
+        {
+          "path": "references/visual-inputs.md",
+          "sha256": "8917c0e597c4baf015a45de0e1ad43c7bcb7b1c99bb5d52d92943125a1ba4ee4"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "5ef79f3994d8eca31ae66bb95627b8c316c4357b4e5fbbee3842dc10ed122809"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "f77c354e6317d26a0150045257c4d13f9e04b357e8ebc5a1901eec9a217e4502"
+        }
+      ]
+    },
+    {
+      "name": "brand-ad",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "aa187d4b226b054cb0611e78a233c1641f2c8b9a217db1725e192e4f3cf8ab26"
+        },
+        {
+          "path": "references/future-system-montage.md",
+          "sha256": "4ffcb72afe4beb15a2e4a614c5bba8122616c955ce079102a1ea249a1324d6ea"
+        },
+        {
+          "path": "references/product-motion.md",
+          "sha256": "624f9c9c8668f632a73e7c462fd537da5bb990dd01049140c781992b95c91b90"
+        },
+        {
+          "path": "references/product-seedance-compile.md",
+          "sha256": "abb4c7a0a7b7134ae7d6b2bd6ddfeb06e0b6bb7b51dbbae70ce8fdd6f9d3274d"
+        },
+        {
+          "path": "references/product-visual-techniques.md",
+          "sha256": "4e988a8e0a5132e0a8fe07e68d0badbacd22911359bcd84e110bf2e65a19771e"
+        },
+        {
+          "path": "references/style-research.md",
+          "sha256": "702649a91757f93abaff1522fe8a7c7611cdb0cece8ff77846d8cea0a8293f18"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "fdf2e5d398edd286550924f787189aeb8af54fb7b90eb25ed23f2516c71e404d"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "7b09f85886ede5f0ea85f6de579008d1e25e6d812907ff3a5108f9af3d209395"
+        }
+      ]
+    },
+    {
+      "name": "cinematic-title-sequence",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "0f8369ea8c703e4464a0c180489d9787ef6dd788aadf2276a06d49973c5bd04a"
+        },
+        {
+          "path": "references/case-calibration-matrix.md",
+          "sha256": "3c0a4d4b0cb7cabf91c3df4eb123a25e4a611458cd427e0374450218fbcf1dd7"
+        },
+        {
+          "path": "references/cinematic-narrative.md",
+          "sha256": "cd5c6e85d9d88648149cbf37e97d1316eff677edaf937bcceb28b485597f931c"
+        },
+        {
+          "path": "references/cinematography-and-transitions.md",
+          "sha256": "0ee5ae1ada61631a5254873bcfede968abb9268c3dc7b89af10910a2c030d2b8"
+        },
+        {
+          "path": "references/constructed-world-vfx.md",
+          "sha256": "969659c2386d24f733a2b2bbc2f0eb5b9030a19f8885205a847e4a029fa40c43"
+        },
+        {
+          "path": "references/editorial-collage.md",
+          "sha256": "c75ab0a633a45b04221d112f12d0167c8081b71428bfed50b6eed561b2c433aa"
+        },
+        {
+          "path": "references/live-action-graphics.md",
+          "sha256": "73a1640723020ede124ce707e822cea97081a4afed9d40c20b59e05e2696c3bc"
+        },
+        {
+          "path": "references/seedance-prompt-contract.md",
+          "sha256": "f22f59de6eec255b68ef5c900b0c2db76b42be047d7d0e4dd4e2af6f5a2dbec0"
+        },
+        {
+          "path": "references/typography-and-credits.md",
+          "sha256": "10216b96a3f934c950c83e7c171216ccb094d22792af0e9516d19d1aae5168c5"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "a7f13753269366bc8ab2cb62f4e5a7adf821e28007385d004b53b2d73d3a275e"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "1182d406aa4617dd27903bbaa53d0100f0599c49270f6b3d72e89ca4996f958b"
+        }
+      ]
+    },
+    {
+      "name": "cool-music-video",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "2abe46538283515d4fd628ebce1964a6f7b0297e7d7bd8425b7be599d479ac54"
+        },
+        {
+          "path": "references/methods.md",
+          "sha256": "191e771c1d7bacd58d13be61b79a82d830c370d1536d33fdef05fc3549a11522"
+        },
+        {
+          "path": "references/music.md",
+          "sha256": "0facd28d6524d9efb2c5b304170f45369525d120b4cc8e21c1e962da461f45ff"
+        },
+        {
+          "path": "references/performance-and-space.md",
+          "sha256": "2820dc31b706e83e087806be6a73c2801e8d16542ee871c022d4a181f3d66a04"
+        },
+        {
+          "path": "references/prompt-blueprint.md",
+          "sha256": "7a1fc3a3170740835bd22abec97f919e72e8b9e1fbff528232c6388eaaaa0345"
+        },
+        {
+          "path": "references/style-guide.md",
+          "sha256": "21f69c9f5c1844c7645b017ea068ff40097087a67c025642e95e261f0785a4ff"
+        },
+        {
+          "path": "references/typography.md",
+          "sha256": "d9cdd4e395085cd61276cf11310a015e7190ab9b14d76e3de6edfc39b7eb982b"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "ee896bd995b262c3358f32cbbb09c796aeab30a5c6543d21548aad06af8dfbbc"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "e026355997c78e8d215a66390f0eaf28cdea4e81ac3fab00a12d53733b305838"
+        }
+      ]
+    },
+    {
+      "name": "education-studio",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "201b5f2ecdfe7c8d12f54db2ec4ac2f29b4fe4f10fb999dde9b96607fb81eb50"
+        },
+        {
+          "path": "references/assessment.md",
+          "sha256": "ba0269d8a2cfffd51e0646617470002b8fc6b4ea2cb59b361e16cbd9a217844f"
+        },
+        {
+          "path": "references/education-video-pipeline.md",
+          "sha256": "af86ba411c535f3b049e5a8ed31c65c8c1e08eef7f1d7824099e386c08763d28"
+        },
+        {
+          "path": "references/visual-production.md",
+          "sha256": "1b62e1b7cf8f480d7e6ce6c43578ed3222e171096ba8d7d177d6da6b48bf6297"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "6f747803de52dc188629375f854b9526b4cdddcfb0eb9f74facadbab779aed9c"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "0ab4cb12446fe0582697e6399666b279377082ff3cfa95695aae7bbd384bac1c"
+        }
+      ]
+    },
+    {
+      "name": "seedance-visual-design",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "8f2ca0af3513d0b6642351de79738198f8e7ae0b3401b76383cc885699dd4219"
+        },
+        {
+          "path": "references/handdrawn-live-action.md",
+          "sha256": "3b4a077ea51ac480b95eb623987dab1700a58e49dd6aa22cc9c72741c4760052"
+        },
+        {
+          "path": "references/music-direction-library.md",
+          "sha256": "17d3d680b0f105aee0cca10e5f316ecfa9495df4c8be74634ecf5732dd47d281"
+        },
+        {
+          "path": "references/seedance-execution-grammar.md",
+          "sha256": "59329638bdbddc82b485dc0f61a4b22cd86cd9dacdeb782d05ca047f45350a97"
+        },
+        {
+          "path": "references/style-cool-art.md",
+          "sha256": "8cfce59ba668e3ee894cbf1705efb1550ec855a2f20581c8897feccf0a5c4f6e"
+        },
+        {
+          "path": "references/style-dark-pop-glitch.md",
+          "sha256": "cb2c46b73be6708fd407c74485109a1c783ab631eff715f4645a2c5b38c147be"
+        },
+        {
+          "path": "references/style-fresh-cute.md",
+          "sha256": "8af06252d9db7bab7f448686e4faf91e16d72ceff1311659e5df990484d84b95"
+        },
+        {
+          "path": "references/style-poster-collage.md",
+          "sha256": "38193c84f6eb652c7388c56dc94db6e169ec25670c40ea2e8231b389b60f4283"
+        },
+        {
+          "path": "references/style-tech-particle.md",
+          "sha256": "619f97be1a93a15f17e21f5d412b89c23ac23eb294fdee3eaa87047022b050de"
+        },
+        {
+          "path": "references/subject-packaging-system.md",
+          "sha256": "c9c593379d5488aed83e313387d24e3f66dc1805e98779ca20a652aa4b0c6151"
+        },
+        {
+          "path": "references/td-cv-tracking.md",
+          "sha256": "49ac82f7b320f04efb014e990a5eb449687c6e507fa06015ef5c76878cf24abb"
+        },
+        {
+          "path": "references/td-visual-attributes.md",
+          "sha256": "263f6f982666b7c3fe3f84e7545674feca63094d09e0d6494aa700b3cfc8846d"
+        },
+        {
+          "path": "references/typography-packaging.md",
+          "sha256": "11f79e658c2cf54b44d69ed11abd1d539f9145749adb17cd27f95d698c13b63a"
+        },
+        {
+          "path": "references/typography-system-library.md",
+          "sha256": "0ec3827a6d20d833305b20d3d5aa5c950303e15df80267febf304fca4d5fa2b7"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "dad28104cb72e7217d31a8574b916c14a84b512b2c3d4acf832cac3f370faf8c"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "c0d8b9af3ea14633f482b51f00f441194f4c0c34b25e29a7191e413b4abf0837"
+        }
+      ]
+    },
+    {
+      "name": "koc-video",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "78f7a7396661e97cae288df7288d3a19efa86cb0827795deff3fa3e066525ae1"
+        },
+        {
+          "path": "references/creator-direction.md",
+          "sha256": "aa99c26d1be2f6aead30d4ca9e08ef2ded89b16059fd21a5b77bcbb02b9c0b94"
+        },
+        {
+          "path": "references/hook-decision.md",
+          "sha256": "65b5ac5d8e1a68e85d7611c8085cdc7f4a0605c979f81e3af2102a3e42489d11"
+        },
+        {
+          "path": "references/production.md",
+          "sha256": "31a91cd1c3730147e4a16d249f99d14745e0ab5bc8d1a2f2e352915b8d11e278"
+        },
+        {
+          "path": "references/script-and-shots.md",
+          "sha256": "78013b2bfcfccb23495b05a874e05dbac2ecc07e0476b627ac328dc3d3a910c2"
+        },
+        {
+          "path": "references/source-routing.md",
+          "sha256": "846cd991d7ee403e25f6ae9ab791fde0e9fb6b702c6c4952a1b53a5a9d4cbf62"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "e1f4464a2244057ef85497c79c94a52d8184a4924eee8ec9ce5a3127a7707ff4"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "8126b21370242bb4fc400208be52517a0e72dfee54beba336cc55471f7070260"
+        }
+      ]
+    },
+    {
+      "name": "ui-motion",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "cb75b24e7ee9269c7daa77b71d17330a4579cddb3659b77420dc3fb39ac83c11"
+        },
+        {
+          "path": "references/brand-analysis.md",
+          "sha256": "3de5892be10bff382aa0d6fb6c0f24984ea1e862eb1525efaa5696f95087957a"
+        },
+        {
+          "path": "references/common-adaptations.md",
+          "sha256": "1df0d3076722203fecfd7101742c9bc0fd8fc69e4a65ec042a73462c1f71659e"
+        },
+        {
+          "path": "references/custom-style.md",
+          "sha256": "2eace77ff6c60efcadd3299dcda27b78027467d667d6c4488ba8e66a6dc50285"
+        },
+        {
+          "path": "references/long-form.md",
+          "sha256": "5d6a1f43dbee60ff1e5d6d5eeaa91fe58c0ad6e39cac71e25a35224a9b903078"
+        },
+        {
+          "path": "references/motion-prompt-writing.md",
+          "sha256": "b023fac5f5e58670ec02f87bc75bb296719b1208cbb35911555a77437015eebe"
+        },
+        {
+          "path": "references/qa-checklist.md",
+          "sha256": "f708ca9d477cb0b5feb2f560d84dd2ee398c9acb4985a4e598f36ecbdb42ef76"
+        },
+        {
+          "path": "references/storyboard-schema.md",
+          "sha256": "2ff3f4604c505e1e8cef9e602e15b0e0d896cfc453426b83c1f24fd51d24d977"
+        },
+        {
+          "path": "references/style-matching.md",
+          "sha256": "cd0f7d90368b39b7105c7ac2283a823650127c34bfa35128ec1d09bee27d563a"
+        },
+        {
+          "path": "references/styles/A.md",
+          "sha256": "b8e93fcfcf6ee411ec11562d8b6ee414b915c3775678b528ff3e1e5609dcdb43"
+        },
+        {
+          "path": "references/styles/B.md",
+          "sha256": "68e20c9d83d83918d61b4415a17a7147b06022b043931e91185fde95aa2fd08b"
+        },
+        {
+          "path": "references/styles/C.md",
+          "sha256": "ec9e605121ff40afb908f683ab31e7c4e83907c837515872abbb0cabfa20e686"
+        },
+        {
+          "path": "references/styles/D.md",
+          "sha256": "92b0b3d039c844df180cc83f2402cc4de443474f58f6d2b17adcf32511032e42"
+        },
+        {
+          "path": "references/styles/E.md",
+          "sha256": "a0984a750e6c739d7ab087d4d05d42951275ffd1acfd9e6470cd6382ee3f5927"
+        },
+        {
+          "path": "references/styles/F.md",
+          "sha256": "b834fe4d56e1da3a9d67b62a42135243ee95af33892490ff297879d8199ebdb3"
+        },
+        {
+          "path": "references/styles/G.md",
+          "sha256": "1148c95020b9bc814bcbbfa275033add886f0c6defefaaaeed1e1822c098b690"
+        },
+        {
+          "path": "references/styles/H.md",
+          "sha256": "49b0ac793a149f302de5245225d2145dada80948f5e3e4ee2256663c22196bcb"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "550ad6496725453f9061ac9584b0678d7bee4d6f8ff781009f58c85d0614fcfc"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "9bf8b0c44499b9ead3b0eda265f3b1219c940afabe75cc7bcf901d7b515df757"
+        }
+      ]
+    },
+    {
+      "name": "video-deconstruct",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "27e555141e376efd0ef707cb3cc774ce162ea5453d5a7243cc6c6d6a51f030b3"
+        },
+        {
+          "path": "references/seedance-multi-ref.md",
+          "sha256": "18090a0a81c55e08fde8d4c4f1b15c5b006797f0b657480ffa89e6575bded05f"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "1870de6e12051ac2322c2b5ff17e9104cf70a065f0024859d4832515dabbdbd9"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "d1c28cd2f1b8c236f6ad8ce9219446245b1bf18419892fbcac1cc87cd2da8eed"
+        }
+      ]
+    },
+    {
+      "name": "clip-studio-craft",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "c5cd39ad23aeb6335f896611734a25383aa0905349c378becfadafefce0c649f"
+        },
+        {
+          "path": "references/verification.md",
+          "sha256": "e704d41c4ad9c568aef79f031c37ed44164c5465795ed26eddb8c30cda918758"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "caad33e18b5f8decd668675ab81fd41bc0df25d16a9907d104554a7a28e3b702"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "235f5b341a4c778e8b03c84c2ad95b6063e23a5e6031f68a2308647146e838ce"
+        }
+      ]
+    }
+  ]
+}

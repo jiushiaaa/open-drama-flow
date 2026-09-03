@@ -1,0 +1,5 @@
+name: character-scene-storyboard
+name-cn: "角色场景分镜板"
+summary-cn: "把角色参考、场景设定和剧情节点整合为专业角色场景分镜文档；适用于影视与漫剧前期设定。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

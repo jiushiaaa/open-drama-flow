@@ -313,18 +313,21 @@ async function runAssetContextAction(name) {
   if (name === "move") { openAssetMoveDialog(target.type, target.id); return; }
   if (name === "delete") openDeleteDialog(target.type, project.id, target.id);
 }
-async function openAssetPreview(assetId) {
-  const asset = activeProject()?.assets?.find(item => item.id === assetId); if (!asset) return;
-  activePreviewAssetId = assetId;
+async function openAssetPreview(assetId, outputPreview = null) {
+  const asset = assetId ? activeProject()?.assets?.find(item => item.id === assetId) : outputPreview; if (!asset) return;
+  activePreviewAssetId = assetId || null;
   $("#asset-preview-title").textContent = asset.originalName || `${assetKindLabel(asset.kind)}素材`;
   $("#asset-preview-type").textContent = `${assetKindLabel(asset.kind)} · V${asset.version || 1}`;
   $("#asset-preview-meta").textContent = `${formatDate(asset.createdAt)} · ${assetFileSize(asset.size) || "本地文件"}`;
-  $("#asset-preview-edit").hidden = !assetEditable(asset);
+  $("#asset-preview-edit").hidden = !assetId || !assetEditable(asset);
+  $("#asset-preview-reveal").hidden = !assetId;
+  $("#asset-preview-original").href = asset.mediaUrl || "#";
+  $("#asset-preview-original").hidden = !asset.mediaUrl;
   const body = $("#asset-preview-body"); body.replaceChildren(el("p", { class: "asset-preview-loading", text: "正在读取素材…" }));
   if (!$("#asset-preview-dialog").open) $("#asset-preview-dialog").showModal();
   try {
     if (asset.kind === "image") body.replaceChildren(el("img", { src: asset.mediaUrl, alt: asset.originalName || "图片素材" }));
-    else if (asset.kind === "video") body.replaceChildren(el("video", { src: asset.mediaUrl, controls: true, preload: "metadata" }));
+    else if (asset.kind === "video") body.replaceChildren(el("video", { src: asset.mediaUrl, controls: true, playsinline: true, preload: "metadata" }));
     else if (asset.kind === "audio") body.replaceChildren(el("audio", { src: asset.mediaUrl, controls: true, preload: "metadata" }));
     else if (/\.pdf$/i.test(asset.originalName || "")) body.replaceChildren(el("iframe", { src: asset.mediaUrl, title: asset.originalName || "PDF 预览" }));
     else if (assetEditable(asset)) { const result = await api(`/api/projects/${activeProjectId}/assets/${assetId}/content`); body.replaceChildren(el("pre", { text: result.content || "（空文档）" })); }
@@ -370,7 +373,7 @@ function renderAssets(project) {
   for (const folder of folders) {
     const itemCount = (project.assetFolders || []).filter(item => item.parentId === folder.id).length + (project.assets || []).filter(asset => asset.folderId === folder.id).length;
     const card = el("article", { class: "asset-folder-card", oncontextmenu: event => openAssetContextMenu(event, "folder", folder.id) },
-      el("button", { class: "asset-folder-main", type: "button", onclick: () => openAssetFolder(folder.id) }, el("img", { src: "/icons/folder-kanban.svg", alt: "" }), el("div", {}, el("strong", { text: folder.name }), el("small", { text: `${itemCount} 项 · ${formatDate(folder.updatedAt)}` }))),
+      el("button", { class: "asset-folder-main", type: "button", onclick: () => openAssetFolder(folder.id) }, el("img", { src: "/icons/folder-kanban.svg", alt: "" }), el("div", {}, el("strong", { text: folder.name, title: folder.name }), el("small", { text: `${itemCount} 项 · ${formatDate(folder.updatedAt)}` }))),
       el("button", { class: "asset-more-button", type: "button", title: "更多", onclick: event => openAssetContextMenu(event, "folder", folder.id) }, el("img", { src: "/icons/ellipsis.svg", alt: "" }))
     );
     card.addEventListener("dragover", event => { event.preventDefault(); event.stopPropagation(); card.classList.add("drop-target"); });
@@ -381,7 +384,7 @@ function renderAssets(project) {
   for (const asset of assets) {
     const card = el("article", { class: `asset-card asset-${asset.kind}`, draggable: true, oncontextmenu: event => openAssetContextMenu(event, "asset", asset.id) },
       el("button", { class: "asset-card-preview", type: "button", title: `查看${asset.originalName || "素材"}`, onclick: () => openAssetPreview(asset.id) }, renderAssetPreview(asset)),
-      el("div", { class: "asset-card-copy" }, el("strong", { text: asset.originalName || `${assetKindLabel(asset.kind)}素材` }), el("small", { text: `${assetKindLabel(asset.kind)} · ${formatDate(asset.createdAt)}` })),
+      el("div", { class: "asset-card-copy" }, el("strong", { text: asset.originalName || `${assetKindLabel(asset.kind)}素材`, title: asset.originalName || `${assetKindLabel(asset.kind)}素材` }), el("small", { text: `${assetKindLabel(asset.kind)} · ${formatDate(asset.createdAt)}` })),
       el("button", { class: "asset-more-button", type: "button", title: "更多", onclick: event => openAssetContextMenu(event, "asset", asset.id) }, el("img", { src: "/icons/ellipsis.svg", alt: "" }))
     );
     card.addEventListener("dragstart", event => { event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("application/x-opendrama-asset", asset.id); card.classList.add("dragging"); });
@@ -444,8 +447,9 @@ function buildCanvasGraph(project, creation) {
       connect(previous, id, "锁定角色"); previous = id;
     }
     (production.shots || []).forEach((shot, index) => {
-      const media = [...(project.assets || [])].reverse().find(asset => asset.shotId === shot.id && asset.kind === "image");
-      const id = add({ id: `shot-${shot.id}`, kind: `SHOT ${String(shot.order || index + 1).padStart(2, "0")}`, title: shot.scene || `镜头 ${index + 1}`, body: shot.prompt || shot.subtitle || "等待镜头描述", meta: `${shot.framing || "镜头"} · ${shot.duration || 0}s`, mediaUrl: media?.mediaUrl, mediaKind: media?.kind }, { x: 920 + Math.floor(index / 3) * 370, y: 120 + (index % 3) * 300 });
+      const shotMedia = [...(project.assets || [])].reverse().filter(asset => asset.shotId === shot.id);
+      const media = shotMedia.find(asset => asset.kind === "video") || shotMedia.find(asset => asset.kind === "image");
+      const id = add({ id: `shot-${shot.id}`, kind: `SHOT ${String(shot.order || index + 1).padStart(2, "0")}`, title: shot.scene || `镜头 ${index + 1}`, body: shot.prompt || shot.subtitle || "等待镜头描述", meta: `${shot.framing || "镜头"} · ${shot.duration || 0}s`, mediaUrl: media?.mediaUrl, mediaKind: media?.kind, assetId: media?.id }, { x: 920 + Math.floor(index / 3) * 370, y: 120 + (index % 3) * 300 });
       connect(previous, id, index ? "连续镜头" : "进入分镜"); previous = id;
     });
     const shotAssetIds = new Set((project.assets || []).filter(asset => asset.shotId).map(asset => asset.id));
@@ -468,16 +472,29 @@ function buildCanvasGraph(project, creation) {
 }
 
 function renderCanvasNode(node) {
-  const media = node.mediaUrl ? (node.mediaKind === "video" ? el("video", { src: node.mediaUrl, muted: true, preload: "metadata" }) : node.mediaKind === "audio" ? el("audio", { src: node.mediaUrl, controls: true, preload: "metadata" }) : el("img", { src: node.mediaUrl, alt: node.title })) : null;
-  const article = el("article", { class: `canvas-node node-${node.mediaKind || "text"}`, "data-node-id": node.id, style: `left:${node.x}px;top:${node.y}px;width:${node.width}px;min-height:${node.height}px` },
-    el("header", {}, el("span", { text: node.kind }), node.meta ? el("small", { text: node.meta }) : null), media ? el("div", { class: "canvas-node-media" }, media) : null,
+  const media = node.mediaUrl ? (node.mediaKind === "video" ? el("video", { src: node.mediaUrl, muted: true, playsinline: true, preload: "metadata" }) : node.mediaKind === "audio" ? el("audio", { src: node.mediaUrl, controls: true, preload: "metadata" }) : el("img", { src: node.mediaUrl, alt: node.title, draggable: "false" })) : null;
+  const previewable = Boolean(node.assetId || node.mediaUrl);
+  const previewLabel = node.mediaKind === "video" ? "播放视频" : node.mediaKind === "image" ? "查看全图" : "打开素材";
+  const preview = () => openAssetPreview(node.assetId, { kind: node.mediaKind, mediaUrl: node.mediaUrl, originalName: node.title });
+  const article = el("article", { class: `canvas-node node-${node.mediaKind || "text"} ${previewable ? "previewable" : ""}`, "data-node-id": node.id, tabindex: previewable ? "0" : null, role: previewable ? "button" : null, "aria-label": previewable ? `${previewLabel}：${node.title}` : null, "aria-haspopup": previewable ? "dialog" : null, style: `left:${node.x}px;top:${node.y}px;width:${node.width}px;min-height:${node.height}px` },
+    el("header", {}, el("span", { text: node.kind }), node.meta ? el("small", { text: node.meta }) : null), media ? el("div", { class: "canvas-node-media" }, media, node.mediaKind !== "audio" ? el("span", { class: "canvas-preview-hint", "aria-hidden": "true", text: node.mediaKind === "video" ? "▶ 播放视频" : "查看全图" }) : null) : null,
     el("div", { class: "canvas-node-copy" }, el("strong", { text: node.title }), el("p", { text: node.body || "" }))
   );
   article.addEventListener("pointerdown", event => beginNodeDrag(event, node.id));
+  if (previewable) {
+    article.addEventListener("click", event => {
+      if (event.target.closest("audio") || canvasRuntime.suppressClick) return;
+      preview();
+    });
+    article.addEventListener("keydown", event => {
+      if (event.target === article && ["Enter", " "].includes(event.key)) { event.preventDefault(); preview(); }
+    });
+  }
   return article;
 }
 
 function renderWorkspace() {
+  if (canvasRuntime.dragging) return;
   const project = activeProject();
   const creation = activeCreation() || project?.creations?.[0];
   if (!project || !creation) return;
@@ -565,10 +582,11 @@ function fitCanvas() {
 }
 
 function beginNodeDrag(event, nodeId) {
-  if (event.button !== 0) return;
+  if (event.button !== 0 || event.target.closest("audio")) return;
   event.stopPropagation();
+  canvasRuntime.suppressClick = false;
   const creation = activeCreation(); const graphNode = buildCanvasGraph(activeProject(), creation).nodes.find(item => item.id === nodeId);
-  canvasRuntime.dragging = { type: "node", nodeId, startX: event.clientX, startY: event.clientY, originX: graphNode?.x || 0, originY: graphNode?.y || 0 };
+  canvasRuntime.dragging = { type: "node", nodeId, pointerId: event.pointerId, moved: false, startX: event.clientX, startY: event.clientY, originX: graphNode?.x || 0, originY: graphNode?.y || 0 };
   event.currentTarget.setPointerCapture(event.pointerId);
 }
 
@@ -638,6 +656,17 @@ function renderSettings() {
   $("#credential-chip").className = `status-chip ${configured ? "success" : ""}`;
   $("#ark-api-key").placeholder = configured ? "••••••••••••••••" : "粘贴火山方舟 API Key";
   $("#save-key-button").textContent = configured ? "更换并保存" : "安全保存";
+  $("#clear-key-button").disabled = !configured;
+  const speechConfigured = studioState.credentialStatus?.speechConfigured === true;
+  $("#speech-credential-chip").textContent = speechConfigured ? "已安全保存" : "未配置 · 可跳过";
+  $("#speech-credential-chip").className = `status-chip ${speechConfigured ? "success" : ""}`;
+  $("#speech-api-key").placeholder = speechConfigured ? "已保存，输入新密钥可更换" : "粘贴豆包语音 API Key（可选）";
+  $("#save-speech-key-button").textContent = speechConfigured ? "更换并保存" : "安全保存";
+  $("#clear-speech-key-button").disabled = !speechConfigured;
+  $("#sound-strategy-title").textContent = speechConfigured ? "Seedance + 可选语音辅助" : "Seedance 原生声音";
+  $("#sound-strategy-description").textContent = speechConfigured
+    ? "视频和主要声音由 Seedance 生成；需要对白核对时用 ASR，需要独立旁白或补录时用 TTS。声音克隆与独立音乐生成暂未接入。"
+    : "不调用独立语音服务。视频、对白和环境音由 Seedance 按创作方案生成，仍需实际听音与验片；不包含自动语音识别。";
   const bridge = studioState.assetBridge;
   $("#bridge-status").textContent = bridge?.ready ? "受控 HTTPS 桥已连接" : bridge?.configured ? "已配置，按需连接" : "按需自动连接";
 }
@@ -868,6 +897,11 @@ $("#asset-grid-button").addEventListener("click", () => { assetViewMode = "grid"
 $("#asset-refresh-button").addEventListener("click", () => refreshState({ quiet: true }));
 $("#asset-preview-edit").addEventListener("click", () => openAssetEditor(activePreviewAssetId));
 $("#asset-preview-reveal").addEventListener("click", () => { if (activePreviewAssetId) api(`/api/projects/${activeProjectId}/assets/${activePreviewAssetId}/reveal`, { method: "POST", body: "{}" }).catch(error => toast(error.message, "error")); });
+$("#asset-preview-dialog").addEventListener("close", () => {
+  $$("#asset-preview-body video, #asset-preview-body audio").forEach(media => media.pause());
+  $("#asset-preview-body").replaceChildren();
+  activePreviewAssetId = null;
+});
 $("#asset-editor-form").addEventListener("submit", saveEditedAsset);
 $("#asset-move-form").addEventListener("submit", submitAssetMove);
 $("#project-search").addEventListener("input", event => { projectSearch = event.target.value; renderLibrary(); });
@@ -885,9 +919,30 @@ $("#skill-dropzone").addEventListener("drop", event => { event.preventDefault();
 $("#skill-search").addEventListener("input", event => { skillSearch = event.target.value; renderSkills(); });
 $$("[data-skill-filter]").forEach(button => button.addEventListener("click", () => { skillFilter = button.dataset.skillFilter; $$("[data-skill-filter]").forEach(item => item.classList.toggle("active", item === button)); renderSkills(); }));
 $("#skill-detail-toggle").addEventListener("change", event => { if (activeSkillDetail?.skill) setSkillEnabled(activeSkillDetail.skill, event.currentTarget.checked); });
-$("#secret-toggle").addEventListener("click", event => { const input = $("#ark-api-key"); input.type = input.type === "password" ? "text" : "password"; event.currentTarget.textContent = input.type === "password" ? "显示" : "隐藏"; });
-$("#credential-form").addEventListener("submit", async event => { event.preventDefault(); const apiKey = $("#ark-api-key").value.trim(); if (!apiKey) { $("#ark-key-error").textContent = "请输入 API Key。"; return; } try { await api("/api/secrets/ark", { method: "PUT", body: JSON.stringify({ apiKey }) }); $("#ark-api-key").value = ""; $("#settings-dialog").close(); await refreshState(); toast("API Key 已安全保存。", "success"); } catch (error) { $("#ark-key-error").textContent = error.message; } });
-$("#clear-key-button").addEventListener("click", async () => { try { await api("/api/secrets/ark", { method: "DELETE" }); await refreshState(); toast("已清除保存的 API Key。", "success"); } catch (error) { toast(error.message, "error"); } });
+for (const config of [
+  { name: "方舟", key: "ark", input: "ark-api-key", form: "credential-form", toggle: "secret-toggle", error: "ark-key-error", save: "save-key-button", clear: "clear-key-button" },
+  { name: "豆包语音", key: "speech", input: "speech-api-key", form: "speech-credential-form", toggle: "speech-secret-toggle", error: "speech-key-error", save: "save-speech-key-button", clear: "clear-speech-key-button" }
+]) {
+  const resetField = () => { $(`#${config.input}`).value = ""; $(`#${config.input}`).type = "password"; $(`#${config.toggle}`).textContent = "显示"; $(`#${config.toggle}`).setAttribute("aria-pressed", "false"); $(`#${config.toggle}`).setAttribute("aria-label", `显示${config.name}密钥`); $(`#${config.error}`).textContent = ""; };
+  $(`#${config.toggle}`).addEventListener("click", event => {
+    const input = $(`#${config.input}`); input.type = input.type === "password" ? "text" : "password";
+    const visible = input.type === "text"; event.currentTarget.textContent = visible ? "隐藏" : "显示";
+    event.currentTarget.setAttribute("aria-pressed", String(visible)); event.currentTarget.setAttribute("aria-label", `${visible ? "隐藏" : "显示"}${config.name}密钥`);
+  });
+  $(`#${config.form}`).addEventListener("submit", async event => {
+    event.preventDefault(); const input = $(`#${config.input}`); const apiKey = input.value.trim();
+    if (apiKey.length < 12 || apiKey.length > 512 || /\s/.test(apiKey)) { $(`#${config.error}`).textContent = "密钥格式不正确，请检查空格和完整性。"; return; }
+    const button = $(`#${config.save}`); button.disabled = true;
+    try { await api(`/api/secrets/${config.key}`, { method: "PUT", body: JSON.stringify({ apiKey }) }); resetField(); await refreshState(); toast(`${config.name}密钥已安全保存，服务权限需通过实际调用确认。`, "success"); }
+    catch { $(`#${config.error}`).textContent = "保存失败，请确认工作台服务正常后重试。"; }
+    finally { button.disabled = false; }
+  });
+  $(`#${config.clear}`).addEventListener("click", async () => {
+    try { await api(`/api/secrets/${config.key}`, { method: "DELETE" }); resetField(); await refreshState(); toast(`已清除${config.name}密钥。`, "success"); }
+    catch { $(`#${config.error}`).textContent = "清除失败，请检查工作台服务。"; }
+  });
+  $("#settings-dialog").addEventListener("close", resetField);
+}
 $("#canvas-zoom-in").addEventListener("click", () => zoomCanvas(1.15));
 $("#canvas-zoom-out").addEventListener("click", () => zoomCanvas(1 / 1.15));
 $("#canvas-fit").addEventListener("click", fitCanvas);
@@ -897,12 +952,15 @@ $("#canvas-stage").addEventListener("pointerdown", event => {
   const middlePan = event.button === 1;
   if ((!leftBlank && !middlePan) || event.target.closest(".canvas-minimap")) return;
   event.preventDefault();
-  canvasRuntime.dragging = { type: "pan", startX: event.clientX, startY: event.clientY, originX: canvasRuntime.x, originY: canvasRuntime.y };
+  canvasRuntime.suppressClick = false;
+  canvasRuntime.dragging = { type: "pan", pointerId: event.pointerId, moved: false, startX: event.clientX, startY: event.clientY, originX: canvasRuntime.x, originY: canvasRuntime.y };
   event.currentTarget.setPointerCapture(event.pointerId);
   event.currentTarget.classList.add("panning");
 });
 $("#canvas-stage").addEventListener("pointermove", event => {
-  const drag = canvasRuntime.dragging; if (!drag) return;
+  const drag = canvasRuntime.dragging; if (!drag || event.pointerId !== drag.pointerId) return;
+  if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 5) return;
+  drag.moved = true;
   if (drag.type === "pan") { canvasRuntime.x = drag.originX + event.clientX - drag.startX; canvasRuntime.y = drag.originY + event.clientY - drag.startY; applyCanvasTransform(); }
   if (drag.type === "node") {
     const node = $(`[data-node-id="${CSS.escape(drag.nodeId)}"]`); if (!node) return;
@@ -912,8 +970,13 @@ $("#canvas-stage").addEventListener("pointermove", event => {
     drawCanvasEdges(buildCanvasGraph(activeProject(), activeCreation()));
   }
 });
-$("#canvas-stage").addEventListener("pointerup", event => { if (!canvasRuntime.dragging) return; canvasRuntime.dragging = null; event.currentTarget.classList.remove("panning"); scheduleCanvasSave(); });
-$("#canvas-stage").addEventListener("pointercancel", event => { canvasRuntime.dragging = null; event.currentTarget.classList.remove("panning"); });
+$("#canvas-stage").addEventListener("pointerup", event => {
+  const drag = canvasRuntime.dragging; if (!drag || event.pointerId !== drag.pointerId) return;
+  canvasRuntime.suppressClick = drag.moved || drag.type === "pan";
+  canvasRuntime.dragging = null; event.currentTarget.classList.remove("panning");
+  if (drag.moved) scheduleCanvasSave();
+});
+$("#canvas-stage").addEventListener("pointercancel", event => { canvasRuntime.suppressClick = true; canvasRuntime.dragging = null; event.currentTarget.classList.remove("panning"); });
 $("#canvas-stage").addEventListener("auxclick", event => { if (event.button === 1) event.preventDefault(); });
 $("#canvas-stage").addEventListener("wheel", event => { event.preventDefault(); const rect = event.currentTarget.getBoundingClientRect(); if (event.ctrlKey) zoomCanvas(event.deltaY < 0 ? 1.1 : 1 / 1.1, { x: event.clientX - rect.left, y: event.clientY - rect.top }); else { canvasRuntime.x -= event.deltaX; canvasRuntime.y -= event.deltaY; applyCanvasTransform(); scheduleCanvasSave(); } }, { passive: false });
 $("#canvas-stage").addEventListener("dragover", event => { event.preventDefault(); event.currentTarget.classList.add("file-dragging"); });

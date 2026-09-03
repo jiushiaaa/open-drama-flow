@@ -23,10 +23,24 @@ test("the forkable plugin ships all 45 built-in Skill entrypoints", async () => 
 });
 
 test("Skill enable state persists and controls the managed catalog", async () => {
-  await registry.setManagedSkillEnabled("minimax-film-shot", false);
-  assert.equal((await registry.listManagedSkills()).find(skill => skill.name === "minimax-film-shot").enabled, false);
-  assert.equal((await registry.listManagedSkills({ enabledOnly: true })).some(skill => skill.name === "minimax-film-shot"), false);
-  await registry.setManagedSkillEnabled("minimax-film-shot", true);
+  await registry.setManagedSkillEnabled("film-shot", false);
+  assert.equal((await registry.listManagedSkills()).find(skill => skill.name === "film-shot").enabled, false);
+  assert.equal((await registry.listManagedSkills({ enabledOnly: true })).some(skill => skill.name === "film-shot"), false);
+  await registry.setManagedSkillEnabled("film-shot", true);
+});
+
+test("explicit IDs and display names cannot invoke a disabled Skill", async () => {
+  const { routeSkills } = await import("../src/skill-router.mjs");
+  const name = "ui-motion";
+  await registry.setManagedSkillEnabled(name, false);
+  try {
+    for (const request of [`$${name}`, "$ai-drama-studio:ui-motion", "界面交互动效", "UI Motion"]) {
+      assert.ok((await routeSkills(request, 5)).selected.every(skill => skill.name !== name), request);
+    }
+  } finally {
+    await registry.setManagedSkillEnabled(name, true);
+  }
+  assert.equal((await routeSkills("界面交互动效", 5)).selected[0].name, name);
 });
 
 test("a zip containing one SKILL.md is imported into the local router library", async () => {

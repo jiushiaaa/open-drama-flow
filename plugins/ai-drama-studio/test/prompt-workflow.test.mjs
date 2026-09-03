@@ -89,7 +89,7 @@ function completePlan(creationId, suffix, generationMode = "seedance") {
       deliverables: ["5 秒竖屏 MP4"],
       acceptanceCriteria: ["角色与旧相机外观稳定", "运镜只有一次缓慢推进"]
     },
-    selectedSkills: ["minimax-character-scene-storyboard"],
+    selectedSkills: ["character-scene-storyboard"],
     scenes: [{ id: `scene-${suffix}`, heading: "雨夜废弃车站", summary: "角色在月台发现未来相机" }],
     characters: [{ id: `character-${suffix}`, name: "林夏", role: "主角", visual: "黑色短发、红色发卡、深色雨衣", referenceAssetIds: [] }],
     shots: [completeV2Shot(suffix, generationMode)]

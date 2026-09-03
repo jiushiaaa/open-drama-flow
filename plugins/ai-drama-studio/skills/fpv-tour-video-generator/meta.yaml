@@ -1,0 +1,5 @@
+name: fpv-tour-video-generator
+name-cn: "FPV 穿越短片"
+summary-cn: "基于场景参考规划第一人称 FPV 一镜到底飞行；适用于建筑、文旅、室内与空间展示。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:fpv-tour-video-generator，根据我提供的素材与要求完成FPV 穿越短片，并核验所需工具与交付结果。"
+  short_description: "基于场景参考规划第一人称 FPV 一镜到底飞行；适用于建筑、文旅、室内与空间展示。"
+  display_name: "FPV 穿越短片"

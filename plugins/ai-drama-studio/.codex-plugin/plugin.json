@@ -1,7 +1,7 @@
 {
   "name": "ai-drama-studio",
-  "version": "0.1.0+codex.20260902harness2",
-  "description": "Codex-native local harness for AI comic-drama scripting, storyboards, media generation, approvals and FFmpeg editing.",
+  "version": "0.1.0+codex.20260903skillnames1",
+  "description": "Codex-native local harness for AI video planning, canonical creative skills, versioned assets, Seedance generation and FFmpeg editing.",
   "author": {
     "name": "OpenDramaFlow Contributors"
   },
@@ -18,8 +18,8 @@
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "OpenDramaFlow",
-    "shortDescription": "\u5267\u672c\u3001\u5206\u955c\u3001\u7d20\u6750\u3001\u89c6\u9891\u4e0e\u526a\u8f91\u7684\u4e00\u4f53\u5316\u672c\u5730\u5236\u4f5c\u6d41\u7a0b",
-    "longDescription": "\u8ba9 Codex \u8bfb\u53d6\u9879\u76ee\u72b6\u6001\u3001\u7f16\u5199\u5267\u672c\u4e0e\u5206\u955c\u3001\u9886\u53d6 Image Gen \u7d20\u6750\u4efb\u52a1\u3001\u521b\u5efa\u53d7\u5ba1\u6279\u7684 Seedream/Seedance \u6279\u6b21\uff0c\u5e76\u7528 FFmpeg \u786e\u5b9a\u6027\u5408\u6210\u6210\u7247\u3002",
+    "shortDescription": "剧本、分镜、素材、视频与剪辑的一体化本地制作流程",
+    "longDescription": "由 Codex 总控自动规划视频、编写分镜与提示词。默认使用内置 image2 生成候选，经用户验收后入库；Seedance 2.5 按冻结范围与当前执行策略运行，支持素材版本追踪、ASR/TTS 与 FFmpeg 后期。",
     "developerName": "OpenDramaFlow",
     "category": "Productivity",
     "capabilities": [
@@ -29,9 +29,9 @@
       "Media generation"
     ],
     "defaultPrompt": [
-      "\u68c0\u67e5\u5f53\u524d\u6f2b\u5267\u9879\u76ee\uff0c\u544a\u8bc9\u6211\u4e0b\u4e00\u6b65\u5e76\u7ee7\u7eed\u5236\u4f5c\u3002",
-      "\u4e3a\u8fd9\u4e2a\u6545\u4e8b\u5199\u5267\u672c\u3001\u62c6\u955c\u5e76\u5efa\u7acb\u7d20\u6750\u4efb\u52a1\u3002",
-      "\u68c0\u67e5\u5f85\u5ba1\u6279\u8d39\u7528\u6279\u6b21\uff0c\u4e0d\u8c03\u7528\u4ed8\u8d39\u6a21\u578b\u3002"
+      "检查当前视频项目，告诉我下一步并继续制作。",
+      "为这个故事写剧本、拆镜并建立素材任务。",
+      "检查待审批费用批次，不调用付费模型。"
     ],
     "brandColor": "#2457D6"
   }

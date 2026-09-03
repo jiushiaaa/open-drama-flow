@@ -1,0 +1,5 @@
+name: video-prompting
+name-cn: "视频模型提示词"
+summary-cn: "为 Seedance 等指定图像/视频模型撰写或优化提示词；适用于单镜头、参考图、关键帧和编辑指令。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

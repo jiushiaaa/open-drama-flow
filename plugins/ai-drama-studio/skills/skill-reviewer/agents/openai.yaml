@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:skill-reviewer，根据我提供的素材与要求完成创作 Skill 审查，并核验所需工具与交付结果。"
+  short_description: "只读审查项目内创作 Skill 的结构、触发描述和工作流质量；适用于发布或安装前验收。"
+  display_name: "创作 Skill 审查"

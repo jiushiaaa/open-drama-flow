@@ -1,0 +1,5 @@
+name: film-reference-prompt-writer
+name-cn: "电影参考提示词"
+summary-cn: "把电影名称、剧照或截图组转成可执行的图像/视频提示词；适用于摄影、美术和运镜参考迁移。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

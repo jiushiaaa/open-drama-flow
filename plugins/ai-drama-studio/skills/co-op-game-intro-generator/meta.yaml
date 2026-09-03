@@ -1,0 +1,5 @@
+name: co-op-game-intro-generator
+name-cn: "双人游戏开场"
+summary-cn: "制作双人合作游戏主菜单与开场动画；适用于角色卡、装备配置、加载与进入世界的连续演示。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

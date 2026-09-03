@@ -1,0 +1,5 @@
+name: image-remix
+name-cn: "图片灵感重混"
+summary-cn: "提取参考图的构图、色彩、光影和氛围并生成内容不同的新图；适用于审美迁移而非复制主体。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

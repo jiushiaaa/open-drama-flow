@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:ui-motion，根据我提供的素材与要求完成界面交互动效，并核验所需工具与交付结果。"
+  short_description: "基于真实品牌界面制作 App、SaaS 或网页 UI 动效；适用于状态变化、交互、卡片重组和界面演示。"
+  display_name: "界面交互动效"

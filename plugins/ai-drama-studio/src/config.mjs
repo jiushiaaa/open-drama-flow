@@ -28,6 +28,7 @@ export const lockedGenerationSettings = {
 
 export const defaultSettings = {
   ...lockedGenerationSettings,
+  executionMode: "automatic",
   publicAssetBaseUrl: ""
 };
 

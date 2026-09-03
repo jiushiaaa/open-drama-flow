@@ -45,6 +45,17 @@ if (-not (Find-Command "npm.cmd")) { throw "NPM_NOT_FOUND" }
 if (-not (Find-Command "ffmpeg.exe")) { Install-WingetPackage "Gyan.FFmpeg" }
 if (-not (Find-Command "codex.exe")) { throw "CODEX_CLI_NOT_FOUND: run this installation prompt inside Codex Desktop." }
 
+# On Windows the CLI can partially remove a cache before noticing its open cwd.
+# Refuse an in-use upgrade before changing dependencies, settings, or cache files.
+$installedPluginLines = @(& codex.exe plugin list | Select-String '^ai-drama-studio@ai-drama-local\s+.*installed,')
+if ($installedPluginLines.Count -gt 0) {
+  $activeWorkbench = $false
+  try { $activeWorkbench = (Invoke-RestMethod -Uri 'http://127.0.0.1:4317/api/health' -TimeoutSec 2).ok -eq $true } catch {}
+  if ($activeWorkbench) {
+    throw 'PLUGIN_IN_USE: Close Codex Desktop and the OpenDramaFlow workbench before upgrading. Then run this installer from PowerShell; no files have been changed.'
+  }
+}
+
 New-Item -ItemType Directory -Force -Path $runtimeBin | Out-Null
 if (-not (Test-Path -LiteralPath $cloudflaredPath)) {
   $architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
@@ -60,6 +71,10 @@ Push-Location $pluginRoot
 try {
   & npm.cmd ci --no-audit --no-fund
   if ($LASTEXITCODE -ne 0) { throw "NPM_INSTALL_FAILED" }
+  & node.exe scripts/sync-skill-manifest.mjs --check
+  if ($LASTEXITCODE -ne 0) { throw "SKILL_MANIFEST_MISMATCH" }
+  & node.exe scripts/migrate-skill-settings.mjs
+  if ($LASTEXITCODE -ne 0) { throw "SKILL_SETTINGS_MIGRATION_FAILED" }
 } finally {
   Pop-Location
 }

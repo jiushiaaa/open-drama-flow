@@ -22,6 +22,7 @@ const {
 const { probeMedia } = await import("../src/ffmpeg.mjs");
 
 after(async () => {
+  await (await import("../src/background-jobs.mjs")).drainBackgroundJobs();
   await fs.rm(tempRoot, { recursive: true, force: true });
 });
 
@@ -38,7 +39,7 @@ function planInput(creationId, { aspectRatio = "9:16", shots, acceptanceCriteria
       deliverables: [`${aspectRatio} MP4`],
       acceptanceCriteria
     },
-    selectedSkills: ["minimax-minimalist-product-ad-generator"],
+    selectedSkills: ["minimalist-product-ad-generator"],
     premise: "用产品特写表现轻便和降噪",
     shots: shots || [{
       id: "shot-1",
@@ -73,6 +74,11 @@ async function prepareAndReview(projectId, creationId, outputId, criteria) {
   const evidence = await prepareQualityEvidence(projectId, creationId, outputId);
   return recordQualityReview(projectId, creationId, outputId, {
     ...reviewInput(criteria),
+    playbackSourceSha256: evidence.source.sha256,
+    listenedAudioSha256: evidence.temporal.audioPlayback?.sha256,
+    observations: evidence.temporal.requirements.map(item => ({ shotId: item.shotId, start: item.start, end: item.end,
+      ...Object.fromEntries(Object.keys(item.required).map(key => [key, "passed"])), heardDialogue: item.expectedDialogue, observedSubtitles: item.expectedSubtitles,
+      notes: "Test fixture playback assertion; not a real creative acceptance." })),
     inspectedFrameSha256s: evidence.frames.map(frame => frame.sha256)
   });
 }

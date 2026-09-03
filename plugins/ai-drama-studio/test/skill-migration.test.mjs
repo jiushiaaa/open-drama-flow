@@ -24,35 +24,24 @@ async function walkFiles(root) {
   return files;
 }
 
-test("migration manifest accounts for every MiniMax source and reference file", async () => {
-  const manifest = JSON.parse(
-    await fs.readFile(path.join(skillsRoot, "MINIMAX_MIGRATION_MANIFEST.json"), "utf8")
-  );
-  assert.equal(manifest.schemaVersion, 1);
-  assert.equal(manifest.skillCount, 44);
-  assert.equal(manifest.skills.length, 44);
-  assert.deepEqual(
-    new Set(manifest.skills.map(skill => skill.name)),
-    new Set(specializedSkills.map(skill => skill.name))
-  );
-
-  const records = manifest.skills.flatMap(skill => skill.files);
-  assert.equal(records.length, 206);
-  assert.equal(records.filter(file => file.sourcePath.startsWith("references/")).length, 123);
-
+test("manifest accounts for every current skill file including producer and references", async () => {
+  const {buildSkillManifest} = await import("../scripts/skill-manifest.mjs");
+  const manifest = JSON.parse(await fs.readFile(path.join(skillsRoot, "SKILL_MANIFEST.json"), "utf8"));
+  assert.equal(manifest.schemaVersion, 2);
+  assert.equal(manifest.skillCount, 45);
+  assert.deepEqual(manifest, await buildSkillManifest());
+  const directories = (await fs.readdir(skillsRoot, {withFileTypes: true})).filter(e => e.isDirectory()).map(e => e.name).sort();
+  assert.deepEqual(directories, manifest.skills.map(s => s.name).sort());
   for (const skill of manifest.skills) {
-    const skillRoot = path.join(skillsRoot, skill.name);
-    const entrypoint = await fs.readFile(path.join(skillRoot, "SKILL.md"));
-    assert.equal(sha256(entrypoint), skill.entrypointSha256);
-    for (const record of skill.files) {
-      assert.match(record.sourceSha256, /^[a-f0-9]{64}$/);
-      const target = await fs.readFile(path.join(skillRoot, ...record.targetPath.split("/")));
-      assert.equal(sha256(target), record.targetSha256, `${skill.name}/${record.targetPath}`);
+    assert.ok(skill.files.some(f => f.path === "SKILL.md"));
+    for (const file of skill.files) {
+      assert.match(file.sha256, /^[a-f0-9]{64}$/);
+      assert.equal(sha256(await fs.readFile(path.join(skillsRoot, skill.name, file.path))), file.sha256);
     }
   }
 });
 
-test("all migrated skills disclose their full workflow and real runtime contract", async () => {
+test("all specialist skills disclose their full workflow and real runtime contract", async () => {
   for (const skill of specializedSkills) {
     const skillRoot = path.join(skillsRoot, skill.name);
     const entrypoint = await fs.readFile(path.join(skillRoot, "SKILL.md"), "utf8");
@@ -63,15 +52,17 @@ test("all migrated skills disclose their full workflow and real runtime contract
     assert.match(entrypoint, /drama_request_paid_batch/);
     assert.match(entrypoint, /drama_resume_paid_batch/);
     assert.match(workflow, /完整制作工作流/);
-    assert.match(workflow, /Seedance 2\.5 付费审批链/);
+    assert.match(workflow, /drama_authorize_and_start_paid_batch/);
+    assert.match(workflow, /automatic/);
+    assert.match(workflow, /execution-contract\.md/);
     assert.doesNotMatch(workflow, /hub_[A-Za-z0-9_]+/);
     assert.doesNotMatch(workflow, /视频生成默认使用\s*(?:MiniMax[- ]?)?H3/i);
   }
 });
 
-test("every local Markdown link in the migrated skills resolves", async () => {
+test("every local Markdown link in all bundled skills resolves", async () => {
   const broken = [];
-  for (const skill of specializedSkills) {
+  for (const skill of [{name: "ai-drama-producer"}, ...specializedSkills]) {
     const skillRoot = path.join(skillsRoot, skill.name);
     const markdownFiles = (await walkFiles(skillRoot)).filter(file => file.endsWith(".md"));
     for (const file of markdownFiles) {
@@ -92,6 +83,19 @@ test("every local Markdown link in the migrated skills resolves", async () => {
   assert.deepEqual(broken, []);
 });
 
+test("active skill paths and text contain no retired platform or model identities", async () => {
+  const stale = [];
+  for (const file of await walkFiles(skillsRoot)) {
+    const relative = path.relative(skillsRoot, file);
+    if (/minimax|hilo|(?:^|[\\/._-])h3(?:[\\/._-]|$)/i.test(relative)) stale.push(relative);
+    if (/\.(?:md|yaml|json|mjs|js|py|txt|csv)$/i.test(file)) {
+      const content = await fs.readFile(file, "utf8");
+      if (/minimax|\bh3\b|hilo/i.test(content)) stale.push(`${relative}: content`);
+    }
+  }
+  assert.deepEqual(stale, []);
+});
+
 test("remaining local editing adapter keeps its verification reference", async () => {
-  await fs.access(path.join(skillsRoot, "minimax-clip-studio-craft", "references", "verification.md"));
+  await fs.access(path.join(skillsRoot, "clip-studio-craft", "references", "verification.md"));
 });

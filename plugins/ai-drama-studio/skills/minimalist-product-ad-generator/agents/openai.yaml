@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:minimalist-product-ad-generator，根据我提供的素材与要求完成极简产品广告，并核验所需工具与交付结果。"
+  short_description: "把实体产品图制作成留白、细节特写和高质感节奏的极简广告；适用于电商与新品发布。"
+  display_name: "极简产品广告"

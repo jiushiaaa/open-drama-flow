@@ -1,0 +1,5 @@
+name: live-sketch-motion
+name-cn: "实景手绘显影"
+summary-cn: "把实景照片或文字场景制作成笔尖同步手绘显影视频；适用于彩铅、蜡笔和空间遮挡效果。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

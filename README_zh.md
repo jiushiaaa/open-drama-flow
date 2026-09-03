@@ -50,7 +50,7 @@ OpenDramaFlow 专为 **Windows PC 上的 Codex Desktop** 设计。
 | Codex 全程操作 | 通过 MCP 创建、读取、修改、生成和渲染项目 |
 | 自动选择专业能力 | 44 个专业 Skill 加 1 个总控 Skill，按用户需求自动加载 |
 | 分层生产记忆 | 只有明确批准的系列、分卷/季度和创作页记忆才会进入限额 context pack |
-| 控制真实费用 | 付费调用前必须审批，并设置图片和视频硬性次数上限 |
+| 控制真实费用 | 默认自动执行、可选逐批审批；始终冻结输入版本与图片/视频次数上限 |
 | 本地保护密钥 | 使用 Windows DPAPI 加密，MCP 永远不会返回 API Key 明文 |
 | 拒绝伪造产物 | FFmpeg 只合成真实生成或导入的图片与视频 |
 | 可检查质量复核 | 从当前成片确定性抽取证据帧，再由 Codex 或用户实际目检 |
@@ -77,8 +77,8 @@ flowchart LR
 2. 向 Codex 说明题材、受众、时长、风格和交付目标。
 3. Codex 读取只含当前系列、分卷/季度与创作页已批准记忆的 context pack。
 4. Codex 写入正式计划和有序 ShotSpec v2；`imagePrompt` 只负责静态构图，`videoPrompt` 负责动作与运镜。
-5. OpenDramaFlow 在可信人工审批前编译并冻结准确的供应商请求摘要、素材版本与调用上限。
-6. Codex Image Gen 或 Seedream 生成真实图片；当前 Ark 视频适配器只用一张已批准首帧生成 4–15 秒 I2V 镜头。
+5. OpenDramaFlow 编译并冻结供应商请求摘要、素材版本与调用上限，然后默认自动执行；只有用户选择手动模式时才逐批弹窗审批。
+6. 默认 Codex 内置图片工具（image2）生成库外候选，用户验收确切图片后才入库；仅内置不可用、失败或用户指定时启用 Seedream。当前 Seedance 2.5 适配器支持 4–30 秒、六种输入/任务模式，覆盖多图、视频/音频参考、首尾帧、续写与提示词编辑；每次仍校验实际参数、素材版本与能力。
 7. FFmpeg 组织真实素材，随后系统确定性抽取证据帧；Codex 或用户必须实际查看后才能记录质量通过并生成最终 SHA-256 清单。
 
 ## 界面展示
@@ -93,7 +93,9 @@ Codex 是对话控制面。画布负责呈现已经持久化的 brief、素材�
 
 ### 本地密钥仓
 
-普通用户只需要配置火山方舟 API Key。模型 ID、画幅、分辨率、水印和生成上限由系统维护，不作为日常表单暴露。
+配置火山方舟 API Key 即可走 Seedance 原生声音方案；可另外配置豆包语音 API Key，按需使用 ASR 对白识别与 TTS 预置音色旁白/补录。两份密钥独立经 Windows DPAPI 加密保存，不进入项目或 Git，换电脑需自行配置。保存 Key 不代表服务权限已开通。声音克隆与独立音乐生成暂不接入。
+
+语音任务通过 `drama_request_speech_job` → `drama_authorize_speech_job` → `drama_get_speech_job` 冻结、执行和查询；默认自动执行，每项仅 1 次调用，无自动重试。用户选择手动模式时才逐项审批。ASR 默认选取 5 秒、上限 120 秒的音频/视频片段；TTS 上限 500 字符。结果进入素材库但仍需审核，转写不会自动进入批准记忆。见[语音验收与边界](docs/doubao-speech-validation.md)。
 
 ![OpenDramaFlow API Key 安全仓](docs/images/api-key-vault.png)
 
@@ -104,7 +106,7 @@ Codex 是对话控制面。画布负责呈现已经持久化的 brief、素材�
 - 由 Codex 编写故事梗概、正式剧本、角色设定、场景和分镜。
 - ShotSpec v2 结构化记录镜头目的、主体、起止状态、机位、运动、声音意图、连续性、负面约束、质量风险和验收标准。
 - 静态 `imagePrompt` 与运动优先的 `videoPrompt` 分离；已批准首帧在 I2V 中承担身份、构图和风格约束。
-- Codex 可以领取 Image Gen 任务并回填真实图片素材。
+- Codex 可以领取 Image Gen 任务，生成并展示库外候选；用户验收后才回填确切图片素材。
 - Seedream 5.0 Pro 图片生成适配器。
 - Ark 视频任务的异步创建、轮询、下载和镜头回填，严格受当前适配器已经验证的边界约束。
 - FFmpeg 确定性剪辑、视频规格统一、音频处理和 SRT 字幕烧录。
@@ -120,8 +122,8 @@ OpenDramaFlow 当前包含 45 个项目 Skill：
 
 ### 审批与恢复
 
-- Seedream 和 Seedance 真实付费调用必须先获得批次审批。
-- 审批冻结准确的请求摘要、计划修订、输入素材版本、供应商参数和调用上限；任何一项变化都需要重新审批。
+- Codex 按用户创作目标默认自动执行 Seedream、Seedance、ASR/TTS，无需逐次产品审批。用户说“先审批再执行”时，通过 `drama_set_execution_mode(manual)` 开启逐批确认；说“恢复自动”时设置 `automatic`。切换本身不启动任务，不修改 Codex 的沙箱、网络或工具权限。
+- 调用范围冻结请求摘要、计划修订、输入素材版本、供应商参数、执行模式和调用上限；变化后需重新冻结。手动模式仍需本人通过 MCP 表单确认；不会把旧的拒绝记录改成自动授权。
 - 每个批次都有图片与视频调用硬上限。
 - 候选记忆不会直接进入生产；只有明确复核并批准的准确版本，才会按当前创作页、分卷/季度与系列范围进入后续 context pack。
 - 后续步骤失败时，已经成功生成的素材会继续保留。
@@ -190,11 +192,11 @@ HTTP 服务只监听本机回环地址。项目状态默认保存在 `%LOCALAPPD
 | `drama_set_skill_enabled` | 启用或停用某个 Skill 的自动路由 |
 | `drama_create_project` | 创建不触发模型调用的空白项目 |
 | `drama_update_plan` | 写入正式故事、人物、场景和分镜 |
-| `drama_request_paid_batch` | 创建有次数上限的真实调用审批 |
-| `drama_authorize_and_start_paid_batch` | 展示冻结范围并取得可信人工确认后，仅启动一个批次 |
+| `drama_request_paid_batch` | 冻结请求摘要、素材版本与次数上限；不启动模型 |
+| `drama_authorize_and_start_paid_batch` | 按当前策略启动一个批次：默认 automatic；manual 才要求可信人工确认 |
 | `drama_resume_paid_batch` | 图片任务完成后继续已经批准的流水线 |
 | `drama_claim_image_task` | 领取一个 Codex Image Gen 任务 |
-| `drama_complete_image_task` | 将真实图片回填到对应镜头 |
+| `drama_complete_image_task` | 用户验收确切候选图片后，将其回填到对应镜头 |
 | `drama_render_project` | 使用 FFmpeg 把真实素材渲染成本地 MP4 |
 | `drama_prepare_quality_evidence` | 从当前 MP4 抽取带哈希的目检帧，不自动判定通过 |
 | `drama_record_quality_review` | Codex 或用户实际检查输出证据后记录质量结论 |
@@ -219,6 +221,8 @@ open-drama-flow/
 └─ LICENSE
 ```
 
+44 个专业 Skill 已统一为无供应商前缀的标识，默认由总控自动执行。旧启用开关与历史引用兼容迁移，冻结生产记录不改写。升级后需重启 Codex Desktop。具体名称、图片验收边界和维护命令见[Skill 更新说明](docs/skill-runtime-update.md)。
+
 ## 开发与验证
 
 ```powershell
@@ -241,7 +245,7 @@ npm test
 ## 当前能力边界
 
 - 正式生产前仍应使用自己的模型权限完成一次真实付费端到端验证。
-- 当前 Ark 视频适配器仅支持一张首帧参考的 I2V（`https://` 或可信 `asset://`）和 4–15 秒整数时长；不支持多参考图、参考视频/音频、首尾帧续接或原位视频编辑。
+- Seedance 2.5 适配器已提供多模态参考、首尾帧、续写和提示词驱动编辑等六种任务模式及 4–30 秒输出合同；这不等于账号侧所有模式均已实测，也不等于像素级蒙版编辑。见[已实现范围与待验收项](docs/seedance-2.5-validation.md)。
 - 只有镜头合同声明且本地设置启用时才会请求供应商原生音频。最终是否有可用声音，必须以下载成片真实存在音轨并通过实际听检为证据；模型宣传或请求参数都不能单独证明。
 - 音色克隆、专业 NLE 工程导出和可控 3D 场景仍属于规划能力，等待真实适配器接入。
 - OpenDramaFlow 面向 Windows PC 桌面工作流。

@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:transcript-broll-planner，根据我提供的素材与要求完成口播 B-roll 规划，并核验所需工具与交付结果。"
+  short_description: "把逐字稿、配音稿或数据讲稿转为可审片 B-roll 计划；适用于知识、产品和市场分析视频。"
+  display_name: "口播 B-roll 规划"

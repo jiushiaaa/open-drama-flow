@@ -22,6 +22,7 @@ const {
 const { probeMedia } = await import("../src/ffmpeg.mjs");
 
 after(async () => {
+  await (await import("../src/background-jobs.mjs")).drainBackgroundJobs();
   await fs.rm(tempRoot, { recursive: true, force: true });
 });
 
@@ -44,7 +45,7 @@ function completePlan(creationId, shots, overrides = {}) {
       acceptanceCriteria: ["素材版本准确"],
       ...(overrides.brief || {})
     },
-    selectedSkills: ["minimax-brand-promo-video-generator"],
+    selectedSkills: ["brand-promo-video-generator"],
     premise: "使用已审核素材完成视频",
     characters: overrides.characters || [],
     shots

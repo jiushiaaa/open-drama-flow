@@ -1,0 +1,5 @@
+name: pov-short-film-generator
+name-cn: "第一视角剧情短片"
+summary-cn: "制作悬疑、生存、恋爱、职场等题材的沉浸式第一视角剧情短片；适用于眼睛视角叙事。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:browser-game-demo-maker，根据我提供的素材与要求完成浏览器游戏 Demo 影像，并核验所需工具与交付结果。"
+  short_description: "制作真实浏览器窗口与本地 HTML5 游戏 Demo 的截图锚点和连续演示视频；适用于 localhost 游戏展示。"
+  display_name: "浏览器游戏 Demo 影像"

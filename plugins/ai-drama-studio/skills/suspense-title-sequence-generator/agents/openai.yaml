@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:suspense-title-sequence-generator，根据我提供的素材与要求完成悬疑电影片头，并核验所需工具与交付结果。"
+  short_description: "制作悬疑、犯罪、黑色电影或间谍风标题序列；适用于片名、卡司和复古节拍动效。"
+  display_name: "悬疑电影片头"

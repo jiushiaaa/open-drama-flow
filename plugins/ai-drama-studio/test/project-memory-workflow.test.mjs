@@ -27,7 +27,7 @@ function completePlan(creationId) {
       deliverables: ["竖屏 MP4"],
       acceptanceCriteria: ["设定准确"]
     },
-    selectedSkills: ["minimax-brand-promo-video-generator"],
+    selectedSkills: ["brand-promo-video-generator"],
     shots: [{ id: "shot-1", duration: 5, scene: "场景", framing: "中景", prompt: "稳定的静态镜头", generationMode: "static-motion" }]
   };
 }

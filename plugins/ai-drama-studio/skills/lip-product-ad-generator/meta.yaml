@@ -1,0 +1,5 @@
+name: lip-product-ad-generator
+name-cn: "唇部彩妆广告"
+summary-cn: "制作口红、唇釉、唇泥等唇部产品广告；适用于模特、产品静物和质地特写的组合。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

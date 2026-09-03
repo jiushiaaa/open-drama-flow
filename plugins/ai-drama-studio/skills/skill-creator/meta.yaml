@@ -1,0 +1,5 @@
+name: skill-creator
+name-cn: "创作技能编写与迁移"
+summary-cn: "把已有创作工作流沉淀为项目内 Codex Skill；适用于新增、迁移或改造可重复创作能力。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

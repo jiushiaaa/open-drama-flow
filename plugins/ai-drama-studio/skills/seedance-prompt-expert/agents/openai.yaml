@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:seedance-prompt-expert，根据我提供的素材与要求完成Seedance 多模态提示词专家，并核验所需工具与交付结果。"
+  short_description: "为 Seedance 2.5 编译多图、视频、音频、首尾帧、续写与编辑提示词；适用于输入模式、素材职责和声音约束的专项规划。"
+  display_name: "Seedance 多模态提示词专家"

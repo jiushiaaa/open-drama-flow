@@ -12,15 +12,17 @@ The user never needs to install, attach, tick or choose a Skill manually. If rea
 
 1. The user's current explicit request and authorization.
 2. Current project revision, accepted asset versions and verified output evidence.
-3. The highest-scoring specialized Skill.
-4. Secondary routed Skills for compatible craft guidance.
-5. Generic producer defaults.
+3. The producer's shared [execution rules](execution-contract.md), [workflow](workflow-contract.md), [provider](provider-contract.md), [prompt](prompt-contract.md) and [image asset contract](image-asset-contract.md): automatic execution within scope, real capability constraints, candidate staging and acceptance before import.
+4. The highest-scoring specialized Skill and compatible secondary craft guidance, only within these shared contracts. Specialist stage confirmations are Agent self-checks in automatic mode unless the user requests manual review; they never waive image acceptance or production-memory approval.
+5. Remaining generic creative defaults.
 
 Do not merge conflicting production assumptions. For example, product KOC, official brand film, FPV tour and first-person narrative can all use similar shots while requiring different authorship, truthfulness, camera and CTA contracts.
 
 ## Route-to-plan contract
 
 Routing is complete only when the durable plan contains:
+
+For standalone image assets, persist the image objective, prompt, approved source bindings and candidate/acceptance record outside the library. Do not fabricate video durations or a complete MP4 brief to satisfy the video route-to-plan fields below.
 
 - a normalized commercial brief;
 - the persisted `selectedSkills` list;
@@ -35,10 +37,11 @@ After persisting these fields, call `drama_get_next_actions`. Do not skip direct
 Imported profiles describe professional decisions, not guaranteed provider availability. Their Codex versions must use:
 
 - `drama_update_plan` for durable brief, Skill, subject and shot state;
-- Codex Image Gen tasks for primary images when the project selects `codex-imagegen`;
-- Seedream only when the installed project adapter selects it;
-- Seedance only after an immutable paid-batch request and trusted MCP form confirmation;
+- the current Codex session's built-in image tool by default, with candidates kept outside the project library until the user accepts them;
+- Seedream only on explicit user request or verified built-in-tool unavailability/failure, never just because an adapter setting selects it; its candidates require the same acceptance-before-import gate;
+- Seedance after an immutable capped request and automatic-policy authorization, or trusted MCP confirmation when the user explicitly selects manual mode;
 - FFmpeg for deterministic editing;
-- an explicit boundary for voice cloning, managed TTS/music, professional NLE export or 3D editing when no real adapter exists.
+- optional Doubao ASR and stock-voice TTS through the current speech adapter when configured and authorized; without a speech key, use Seedance native sound and actual listening checks;
+- an explicit unavailable boundary for voice cloning, independent music generation, professional NLE project export and 3D editing.
 
-Never translate a MiniMax-specific tool name into a claim that an action occurred. A creative Skill may recommend a technique; only adapter state and recorded evidence can prove execution.
+Never translate a OpenDramaFlow-specific tool name into a claim that an action occurred. A creative Skill may recommend a technique; only adapter state and recorded evidence can prove execution.

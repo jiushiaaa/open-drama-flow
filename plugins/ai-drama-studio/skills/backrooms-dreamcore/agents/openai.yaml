@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:backrooms-dreamcore，根据我提供的素材与要求完成后室梦核，并核验所需工具与交付结果。"
+  short_description: "把人物、宠物、物体或场景参考转为后室/梦核空间叙事；适用于诡异熟悉感、循环空间与环境氛围创作。"
+  display_name: "后室梦核"

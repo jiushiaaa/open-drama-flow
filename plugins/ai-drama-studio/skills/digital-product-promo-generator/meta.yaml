@@ -1,0 +1,5 @@
+name: digital-product-promo-generator
+name-cn: "数字产品宣传片"
+summary-cn: "把真实网页、前端项目、截图或录屏转成数字产品宣传片；适用于功能发布和界面叙事。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

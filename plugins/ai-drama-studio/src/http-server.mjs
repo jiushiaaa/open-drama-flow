@@ -9,7 +9,8 @@ import { fileURLToPath } from "node:url";
 import AdmZip from "adm-zip";
 import { allowedAudioExtensions, allowedDocumentExtensions, allowedImageExtensions, allowedSpreadsheetExtensions, allowedVideoExtensions, assertInside, dataRoot, defaultSettings, host, lockedGenerationSettings, port, publicRoot, safeId, workspaceRoot } from "./config.mjs";
 import { appendEvent, mutateState, readState } from "./store.mjs";
-import { clearArkKey, hasArkKey, saveArkKey } from "./secrets.mjs";
+import { clearArkKey, hasArkKey, saveArkKey, clearSpeechKey, hasSpeechKey, saveSpeechKey } from "./secrets.mjs";
+import { speechCapabilities } from "./speech.mjs";
 import { getAssetBridgeStatus } from "./asset-bridge.mjs";
 import { getManagedSkill, importSkillFile, listManagedSkills, setManagedSkillEnabled } from "./skill-registry.mjs";
 import { appendCreationMessage, attachTaskRemoteUrl, claimTask, completeTask, createApproval, createAssetFolder, createCreation, createProject, createWorld, deleteAsset, deleteAssetFolder, deleteCreation, deleteProject, deleteWorld, promoteAsset, renameProject, resumeRealPipeline, setProjectPinned, startLocalRender, updateAsset, updateAssetFolder, updateCreation, updateWorld } from "./workflow.mjs";
@@ -73,10 +74,11 @@ async function readJson(req, maxBytes = 1024 * 1024) {
   catch { throw new Error("JSON_INVALID"); }
 }
 
-function publicState(state, keyConfigured, assetBridge) {
+function publicState(state, keyConfigured, assetBridge, speechConfigured = false) {
   return {
     ...state,
-    credentialStatus: { arkConfigured: keyConfigured },
+    credentialStatus: { arkConfigured: keyConfigured, speechConfigured },
+    speech: speechCapabilities(speechConfigured, state.settings),
     assetBridge,
     projects: state.projects.map(project => ({
       ...project,
@@ -222,7 +224,7 @@ async function handleApi(req, res, url) {
     json(res, 200, { ok: true, service: "ai-drama-studio", now: new Date().toISOString(), ffmpeg: true, assetBridge: await getAssetBridgeStatus() }); return;
   }
   if (req.method === "GET" && url.pathname === "/api/state") {
-    json(res, 200, publicState(await readState(), await hasArkKey(), await getAssetBridgeStatus())); return;
+    json(res, 200, publicState(await readState(), await hasArkKey(), await getAssetBridgeStatus(), await hasSpeechKey())); return;
   }
   if (req.method === "GET" && url.pathname === "/api/skills") {
     const skills = await listManagedSkills();
@@ -261,6 +263,15 @@ async function handleApi(req, res, url) {
   }
   if (req.method === "DELETE" && url.pathname === "/api/secrets/ark") {
     await clearArkKey();
+    json(res, 200, { configured: false }); return;
+  }
+  if (req.method === "PUT" && url.pathname === "/api/secrets/speech") {
+    const body = await readJson(req, 4096);
+    await saveSpeechKey(body.apiKey);
+    json(res, 200, { configured: true }); return;
+  }
+  if (req.method === "DELETE" && url.pathname === "/api/secrets/speech") {
+    await clearSpeechKey();
     json(res, 200, { configured: false }); return;
   }
   if (req.method === "POST" && url.pathname === "/api/projects") {
@@ -330,7 +341,7 @@ async function handleApi(req, res, url) {
     const state = await readState();
     if (!state.projects.some(project => project.id === projectId)) throw new Error("PROJECT_NOT_FOUND");
     if (!(file instanceof File) || file.size === 0) throw new Error("FILE_REQUIRED");
-    if (file.size > 30 * 1024 * 1024) throw new Error("FILE_TOO_LARGE");
+    if (file.size > 200 * 1024 * 1024) throw new Error("FILE_TOO_LARGE");
     const extension = path.extname(file.name).toLowerCase();
     const kind = allowedImageExtensions.has(extension) ? "image" : allowedVideoExtensions.has(extension) ? "video" : allowedAudioExtensions.has(extension) ? "audio" : allowedSpreadsheetExtensions.has(extension) ? "spreadsheet" : allowedDocumentExtensions.has(extension) ? "document" : "";
     if (!kind) throw new Error("FILE_TYPE_UNSUPPORTED");
@@ -382,6 +393,13 @@ async function handleApi(req, res, url) {
 async function handler(req, res) {
   try {
     const url = new URL(req.url, `http://${host}:${port}`);
+    if (url.pathname.startsWith("/api/secrets/")) {
+      const expected = `127.0.0.1:${req.socket.localPort}`;
+      const alternative = `localhost:${req.socket.localPort}`;
+      if (![expected, alternative].includes(req.headers.host) || (req.headers.origin && ![`http://${expected}`, `http://${alternative}`].includes(req.headers.origin)) || (req.method === "PUT" && !req.headers["content-type"]?.startsWith("application/json"))) {
+        json(res, 403, { error: { code: "CREDENTIAL_ORIGIN_REJECTED", message: "请在本机工作台配置密钥。" } }); return;
+      }
+    }
     if (url.pathname.startsWith("/api/")) { await handleApi(req, res, url); return; }
     if (url.pathname.startsWith("/media/")) {
       const [, , kind, encodedId] = url.pathname.split("/");

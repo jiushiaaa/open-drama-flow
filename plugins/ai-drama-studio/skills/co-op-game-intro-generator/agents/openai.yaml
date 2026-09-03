@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:co-op-game-intro-generator，根据我提供的素材与要求完成双人游戏开场，并核验所需工具与交付结果。"
+  short_description: "制作双人合作游戏主菜单与开场动画；适用于角色卡、装备配置、加载与进入世界的连续演示。"
+  display_name: "双人游戏开场"

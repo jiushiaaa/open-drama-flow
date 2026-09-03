@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:seedance-visual-design，根据我提供的素材与要求完成单点动态视觉包装，并核验所需工具与交付结果。"
+  short_description: "用 Seedance 2.5 设计字体与 Logo 动态版式、主体追踪和实拍手绘互动；适用于单镜头动态视觉包装。"
+  display_name: "单点动态视觉包装"

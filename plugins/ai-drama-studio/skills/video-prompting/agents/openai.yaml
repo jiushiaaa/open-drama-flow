@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:video-prompting，根据我提供的素材与要求完成视频模型提示词，并核验所需工具与交付结果。"
+  short_description: "为 Seedance 等指定图像/视频模型撰写或优化提示词；适用于单镜头、参考图、关键帧和编辑指令。"
+  display_name: "视频模型提示词"

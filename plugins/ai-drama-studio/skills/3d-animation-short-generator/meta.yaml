@@ -1,0 +1,5 @@
+name: 3d-animation-short-generator
+name-cn: "3D 动画短片"
+summary-cn: "把故事创意制作成连续的风格化 3D 动画短片；适用于角色、场景、镜头和声音需要统一规划的 3D 叙事。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

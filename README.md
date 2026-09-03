@@ -50,7 +50,7 @@ OpenDramaFlow targets **Codex Desktop on Windows PC**.
 | Agent-native control | MCP tools that let Codex create, inspect, update, generate, and render projects |
 | Automatic creative expertise | 44 specialist Skills plus one producer Skill, selected automatically from the request |
 | Scoped production memory | Only explicitly approved series, volume/season, and creation memory enters a token-bounded context pack |
-| Real cost boundaries | Explicit approval and hard image/video call caps before paid provider calls |
+| Real cost boundaries | Automatic execution by default, optional manual approval, frozen inputs and hard image/video call caps |
 | Local credential safety | Windows DPAPI storage; plaintext API keys are never returned through MCP |
 | Honest outputs | FFmpeg only assembles real generated or imported assets |
 | Inspectable review | Deterministic evidence frames are extracted from the rendered bytes, then actually inspected by Codex or the user |
@@ -77,8 +77,8 @@ flowchart LR
 2. Give Codex the genre, audience, duration, style, and delivery goal.
 3. Codex reads a context pack containing only approved memory for the active series, volume/season, and creation page.
 4. Codex writes the production plan and ordered ShotSpec v2 records. Static composition stays in `imagePrompt`; action and camera motion stay in `videoPrompt`.
-5. OpenDramaFlow compiles and freezes the exact provider request digest, asset versions, and call caps before trusted human approval.
-6. Codex Image Gen or Seedream creates image assets; the current Ark video adapter creates 4–15 second I2V shots from one approved first-frame reference.
+5. OpenDramaFlow freezes the exact provider request digest, asset versions and call caps, then runs automatically by default. Trusted per-batch confirmation applies only when the user selects manual mode.
+6. Codex's built-in image tool (image2) generates candidates outside the asset library by default; import only exact user-accepted images. Seedream is a fallback only on explicit user choice or verified built-in-tool failure/unavailability. The Seedance 2.5 adapter compiles 4–30 second text/image/multimodal video, first+last-frame constraints, and source-video extension/edit requests with explicit audio settings and frozen input versions.
 7. FFmpeg assembles the real inputs. OpenDramaFlow then extracts deterministic evidence frames, which Codex or the user must actually inspect before recording a quality pass and final SHA-256 manifest.
 
 ## Interface
@@ -93,7 +93,9 @@ Codex is the conversational control surface. The canvas reflects persisted brief
 
 ### Local credential vault
 
-Users configure only the Volcengine Ark API key. Model IDs, aspect ratio, resolution, watermark behavior, and generation limits are maintained by the system instead of being exposed as routine form fields.
+Users configure the Volcengine Ark API key, and optionally a separate Doubao Speech API key. Both are stored independently with Windows DPAPI, never in project/Git data. Without the optional key, use Seedance native sound and actual listening; with it, Codex can run bounded ASR checks or stock-voice TTS automatically within the user-requested scope (manual confirmation only when selected). Saving a key does not establish service entitlement. Cloning and standalone music remain unconnected. Model parameters remain system-managed.
+
+Speech tasks use `drama_request_speech_job` → `drama_authorize_speech_job` → `drama_get_speech_job`. Each frozen scope allows one request, binds the source hash/version or exact text, and never auto-retries. Execution is automatic by default, with per-call confirmation only in manual mode. ASR defaults to a 5-second segment (maximum 120 seconds); TTS is bounded to 500 characters. Results enter the library as unreviewed assets, not automatically approved memory or quality reviews. See [speech validation and limits](docs/doubao-speech-validation.md).
 
 ![OpenDramaFlow API key vault](docs/images/api-key-vault.png)
 
@@ -120,8 +122,8 @@ OpenDramaFlow includes 45 project Skills:
 
 ### Approval and recovery
 
-- Paid Seedream and Seedance calls require an approved batch.
-- Approval freezes the exact compiled request digests, plan revision, input asset versions, provider settings, and call caps; changing them requires new approval.
+- Seedream, Seedance and speech execute the user's requested work automatically by default. Use `drama_set_execution_mode(manual)` only when the user requests per-call confirmation, and `automatic` to return. Changing policy starts no job and never changes Codex host sandbox, network or tool permissions.
+- Frozen scopes bind exact request digests, plan revisions, input versions, provider settings, execution policy and call caps. Changes require re-preparation; manual scopes still need trusted MCP confirmation. Rejected records are never reinterpreted as automatic authorization.
 - Every batch has hard image and video call limits.
 - Candidate memory is excluded until an exact version is explicitly reviewed and approved; later context packs are scoped to the active creation and its volume/season and series.
 - Existing successful outputs are retained when a later provider step fails.
@@ -190,8 +192,8 @@ The repository contains a Codex plugin manifest, MCP configuration, local market
 | `drama_set_skill_enabled` | Enable or disable a Skill for automatic routing |
 | `drama_create_project` | Create a blank local project without a model call |
 | `drama_update_plan` | Write the formal story, characters, scenes, and shots |
-| `drama_request_paid_batch` | Create a pending bounded approval for real provider calls |
-| `drama_authorize_and_start_paid_batch` | Present the frozen scope for trusted human confirmation, then start exactly one batch |
+| `drama_request_paid_batch` | Freeze request digests, asset versions and call caps without starting a model |
+| `drama_authorize_and_start_paid_batch` | Start exactly one batch under automatic policy, or trusted human confirmation in manual mode |
 | `drama_resume_paid_batch` | Resume an approved pipeline after image tasks are completed |
 | `drama_claim_image_task` | Claim one queued Codex Image Gen task |
 | `drama_complete_image_task` | Attach a real Codex-generated image to its shot |
@@ -219,6 +221,8 @@ open-drama-flow/
 └─ LICENSE
 ```
 
+The 44 specialist Skills now use provider-neutral identifiers, with producer-led automatic execution. Saved switches and historical references remain compatible without rewriting frozen production records. Restart Codex Desktop after upgrading. See the [Skill migration and runtime notes](docs/skill-runtime-update.md).
+
 ## Development
 
 ```powershell
@@ -241,7 +245,8 @@ The regression suite checks blank-project integrity, all 45 shipped Skill entryp
 ## Current boundaries
 
 - A real paid end-to-end production should be validated with your own provider entitlement before production use.
-- The current Ark video adapter supports one first-frame image-to-video reference (`https://` or trusted `asset://`) and integer durations from 4 to 15 seconds. It does not expose multi-reference, reference-video/audio, first-and-last-frame continuation, or in-place video editing.
+- Seedance 2.5 has six input/task modes, up to 30 image / 10 video / 10 audio references, explicit native audio, and 4–30 second output contracts. The 2.0 profile remains limited to 4–15 seconds. All inputs are version/hash-bound and validated before dispatch; account-specific real generation is still an acceptance gate. See [validation and remaining boundaries](docs/seedance-2.5-validation.md).
+- Extension and temporal content editing are prompt-directed source-video generation, not pixel-exact mask editing. Reference duration/size/format/compliance rules still apply. A model appearing in the account list does not prove all modes are enabled.
 - Provider-native audio can be requested only when enabled and declared by the shot contract. Audio is considered present and usable only when the downloaded output contains an audio stream and the actual result passes the required listening/review evidence; model marketing or a request flag is not proof.
 - Voice cloning, professional NLE project export, and controllable 3D scenes remain planning-only until real adapters are connected.
 - OpenDramaFlow is designed for the Windows PC desktop workflow.

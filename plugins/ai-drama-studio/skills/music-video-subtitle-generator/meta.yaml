@@ -1,0 +1,5 @@
+name: music-video-subtitle-generator
+name-cn: "音乐 MV 动态字幕"
+summary-cn: "制作随节拍和歌词变化的 AI MV 与空间字幕；适用于音乐视觉、歌词贴字和情绪短片。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

@@ -1,6 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
+import { providerContent, validateSeedanceRequest } from "./seedance-contract.mjs";
+import { shutdownSignal } from "./background-jobs.mjs";
+import { extractLastFrame } from "./media-inspection.mjs";
 
 function arkHeaders(apiKey) {
   return { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` };
@@ -20,7 +23,7 @@ async function arkFetch(url, options, timeoutMs = 120000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(url, { ...options, signal: controller.signal });
+    const response = await fetch(url, { ...options, signal: AbortSignal.any([controller.signal, shutdownSignal]) });
     const text = await response.text();
     let body = {};
     try { body = text ? JSON.parse(text) : {}; } catch { body = {}; }
@@ -35,7 +38,7 @@ async function downloadBytes(url, timeoutMs = 5 * 60 * 1000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(url, { signal: controller.signal });
+    const response = await fetch(url, { signal: AbortSignal.any([controller.signal, shutdownSignal]) });
     if (!response.ok) {
       const error = new Error(`PROVIDER_DOWNLOAD_FAILED_${response.status}`);
       error.httpStatus = response.status;
@@ -62,13 +65,13 @@ export async function generateSeedreamImage({ apiKey, baseUrl, model, prompt, si
   return { outputPath, remoteUrl, usage: body.usage || null, model: body.model || model };
 }
 
-export async function createSeedanceTask({ apiKey, baseUrl, model, prompt, imageUrl, ratio = "9:16", duration = 5, resolution = "720p", generateAudio = false, watermark = false }) {
+export async function createSeedanceTask({ apiKey, baseUrl, model, prompt, imageUrl, inputs = null, inputMode = "image-to-video", ratio = "9:16", duration = 5, resolution = "720p", generateAudio = false, watermark = false }) {
   if (!model) throw new Error("SEEDANCE_MODEL_REQUIRED");
-  const content = [{ type: "text", text: prompt }];
-  if (imageUrl) content.push({ type: "image_url", image_url: { url: imageUrl }, role: "reference_image" });
-  const payload = { model, content, ratio, duration, watermark, return_last_frame: true };
-  if (resolution) payload.resolution = resolution;
-  if (generateAudio) payload.generate_audio = true;
+  const media = inputs || (imageUrl ? [{ kind: "image", providerRole: "first_frame", url: imageUrl }] : []);
+  const parameters = { ratio, duration, watermark, return_last_frame: true, resolution, generate_audio: generateAudio };
+  const errors = validateSeedanceRequest({ model, inputMode, inputs: media, parameters });
+  if (errors.length) throw new Error(errors.map(error => error.code).join(","));
+  const payload = { model, content: providerContent(prompt, media), ...parameters };
   const body = await arkFetch(`${baseUrl.replace(/\/$/, "")}/contents/generations/tasks`, {
     method: "POST",
     headers: arkHeaders(apiKey),
@@ -96,7 +99,7 @@ export async function waitForSeedanceTask({ apiKey, baseUrl, taskId, maxWaitMs =
     previous = status;
     if (status === "succeeded") return task;
     if (["failed", "cancelled", "expired"].includes(status)) throw new Error(`SEEDANCE_${status.toUpperCase()}`);
-    await delay(pollMs);
+    await delay(pollMs, undefined, { signal: shutdownSignal });
   }
   throw new Error("SEEDANCE_STATUS_UNKNOWN_AFTER_TIMEOUT");
 }
@@ -107,5 +110,7 @@ export async function downloadSeedanceVideo(task, outputPath) {
   const bytes = await downloadBytes(remoteUrl);
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
   await fs.writeFile(outputPath, bytes);
-  return { outputPath, remoteUrl };
+  // Decode the actual delivered video's tail, avoiding expired URLs or guessed image formats.
+  const lastFramePath = await extractLastFrame(outputPath, `${outputPath}.last-frame.png`);
+  return { outputPath, remoteUrl, lastFramePath };
 }

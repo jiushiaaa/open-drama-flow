@@ -11,6 +11,8 @@ const { mutateState, readState } = await import("../src/store.mjs");
 const { authorizeAndStartPipeline, createApproval, createCreation, createProject, getProductionStatus, updateProjectPlan } = await import("../src/workflow.mjs");
 
 after(async () => {
+  const { drainBackgroundJobs } = await import("../src/workflow.mjs");
+  await drainBackgroundJobs();
   await fs.rm(tempRoot, { recursive: true, force: true });
 });
 
@@ -18,7 +20,7 @@ function planInput(creationId, overrides = {}) {
   return {
     creationId,
     brief: { objective: "制作无线耳机竖屏广告", contentType: "电商广告", audience: "通勤用户", platform: "抖音", durationSeconds: 5, deliverables: ["竖屏 MP4"], acceptanceCriteria: ["产品外观准确"] },
-    selectedSkills: ["minimax-minimalist-product-ad-generator"],
+    selectedSkills: ["minimalist-product-ad-generator"],
     premise: "用产品特写表现轻便和降噪",
     shots: [{ id: "shot-1", duration: 5, scene: "地铁", framing: "特写", action: "耳机旋转", prompt: "银色无线耳机在冷色灯光中旋转", subtitle: "安静，由你掌控", generationMode: "seedance" }],
     ...overrides

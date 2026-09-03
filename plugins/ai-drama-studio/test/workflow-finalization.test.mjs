@@ -37,7 +37,7 @@ function planInput(creationId, shotCount) {
       deliverables: ["竖屏 MP4"],
       acceptanceCriteria: ["产品外观准确"]
     },
-    selectedSkills: ["minimax-minimalist-product-ad-generator"],
+    selectedSkills: ["minimalist-product-ad-generator"],
     premise: "使用静态画面验证审批终态",
     shots: Array.from({ length: shotCount }, (_, index) => ({
       id: `shot-${index + 1}`,

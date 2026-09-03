@@ -6,7 +6,7 @@ function fixture(overrides = {}) {
   const plan = {
     logline: "让用户理解产品价值",
     brief: normalizeProductionBrief({ objective: "制作一条 5 秒产品广告", contentType: "电商广告", audience: "通勤人群", platform: "抖音", durationSeconds: 5, deliverables: ["5 秒竖屏 MP4"], acceptanceCriteria: ["产品外观准确"] }),
-    selectedSkills: ["minimax-minimalist-product-ad-generator"],
+    selectedSkills: ["minimalist-product-ad-generator"],
     planRevision: 1,
     script: { premise: "产品特写展示降噪价值", scenes: [] },
     characters: [],
@@ -89,10 +89,10 @@ test("normalizes a general commercial-video brief without drama-only fields", ()
 
 test("publishes the exact implemented Seedance adapter boundary", () => {
   const profile = getSeedanceCapabilityProfile(fixture().settings);
-  assert.equal(profile.maxReferenceImages, 1);
-  assert.deepEqual(profile.supportedRatios, ["9:16"]);
-  assert.deepEqual(profile.duration, { integerSeconds: true, minimum: 4, maximum: 15 });
-  assert.equal(profile.unsupportedByAdapter.includes("multiple reference inputs"), true);
+  assert.equal(profile.maxReferenceImages, 30);
+  assert.equal(profile.supportedRatios.includes("16:9"), true);
+  assert.deepEqual(profile.duration, { integerSeconds: true, minimum: 4, maximum: 30 });
+  assert.equal(profile.accountVerified, false);
 });
 
 test("publishes the single reviewed local MP4 delivery boundary", () => {
@@ -105,19 +105,21 @@ test("publishes the single reviewed local MP4 delivery boundary", () => {
   });
 });
 
-test("blocks an overlong Seedance shot and reports local trim for a short shot", () => {
+test("rejects out-of-range durations without silently trimming or clamping", () => {
   const check = validateSeedanceShots([
     { id: "short", duration: 2.5, prompt: "短镜头" },
-    { id: "long", duration: 20, prompt: "长镜头" },
+    { id: "long", duration: 31, prompt: "长镜头" },
     { id: "static", duration: 30, prompt: "静态镜头", generationMode: "static-motion" }
   ], fixture().settings);
   assert.equal(check.compatible, false);
   assert.equal(check.errors.some(item => item.shotId === "long" && item.code === "SEEDANCE_DURATION_EXCEEDS_ADAPTER"), true);
-  assert.equal(check.warnings.some(item => item.shotId === "short" && item.code === "SEEDANCE_DURATION_WILL_BE_TRIMMED"), true);
+  assert.equal(check.errors.some(item => item.shotId === "short" && item.code === "SEEDANCE_DURATION_UNSUPPORTED"), true);
   assert.equal(check.errors.some(item => item.shotId === "static"), false);
 
   const references = validateSeedanceShots([{ id: "refs", duration: 5, prompt: "多参考图", referenceAssetIds: ["image-1", "image-2"] }], fixture().settings);
-  assert.equal(references.errors.some(item => item.code === "SEEDANCE_REFERENCE_LIMIT_EXCEEDED"), true);
+  assert.equal(references.errors.some(item => item.code === "SEEDANCE_REFERENCE_LIMIT_EXCEEDED"), false);
+  const overflow = validateSeedanceShots([{ id: "refs", duration: 5, prompt: "多参考图", referenceAssetIds: Array.from({ length: 31 }, (_, i) => `image-${i}`) }], fixture().settings);
+  assert.equal(overflow.errors.some(item => item.code === "SEEDANCE_REFERENCE_LIMIT_EXCEEDED"), true);
 });
 
 test("derives a deterministic approval action from durable state", () => {

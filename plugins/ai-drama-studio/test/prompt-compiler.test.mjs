@@ -5,7 +5,7 @@ import { compileShotRequests, normalizeShotContract, promptDigest, validateShotC
 const settings = {
   imageProvider: "codex-imagegen",
   seedreamModel: "seedream-test",
-  seedanceModel: "seedance-test",
+  seedanceModel: "doubao-seedance-2-5-260628",
   ratio: "9:16",
   resolution: "720p",
   generateAudio: false,
@@ -64,11 +64,12 @@ test("compiles an explicit first-frame I2V request with Ark-compatible logical p
     duration: 6,
     watermark: false,
     return_last_frame: true,
-    resolution: "720p"
+    resolution: "720p",
+    generate_audio: false
   });
   assert.equal(compiled.requests.video.inputs[0].assetId, "asset-frame-1");
   assert.equal(compiled.requests.video.inputs[0].sha256, "a".repeat(64));
-  assert.equal(compiled.requests.video.inputs[0].providerRole, "reference_image");
+  assert.equal(compiled.requests.video.inputs[0].providerRole, "first_frame");
   assert.doesNotMatch(compiled.videoPrompt, /场景：雨夜废弃车站/);
   assert.match(compiled.videoPrompt, /主体动作：她捡起旧相机/);
   assert.equal(compiled.requestDigests.video.length, 64);
@@ -126,14 +127,14 @@ test("only a first-frame binding enables motion-first prompt shaping", () => {
   assert.match(subjectReference.videoPrompt, /主体：十九岁的林夏/);
 });
 
-test("currently rejects implicit or text-to-video execution", () => {
+test("defaults legacy image plans to I2V and supports explicit text-to-video", () => {
   const implicit = compileShotRequests({ shot: structuredShot(), settings, inputAssetBinding: assetBinding() });
   const textToVideo = compileShotRequests({ shot: structuredShot(), settings, videoInputMode: "text-to-video" });
-  assert.equal(implicit.executable, false);
-  assert.equal(implicit.validation.capabilityErrors.some(item => item.code === "VIDEO_INPUT_MODE_REQUIRED"), true);
-  assert.equal(textToVideo.executable, false);
-  assert.equal(textToVideo.validation.capabilityErrors.some(item => item.code === "VIDEO_INPUT_MODE_UNSUPPORTED"), true);
-  assert.equal(textToVideo.requests.video.inputMode, "image-to-video");
+  assert.equal(implicit.executable, true);
+  assert.equal(textToVideo.executable, true);
+  assert.equal(textToVideo.requests.video.inputMode, "text-to-video");
+  assert.equal(textToVideo.requests.image, null);
+  assert.deepEqual(textToVideo.requests.video.inputs, []);
 });
 
 test("binds video digests to stable asset version and content evidence", () => {
@@ -191,7 +192,7 @@ test("rejects incomplete asset evidence instead of hashing an asset id alone", (
 });
 
 test("does not silently clamp unsupported Seedance duration", () => {
-  for (const duration of [3, 6.5, 16]) {
+  for (const duration of [3, 6.5, 31]) {
     const compiled = compileShotRequests({ shot: structuredShot({ duration }), settings, videoInputMode: "image-to-video" });
     assert.equal(compiled.executable, false);
     assert.equal(compiled.requests.video.parameters.duration, duration);
@@ -219,13 +220,13 @@ test("does not require a video input for non-video generation modes", () => {
   assert.equal(uploadedVideo.requests.video, null);
 });
 
-test("requires native audio intent and Ark generate_audio to agree", () => {
+test("explicit per-shot audio intent overrides the global default in both directions", () => {
   const soundPlan = { dialogue: "林夏说：谁在那里？", ambience: "雨声" };
   const disabled = compileShotRequests({
     shot: structuredShot({ audioMode: "provider-native", soundPlan }), settings, videoInputMode: "image-to-video"
   });
-  assert.equal(disabled.executable, false);
-  assert.equal(disabled.validation.capabilityErrors.some(item => item.code === "SEEDANCE_NATIVE_AUDIO_DISABLED"), true);
+  assert.equal(disabled.executable, true);
+  assert.equal(disabled.requests.video.parameters.generate_audio, true);
 
   const enabled = compileShotRequests({
     shot: structuredShot({ audioMode: "provider-native", soundPlan }),
@@ -241,8 +242,8 @@ test("requires native audio intent and Ark generate_audio to agree", () => {
     settings: { ...settings, generateAudio: true },
     videoInputMode: "image-to-video"
   });
-  assert.equal(unrequested.executable, false);
-  assert.equal(unrequested.validation.capabilityErrors.some(item => item.code === "SEEDANCE_NATIVE_AUDIO_UNREQUESTED"), true);
+  assert.equal(unrequested.executable, true);
+  assert.equal(unrequested.requests.video.parameters.generate_audio, false);
 });
 
 test("keeps legacy projects compatible while marking them for migration", () => {

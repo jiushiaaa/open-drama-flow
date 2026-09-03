@@ -1,0 +1,5 @@
+name: poster-motion-generator
+name-cn: "海报动态生成"
+summary-cn: "把已有海报锁版为文字可读、版式稳定的动态海报；适用于一镜到底的精致动效。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

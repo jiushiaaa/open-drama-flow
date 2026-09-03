@@ -1,0 +1,5 @@
+name: seedance-prompt-expert
+name-cn: "Seedance 多模态提示词专家"
+summary-cn: "为 Seedance 2.5 编译多图、视频、音频、首尾帧、续写与编辑提示词；适用于输入模式、素材职责和声音约束的专项规划。"
+maintainer: OpenDramaFlow
+runtime: Codex / Seedance 2.5

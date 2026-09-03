@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:paper-collage-explainer-generator，根据我提供的素材与要求完成纸拼贴讲解动画，并核验所需工具与交付结果。"
+  short_description: "用半调纸拼贴与触感停格表现观点、故事或知识点；适用于口播配画和抽象概念解释。"
+  display_name: "纸拼贴讲解动画"

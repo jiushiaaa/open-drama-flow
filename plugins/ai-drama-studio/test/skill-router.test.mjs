@@ -5,12 +5,13 @@ import test from "node:test";
 import { sourceSkillCount, specializedSkills } from "../src/skill-catalog.mjs";
 import { routeSkills } from "../src/skill-router.mjs";
 
-test("all 44 enabled MiniMax capabilities have distinct Codex skill entrypoints", async () => {
+test("all 44 specialist capabilities have distinct canonical Codex entrypoints", async () => {
   assert.equal(sourceSkillCount, 44);
   assert.equal(specializedSkills.length, 44);
   assert.equal(new Set(specializedSkills.map(item => item.name)).size, 44);
   for (const skill of specializedSkills) {
-    assert.match(skill.name, /^minimax-[a-z0-9-]+$/);
+    assert.match(skill.name, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+    assert.equal(skill.name, skill.slug);
     const skillPath = path.resolve("skills", skill.name, "SKILL.md");
     const content = await fs.readFile(skillPath, "utf8");
     assert.match(content, new RegExp(`^---\\nname: ${skill.name}\\n`));
@@ -29,14 +30,14 @@ test("each of the 44 specialized capabilities wins for its canonical user intent
 });
 
 const routingCases = [
-  ["做一条口红唇釉广告，模特与产品质感都要稳定", "minimax-lip-product-ad-generator"],
-  ["把这张建筑图做成 FPV 一镜到底穿越", "minimax-fpv-tour-video-generator"],
-  ["做一个 SaaS 登录到结果卡片展开的 UI 动效", "minimax-ui-motion"],
-  ["逐镜拆解这个参考视频并反推 Seedance 提示词", "minimax-video-deconstruct"],
-  ["审查这个 Skill 的触发描述", "minimax-skill-reviewer"],
-  ["给产品做一条极简高级广告", "minimax-minimalist-product-ad-generator"],
-  ["制作二次元角色觉醒游戏 PV", "minimax-anime-game-pv"],
-  ["做一条雨夜悬疑二次元漫剧，重点表现人物惊恐、迟疑和压抑的微表情", "minimax-micro-expression-video-generator"]
+  ["做一条口红唇釉广告，模特与产品质感都要稳定", "lip-product-ad-generator"],
+  ["把这张建筑图做成 FPV 一镜到底穿越", "fpv-tour-video-generator"],
+  ["做一个 SaaS 登录到结果卡片展开的 UI 动效", "ui-motion"],
+  ["逐镜拆解这个参考视频并反推 Seedance 提示词", "video-deconstruct"],
+  ["审查这个 Skill 的触发描述", "skill-reviewer"],
+  ["给产品做一条极简高级广告", "minimalist-product-ad-generator"],
+  ["制作二次元角色觉醒游戏 PV", "anime-game-pv"],
+  ["做一条雨夜悬疑二次元漫剧，重点表现人物惊恐、迟疑和压抑的微表情", "micro-expression-video-generator"]
 ];
 
 for (const [request, expected] of routingCases) {
@@ -49,17 +50,17 @@ for (const [request, expected] of routingCases) {
 }
 
 const naturalLanguageCases = [
-  ["把这个小故事做成有连续角色和场景的三维动画短片", "minimax-3d-animation-short-generator"],
-  ["想把这张电影剧照的光线、构图和运镜方式整理成可直接出图和出视频的提示词", "minimax-film-reference-prompt-writer"],
-  ["这张海报的标题和人物都别重做，只让它们轻微动起来，做成一条视频", "minimax-poster-motion-generator"],
-  ["演员不说话，只让眼睛和嘴角有很细微的变化，表现她从怀疑到害怕", "minimax-micro-expression-video-generator"],
-  ["这一段口播稿不要改内容，帮我规划什么时候用资料画面、什么时候补生成镜头", "minimax-transcript-broll-planner"],
-  ["照着这个参考视频的镜头顺序、节奏和机位做一版新的", "minimax-video-deconstruct"],
-  ["把这篇文章做成 Vox 那种拼贴、旁白驱动的解释型短纪录片", "minimax-vox-style-video-generator"],
-  ["做一个 SaaS 从登录到结果卡片展开的交互流程动画", "minimax-ui-motion"],
-  ["用这张产品照片做留白很多、细节特写、高级感的广告", "minimax-minimalist-product-ad-generator"],
-  ["让品牌标志被两种颜色的霓虹线条最后汇聚出来", "minimax-brand-stream-mg"],
-  ["做一个两个角色一起出现的游戏菜单开场", "minimax-co-op-game-intro-generator"]
+  ["把这个小故事做成有连续角色和场景的三维动画短片", "3d-animation-short-generator"],
+  ["想把这张电影剧照的光线、构图和运镜方式整理成可直接出图和出视频的提示词", "film-reference-prompt-writer"],
+  ["这张海报的标题和人物都别重做，只让它们轻微动起来，做成一条视频", "poster-motion-generator"],
+  ["演员不说话，只让眼睛和嘴角有很细微的变化，表现她从怀疑到害怕", "micro-expression-video-generator"],
+  ["这一段口播稿不要改内容，帮我规划什么时候用资料画面、什么时候补生成镜头", "transcript-broll-planner"],
+  ["照着这个参考视频的镜头顺序、节奏和机位做一版新的", "video-deconstruct"],
+  ["把这篇文章做成 Vox 那种拼贴、旁白驱动的解释型短纪录片", "vox-style-video-generator"],
+  ["做一个 SaaS 从登录到结果卡片展开的交互流程动画", "ui-motion"],
+  ["用这张产品照片做留白很多、细节特写、高级感的广告", "minimalist-product-ad-generator"],
+  ["让品牌标志被两种颜色的霓虹线条最后汇聚出来", "brand-stream-mg"],
+  ["做一个两个角色一起出现的游戏菜单开场", "co-op-game-intro-generator"]
 ];
 
 for (const [request, expected] of naturalLanguageCases) {
@@ -82,7 +83,7 @@ for (const request of commercialProductAdCases) {
   test(`routes commercial product ad language: ${request}`, async () => {
     const result = await routeSkills(request, 5);
     assert.equal(result.fallback, false);
-    assert.equal(result.selected[0].name, "minimax-minimalist-product-ad-generator");
+    assert.equal(result.selected[0].name, "minimalist-product-ad-generator");
     assert.notEqual(result.confidence, "low");
     assert.ok(result.selected[0].matchedSignals.length > 0);
   });
@@ -98,7 +99,7 @@ for (const request of novelAdaptationCases) {
   test(`routes novel adaptation language: ${request}`, async () => {
     const result = await routeSkills(request, 5);
     assert.equal(result.fallback, false);
-    assert.equal(result.selected[0].name, "minimax-character-scene-storyboard");
+    assert.equal(result.selected[0].name, "character-scene-storyboard");
     assert.notEqual(result.confidence, "low");
     assert.ok(result.selected[0].matchedSignals.length > 0);
   });
@@ -113,7 +114,7 @@ for (const request of digitalProductPromoCases) {
   test(`keeps real SaaS promo routing: ${request}`, async () => {
     const result = await routeSkills(request, 5);
     assert.equal(result.fallback, false);
-    assert.equal(result.selected[0].name, "minimax-digital-product-promo-generator");
+    assert.equal(result.selected[0].name, "digital-product-promo-generator");
     assert.notEqual(result.confidence, "low");
   });
 }
@@ -121,28 +122,28 @@ for (const request of digitalProductPromoCases) {
 const adjacentConflictCases = [
   {
     request: "这个 SaaS 不讲品牌故事，只演示界面状态切换和卡片重组",
-    winner: "minimax-ui-motion",
-    loser: "minimax-digital-product-promo-generator"
+    winner: "ui-motion",
+    loser: "digital-product-promo-generator"
   },
   {
     request: "基于真实网站录屏做功能卖点宣传片，最后加 CTA",
-    winner: "minimax-digital-product-promo-generator",
-    loser: "minimax-ui-motion"
+    winner: "digital-product-promo-generator",
+    loser: "ui-motion"
   },
   {
     request: "不要只借风格，要逐镜拆解参考视频并按镜头顺序复刻",
-    winner: "minimax-video-deconstruct",
-    loser: "minimax-video-prompting"
+    winner: "video-deconstruct",
+    loser: "video-prompting"
   },
   {
     request: "做一条歌词字幕跟着节拍卡点变化的 MV，不以歌手表演为主",
-    winner: "minimax-music-video-subtitle-generator",
-    loser: "minimax-cool-music-video"
+    winner: "music-video-subtitle-generator",
+    loser: "cool-music-video"
   },
   {
     request: "锁住原海报排版和标题，只做人物微动，不做电影片头",
-    winner: "minimax-poster-motion-generator",
-    loser: "minimax-cinematic-title-sequence"
+    winner: "poster-motion-generator",
+    loser: "cinematic-title-sequence"
   }
 ];
 

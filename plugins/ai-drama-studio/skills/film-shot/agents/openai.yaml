@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:film-shot，根据我提供的素材与要求完成电影镜头与角色卡，并核验所需工具与交付结果。"
+  short_description: "用专业景别、机位、光影和调度设计影视镜头与角色卡；适用于漫剧分镜和角色一致性。"
+  display_name: "电影镜头与角色卡"

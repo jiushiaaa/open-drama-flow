@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:koc-video，根据我提供的素材与要求完成KOC / UGC 视频，并核验所需工具与交付结果。"
+  short_description: "制作产品种草、创作者口播、专家分享、证言、无脸 POV 或手部实测；适用于社交平台转化内容。"
+  display_name: "KOC / UGC 视频"

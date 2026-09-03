@@ -8,6 +8,9 @@ studio-data/
 # Local research/audit checkouts
 _audit/
 import-ready/
+candidate-staging/
+production-records/
+.qa/
 
 # Local design-audit reports
 plugins/ai-drama-studio/premium-audit.json
