@@ -32,7 +32,7 @@ test("every specialized skill has current Chinese UI metadata and its canonical 
     assert.equal(detail.content, yaml);
     displayNames.add(entry.label);
   }
-  assert.equal(displayNames.size, 44);
+  assert.equal(displayNames.size, 45);
 });
 
 test("updating UI metadata preserves policy, tools and unrelated interface fields", () => {

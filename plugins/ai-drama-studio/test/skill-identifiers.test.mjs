@@ -20,7 +20,8 @@ test.after(async () => {
 
 test("the legacy mapping is bijective across all 44 canonical identifiers", () => {
   assert.equal(Object.keys(legacySkillIdentifiers).length, 44);
-  assert.deepEqual(new Set(Object.values(legacySkillIdentifiers)), new Set(specializedSkills.map(s => s.name)));
+  assert.deepEqual(new Set(Object.values(legacySkillIdentifiers)), new Set(specializedSkills.filter(s => s.legacyIdentifier !== false).map(s => s.name)));
+  assert.equal(Object.values(legacySkillIdentifiers).includes("novel-comic-drama-preproduction"), false);
   assert.equal(canonicalSkillName("minimax-h3-prompt-expert"), "seedance-prompt-expert");
   assert.equal(canonicalSkillName("minimax-h3-visual-design"), "seedance-visual-design");
   assert.equal(canonicalSkillName("minimax-unrelated-import"), "minimax-unrelated-import");

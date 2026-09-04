@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "runtime": "OpenDramaFlow / Codex / Seedance 2.5",
   "generatedBy": "scripts/sync-skill-manifest.mjs",
-  "skillCount": 45,
+  "skillCount": 46,
   "skills": [
     {
       "name": "ai-drama-producer",
@@ -212,6 +212,71 @@
         {
           "path": "WORKFLOW.md",
           "sha256": "a9e4f9b72d5596e9436f8a1c23d14877d1c90b0139b3a36d6da5411d39d607b0"
+        }
+      ]
+    },
+    {
+      "name": "novel-comic-drama-preproduction",
+      "files": [
+        {
+          "path": "agents/openai.yaml",
+          "sha256": "b7df05e6d6daa39b3d2813885d8cb72aad9ed31504b78827e11308f4939f4adf"
+        },
+        {
+          "path": "meta.yaml",
+          "sha256": "df7dd8164f573de6e0cd911e5a91ace960117aae496729f75456c08b40d7872c"
+        },
+        {
+          "path": "references/asset-admission-policy.md",
+          "sha256": "1656ef3584e1fe0ccc8814adffb9f3575548a75f06e3102995fdf488c74ff156"
+        },
+        {
+          "path": "references/image-approval-policy.md",
+          "sha256": "cca9523a2c78f5e5053c1cd0fee35e3326319474a09b50738363728c19b49b0a"
+        },
+        {
+          "path": "references/phase-gates.md",
+          "sha256": "6a0bd211f70611680ab66ae99e63a0caca010d1aed18749ef3c13e1056b9ce4e"
+        },
+        {
+          "path": "references/pre-video-readiness-checklist.md",
+          "sha256": "fc021b2a21a3b1519e2d49f0b1547be057d670cdfd2a386a7b29e1f8272ee8ae"
+        },
+        {
+          "path": "references/preproduction-manifest-schema.md",
+          "sha256": "3646ad307605120f0da4fe4e62b4180a73111ff414938d5398e41e0b10b159f1"
+        },
+        {
+          "path": "references/screenplay-and-shot-spec.md",
+          "sha256": "2be310e70e6f33d54a3bab2b39a322566af57db10f3a7a321d1c327dd79caef3"
+        },
+        {
+          "path": "references/source-fidelity-rules.md",
+          "sha256": "d4a08600d9db16e53548164ca75cf4ee43c8b6b85439eb01b8c0e5b4a5e55e9d"
+        },
+        {
+          "path": "scripts/audit-project-assets.ps1",
+          "sha256": "e39a5545bc467717e5c3b94d52c5adc69700e110fc08557f2221686ab74c0e3d"
+        },
+        {
+          "path": "scripts/build-readiness-manifest.ps1",
+          "sha256": "d2fb3b88fcd3ce99821f49c3bc28986246dc525f35e3bfd240a649589b611512"
+        },
+        {
+          "path": "scripts/validate-source-coverage.ps1",
+          "sha256": "84cf2b2801cc178d19fffc332e8db2b1a88f4df883850c171c6f6897e1341fe5"
+        },
+        {
+          "path": "SKILL.cn.md",
+          "sha256": "894f7bd6b652c84ffa55e8dacb3c02b080661e46c21ef1322edcdcbf26793d76"
+        },
+        {
+          "path": "SKILL.md",
+          "sha256": "5bc0129bee56b112b94d8ed3dc0bf9080728d3928a7dcfdae9db4fca34242853"
+        },
+        {
+          "path": "WORKFLOW.md",
+          "sha256": "3b8be039f145b36caf9e012a3a3ab2d65098d203521cc74c200bc9d42157f6d4"
         }
       ]
     },

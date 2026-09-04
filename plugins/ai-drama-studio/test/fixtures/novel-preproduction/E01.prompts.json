@@ -1,0 +1,7 @@
+{
+  "status": "approved",
+  "shots": [
+    {"id": "E01-S001", "durationSeconds": 8},
+    {"id": "E01-S002", "durationSeconds": 8}
+  ]
+}

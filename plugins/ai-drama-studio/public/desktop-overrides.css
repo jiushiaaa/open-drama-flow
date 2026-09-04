@@ -46,8 +46,16 @@
 .skill-detail-header p:last-child { margin: 7px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
 .skill-detail-body { min-height: 0; overflow: hidden; display: grid; grid-template-columns: 245px minmax(0,1fr); }
 .skill-file-tree { padding: 17px 12px; border-right: 1px solid var(--line); overflow: auto; background: #f7f9fc; }
-.skill-tree-directory, .skill-file-tree button { width: 100%; height: 36px; border: 0; border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 9px; background: transparent; text-align: left; font-size: 11px; color: #667188; }
-.skill-tree-directory img { width: 15px; }
+.skill-tree-branch { position: relative; }
+.skill-tree-directory, .skill-file-tree .skill-tree-file { width: 100%; height: 36px; border: 0; border-radius: 8px; display: flex; align-items: center; gap: 8px; padding: 0 9px; background: transparent; text-align: left; font-size: 11px; color: #667188; }
+.skill-tree-directory .skill-tree-chevron { width: 10px; height: 10px; transition: transform .16s ease; }
+.skill-tree-branch.collapsed > .skill-tree-directory .skill-tree-chevron { transform: rotate(-90deg); }
+.skill-tree-directory .skill-tree-folder { width: 15px; height: 15px; }
+.skill-tree-directory strong { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.skill-tree-directory small { flex: 0 0 auto; color: #9aa5b8; font-size: 9px; }
+.skill-tree-children { position: relative; margin-left: 14px; padding-left: 13px; border-left: 1px solid #d5ddea; }
+.skill-tree-children::before { content: ""; position: absolute; left: -1px; top: 0; width: 9px; border-top: 1px solid #d5ddea; }
+.skill-tree-empty { height: 29px; margin: 0; display: flex; align-items: center; padding-left: 10px; color: #a0a9b9; font-size: 9px; }
 .skill-file-tree button:hover, .skill-file-tree button.active { background: #e7edfa; color: var(--ink); }
 .skill-file-tree button > span { width: 25px; height: 20px; border-radius: 5px; background: #dce6ff; color: var(--accent); display: grid; place-items: center; font-size: 8px; font-weight: 800; }
 .skill-file-tree button strong { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -119,7 +127,26 @@ img[src^="/icons/"] { image-rendering: pixelated; }
 .empty-result strong, .empty-result p { display: block; }
 .empty-result p { margin: 8px 0 0; }
 
-.sidebar-projects { display: grid; gap: 5px; overflow: visible; }
+.sidebar { overflow: hidden; }
+.sidebar-project-section { flex: 1 1 auto; overflow: hidden; }
+.sidebar-projects {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  padding-right: 3px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #b8c3d6 transparent;
+}
+.sidebar-projects::-webkit-scrollbar { width: 6px; }
+.sidebar-projects::-webkit-scrollbar-thumb { border-radius: 999px; background: #b8c3d6; }
+.sidebar-projects::-webkit-scrollbar-track { background: transparent; }
+.sidebar-projects .creation-menu, .sidebar-projects .sidebar-world-sort-menu { right: 4px; }
 .sidebar-project-row { position: relative; display: grid; gap: 3px; }
 .sidebar-project-head, .sidebar-creation-row { position: relative; display: flex; align-items: center; min-width: 0; border-radius: 6px; }
 .sidebar-project-row.active > .sidebar-project-head { background: #e3e8f1; }
@@ -232,11 +259,23 @@ button.asset-action-card { font: inherit; }
 .world-filter-list button:hover, .world-filter-list button.active { border-color: #7797e9; background: var(--accent-soft); color: var(--accent); }
 .world-toolbar p { max-width: 520px; margin: 3px 0 0 auto; color: var(--muted); font-size: 10px; line-height: 1.6; text-align: right; }
 .sidebar-creations.hierarchy { padding-left: 12px; }
-.sidebar-world-group { display: grid; gap: 2px; margin: 5px 0; }
-.sidebar-projects .sidebar-world-title { height: 31px; display: flex; align-items: center; gap: 8px; padding: 0 7px; color: #4e5c74; }
-.sidebar-world-title > img { width: 14px; height: 14px; }
+.sidebar-world-group { position: relative; display: grid; gap: 2px; margin: 5px 0; }
+.sidebar-projects .sidebar-world-title { position: relative; height: 31px; display: flex; align-items: center; padding: 0 3px; color: #4e5c74; border-radius: 6px; }
+.sidebar-projects .sidebar-world-title:hover, .sidebar-projects .sidebar-world-title:focus-within { background: #e8edf5; }
+.sidebar-projects .sidebar-world-main { height: 31px; flex: 1; min-width: 0; gap: 7px; padding: 0 4px; border-radius: 6px; }
+.sidebar-world-main > img { width: 14px; height: 14px; }
+.sidebar-world-main .sidebar-world-chevron { width: 11px; height: 11px; transition: transform .16s ease; }
+.sidebar-world-group.collapsed .sidebar-world-chevron { transform: rotate(-90deg); }
 .sidebar-world-title strong { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; text-align: left; }
 .sidebar-world-title span { min-width: 20px; color: #8a95a9; font-size: 9px; text-align: right; }
+.sidebar-projects .sidebar-world-sort-toggle { width: 25px; height: 25px; flex: 0 0 25px; display: grid; place-items: center; padding: 0; opacity: 0; }
+.sidebar-world-title:hover .sidebar-world-sort-toggle, .sidebar-world-title:focus-within .sidebar-world-sort-toggle { opacity: 1; }
+.sidebar-world-sort-toggle img { width: 13px; height: 13px; }
+.sidebar-world-sort-menu { position: absolute; z-index: 90; right: -116px; top: 29px; width: 126px; padding: 6px; border: 1px solid var(--line); border-radius: 7px; background: #fff; box-shadow: 0 13px 30px rgba(31,43,71,.16); }
+.sidebar-world-sort-menu > strong { display: block; padding: 5px 8px 4px; color: #98a1b2; font-size: 9px; letter-spacing: .08em; }
+.sidebar-projects .sidebar-world-sort-menu button { width: 100%; height: 30px; padding: 0 8px; border-radius: 5px; font-size: 10px; }
+.sidebar-world-sort-menu button:hover, .sidebar-world-sort-menu button.active { background: #eef2f7; color: var(--accent); }
+.sidebar-world-creations { display: grid; gap: 2px; }
 .sidebar-world-group .sidebar-creation-row, .sidebar-world-group .sidebar-add-creation { margin-left: 15px; }
 .sidebar-tree-actions { display: flex; gap: 4px; padding: 6px 0 0; }
 .sidebar-projects .sidebar-tree-actions button { height: 28px; flex: 1; padding: 0 7px; border: 1px dashed #aebbd0; justify-content: center; color: #66728a; font-size: 9px; }

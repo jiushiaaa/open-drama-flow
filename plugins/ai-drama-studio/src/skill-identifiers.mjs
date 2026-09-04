@@ -1,7 +1,7 @@
 // Legacy identifiers are confined to this compatibility boundary, never the public catalog.
 import { specializedSkills } from "./skill-catalog.mjs";
 
-export const legacySkillIdentifiers = Object.freeze(Object.fromEntries(specializedSkills.map(skill => [
+export const legacySkillIdentifiers = Object.freeze(Object.fromEntries(specializedSkills.filter(skill => skill.legacyIdentifier !== false).map(skill => [
   `minimax-${skill.name.replace(/^seedance-/, "h3-")}`, skill.name
 ])));
 

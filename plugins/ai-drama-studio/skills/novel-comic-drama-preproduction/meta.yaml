@@ -1,0 +1,19 @@
+name: novel-comic-drama-preproduction
+name-cn: "小说漫剧前期制片"
+display-name-zh: "小说漫剧前期制片"
+version: 0.1.0
+tag-en: "Short Drama & Comic Drama"
+tag-cn: "短剧漫剧"
+complete-tags-en:
+  - "Short Drama & Comic Drama / Pre-production"
+complete-tags-cn:
+  - "短剧漫剧 / 前期制作"
+summary-en: "Turns an authorized novel volume into an approved, source-traceable package ready for the user's video-start decision."
+summary-cn: "把授权小说按卷整理成可追溯、已审批并可交付视频生产的完整前期包。"
+desc-en: "This skill helps authors and production teams prepare long-form or infinite-flow novels for comic-drama production without losing source fidelity. It accepts an authorized source manuscript, a target volume or world, distribution requirements, and any approved style decisions. It builds chapter provenance, episode structure, full literary scripts, asset requirements, approved visual anchors, director storyboards, executable prompts, sound intent, and a final readiness manifest. Drafts and rejected candidates remain outside the project library, while approved versions keep hashes and evidence. It is best for repeatable volume-based adaptation and stops before any paid video generation or final editing begins."
+desc-cn: "本能力面向作者与漫剧制作团队，把拥有改编权的长篇或无限流小说按卷、按世界整理为可执行前期包。用户提供原文、目标卷范围、发行要求及已确定的风格信息；流程依次建立章节证据、分集结构、完整文学剧本、资产需求、已审批视觉锚点、导演分镜、逐镜提示词、声音意图和开拍前清单。草稿与退回候选只留本地，正式资产保留版本、哈希和审批依据。适合重复进行分卷改编，不负责付费视频生成、剪辑或成片交付。"
+author-en: "OpenDramaFlow"
+author-cn: "OpenDramaFlow"
+source: official
+maintainer: OpenDramaFlow
+runtime: Codex / OpenDramaFlow

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "project": {
+    "id": "fixture-project",
+    "title": "前期制片测试项目",
+    "volumeId": "fixture-volume",
+    "volumeTitle": "第一卷"
+  },
+  "source": {
+    "path": "source.md",
+    "sha256": "117a9155ef8d2ee7c3b103da7f15ce96a7832175e7514018ea278353e85e99cb",
+    "chapterIds": ["C001", "C002"]
+  },
+  "episodes": [
+    {
+      "id": "E01",
+      "title": "测试集",
+      "sourceChapterIds": ["C001", "C002"],
+      "script": {"path": "E01.script.md", "sha256": "a724723a6094b892b4a8e23719b4fe0fb86adf2561a407203faedde2f7521d9b", "status": "approved"},
+      "directorOverview": {"path": "E01.overview.md", "sha256": "dcd88ff9e7c762cf18bdf9b4529586050e853c938c15789397cb534cee065a68", "status": "approved"},
+      "promptPackage": {"path": "E01.prompts.json", "sha256": "5e2cb45f8b7fce3edcae7a5fd0aba4c0ca963d62a3e6a017b04c97b4950ce0ee", "status": "approved"},
+      "shotCount": 2,
+      "durationSeconds": 16
+    }
+  ],
+  "assets": [
+    {
+      "id": "fixture-asset",
+      "name": "approved-asset.md",
+      "kind": "document",
+      "path": "approved-asset.md",
+      "sha256": "a909c47407fc95100be465208a2b05702cc342a5915a134a91f90aa207def9ce",
+      "status": "approved",
+      "scope": "volume",
+      "libraryEligible": true,
+      "libraryImported": true,
+      "approvalEvidence": "fixture-approval",
+      "required": true
+    }
+  ],
+  "audits": {"unresolved": []},
+  "production": {
+    "targetPlatform": "fixture-platform",
+    "aspectRatio": "16:9",
+    "resolution": "720p",
+    "language": "zh-CN",
+    "audioPlanStatus": "approved",
+    "subtitlePlanStatus": "approved",
+    "callCap": 2,
+    "videoStarted": false
+  },
+  "approvals": {"videoStartApproved": false}
+}

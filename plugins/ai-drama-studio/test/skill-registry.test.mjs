@@ -15,11 +15,12 @@ test.after(async () => {
   await fs.rm(resolved, { recursive: true, force: true });
 });
 
-test("the forkable plugin ships all 45 built-in Skill entrypoints", async () => {
+test("the forkable plugin ships all 46 built-in Skill entrypoints", async () => {
   const skills = await registry.listManagedSkills();
-  assert.equal(skills.length, 45);
-  assert.equal(skills.filter(skill => skill.source === "built-in").length, 45);
+  assert.equal(skills.length, 46);
+  assert.equal(skills.filter(skill => skill.source === "built-in").length, 46);
   assert.ok(skills.some(skill => skill.name === "ai-drama-producer"));
+  assert.ok(skills.some(skill => skill.name === "novel-comic-drama-preproduction"));
 });
 
 test("Skill enable state persists and controls the managed catalog", async () => {
@@ -52,5 +53,5 @@ test("a zip containing one SKILL.md is imported into the local router library", 
   assert.equal(imported.enabled, true);
   const detail = await registry.getManagedSkill("sample-skill", "references/guide.md");
   assert.equal(detail.content, "# Guide\n");
-  assert.equal((await registry.listManagedSkills()).length, 46);
+  assert.equal((await registry.listManagedSkills()).length, 47);
 });

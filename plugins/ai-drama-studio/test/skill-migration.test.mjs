@@ -28,7 +28,7 @@ test("manifest accounts for every current skill file including producer and refe
   const {buildSkillManifest} = await import("../scripts/skill-manifest.mjs");
   const manifest = JSON.parse(await fs.readFile(path.join(skillsRoot, "SKILL_MANIFEST.json"), "utf8"));
   assert.equal(manifest.schemaVersion, 2);
-  assert.equal(manifest.skillCount, 45);
+  assert.equal(manifest.skillCount, 46);
   assert.deepEqual(manifest, await buildSkillManifest());
   const directories = (await fs.readdir(skillsRoot, {withFileTypes: true})).filter(e => e.isDirectory()).map(e => e.name).sort();
   assert.deepEqual(directories, manifest.skills.map(s => s.name).sort());

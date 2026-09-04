@@ -30,6 +30,14 @@ const ROUTING_PROFILES = {
     ],
     aliases: ["小说改编成ai漫剧", "网文改编动态漫", "原著角色场景分镜"]
   },
+  "novel-comic-drama-preproduction": {
+    all: [
+      ["小说", "网文", "原著", "原作", "章节"],
+      ["漫改", "改编", "做成漫剧", "改成漫剧", "ai漫剧", "动态漫", "短剧"],
+      ["按卷", "按世界", "分集剧本", "完整剧本", "项目资产", "资产入库", "资产清洗", "开拍前", "视频生成前", "视频制作前"]
+    ],
+    aliases: ["小说漫剧前期制片", "按卷完成漫剧前期", "原著改编开拍前核验"]
+  },
   "vox-style-video-generator": {
     all: [["vox", "视频论文", "解释型短纪录片"], ["文章", "研究", "知识", "旁白", "拼贴"]],
     aliases: ["vox那种", "混合媒介解释片"]
@@ -179,12 +187,22 @@ function conflictAdjustment(name, normalizedRequest) {
     adjust(-34, "official-brand-over-commerce-ad");
   }
 
+  const sourceMaterial = has("小说", "网文", "原著", "原作", "章节");
   const sourceAdaptation =
-    has("小说", "网文", "原著", "原作", "章节") &&
+    sourceMaterial &&
     has("漫改", "改编", "做成漫剧", "改成漫剧", "ai漫剧", "动态漫", "短剧");
   const adaptationBible = has(
     "世界观", "设定", "角色设定", "人物设定", "角色卡", "人物关系", "角色一致", "人物一致", "不能变脸", "分镜", "镜头表"
   );
+  const fullNovelPreproduction = sourceMaterial && has(
+    "按卷", "按世界", "全卷", "分集剧本", "完整剧本", "完整流程", "前期制片", "项目资产", "资产入库", "资产清洗", "开拍前", "视频生成前", "视频制作前"
+  );
+  if (fullNovelPreproduction && name === "novel-comic-drama-preproduction") {
+    adjust(85, "source-adaptation-preproduction");
+  }
+  if (fullNovelPreproduction && name === "character-scene-storyboard") {
+    adjust(-50, "source-adaptation-preproduction");
+  }
   if (sourceAdaptation && adaptationBible && name === "character-scene-storyboard") {
     adjust(70, "source-adaptation-story-bible");
   }

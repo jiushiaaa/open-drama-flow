@@ -9,7 +9,7 @@ import { VIDEO_INPUT_MODES, seedanceProfile, validateSeedanceRequest } from '../
 
 const producer = path.resolve('skills/ai-drama-producer/references');
 
-test('all 44 specialist contracts are current and normalization preserves craft', async () => {
+test('all 45 specialist contracts are current and normalization preserves craft', async () => {
   for (const {name} of specializedSkills) {
     for (const file of ['SKILL.md', 'WORKFLOW.md']) {
       const text = await fs.readFile(path.resolve('skills', name, file), 'utf8');

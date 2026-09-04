@@ -165,6 +165,38 @@ export const specializedSkills = [
     "name": "character-scene-storyboard"
   },
   {
+    "slug": "novel-comic-drama-preproduction",
+    "label": "小说漫剧前期制片",
+    "origin": "core",
+    "author": "OpenDramaFlow",
+    "legacyIdentifier": false,
+    "description": "把授权小说按卷整理为忠于原著、经审批且可直接进入视频生产的剧本、角色场景资产、导演分镜和 Prompt；适用于长篇与无限流小说改编，不负责实际视频生成。",
+    "keywords": [
+      "小说漫剧前期制片",
+      "按卷改编",
+      "开拍前核验",
+      "视频制作前冻结",
+      "项目资产准入",
+      "原著一致性审计"
+    ],
+    "excludes": [
+      "单张角色图",
+      "直接生成视频",
+      "现有视频剪辑"
+    ],
+    "focus": [
+      "按项目、卷或世界、分集建立原著来源与生产层级",
+      "完整整理文学剧本、视觉资产、导演分镜、Prompt 与声音意图",
+      "统一完成原著审计、图片验收、正式资产准入和开拍前冻结"
+    ],
+    "quality": [
+      "原著事实优先于网络资料、类型惯例和模型推断",
+      "候选、草稿、废案和未批准图片不进入项目资产",
+      "就绪状态只交给用户决定是否开拍，不自动启动视频生成"
+    ],
+    "name": "novel-comic-drama-preproduction"
+  },
+  {
     "slug": "co-op-game-intro-generator",
     "label": "双人游戏开场",
     "origin": "user",
@@ -1235,4 +1267,4 @@ export const specializedSkills = [
   }
 ];
 
-export const sourceSkillCount = 44;
+export const sourceSkillCount = 45;

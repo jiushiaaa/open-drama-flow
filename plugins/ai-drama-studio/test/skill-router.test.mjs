@@ -5,10 +5,10 @@ import test from "node:test";
 import { sourceSkillCount, specializedSkills } from "../src/skill-catalog.mjs";
 import { routeSkills } from "../src/skill-router.mjs";
 
-test("all 44 specialist capabilities have distinct canonical Codex entrypoints", async () => {
-  assert.equal(sourceSkillCount, 44);
-  assert.equal(specializedSkills.length, 44);
-  assert.equal(new Set(specializedSkills.map(item => item.name)).size, 44);
+test("all 45 specialist capabilities have distinct canonical Codex entrypoints", async () => {
+  assert.equal(sourceSkillCount, 45);
+  assert.equal(specializedSkills.length, 45);
+  assert.equal(new Set(specializedSkills.map(item => item.name)).size, 45);
   for (const skill of specializedSkills) {
     assert.match(skill.name, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
     assert.equal(skill.name, skill.slug);
@@ -20,7 +20,7 @@ test("all 44 specialist capabilities have distinct canonical Codex entrypoints",
   }
 });
 
-test("each of the 44 specialized capabilities wins for its canonical user intent", async () => {
+test("each of the 45 specialized capabilities wins for its canonical user intent", async () => {
   for (const skill of specializedSkills) {
     const request = `请帮我制作${skill.keywords[0]}，按这个专业能力完整处理`;
     const result = await routeSkills(request, 5);
@@ -102,6 +102,35 @@ for (const request of novelAdaptationCases) {
     assert.equal(result.selected[0].name, "character-scene-storyboard");
     assert.notEqual(result.confidence, "low");
     assert.ok(result.selected[0].matchedSignals.length > 0);
+  });
+}
+
+const novelPreproductionCases = [
+  "把这部小说按卷完成漫剧前期，整理分集剧本、项目资产并在视频生成前冻结",
+  "这本无限流网文按世界改编动态漫，完成原著审计、图片审批和开拍前核验",
+  "根据原著做完整剧本和导演分镜，清洗资产库后交给我决定是否开始视频制作"
+];
+
+for (const request of novelPreproductionCases) {
+  test(`routes novel preproduction language: ${request}`, async () => {
+    const result = await routeSkills(request, 5);
+    assert.equal(result.fallback, false);
+    assert.equal(result.selected[0].name, "novel-comic-drama-preproduction");
+    assert.notEqual(result.confidence, "low");
+    assert.ok(result.selected[0].matchedSignals.length > 0 || result.selected[0].matchedKeywords.length > 0);
+  });
+}
+
+const novelPreproductionNonCases = [
+  "给这个角色生成一张单独头像",
+  "把这段现有视频重新剪辑并调整字幕",
+  "接着这本小说写下一章正文"
+];
+
+for (const request of novelPreproductionNonCases) {
+  test(`does not over-route novel preproduction: ${request}`, async () => {
+    const result = await routeSkills(request, 5);
+    assert.ok(result.selected.every(skill => skill.name !== "novel-comic-drama-preproduction"));
   });
 }
 

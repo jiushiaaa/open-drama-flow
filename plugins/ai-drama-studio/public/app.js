@@ -1,3 +1,6 @@
+import { sortSidebarCreations } from "./sidebar-order.js";
+import { buildSkillFileTree, countSkillTreeFiles, skillFileBadge } from "./skill-file-tree.js";
+
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
 const stageDefinitions = [["story", "故事"], ["characters", "角色"], ["storyboard", "分镜"], ["assets", "素材"], ["videos", "视频"], ["final", "成片"]];
@@ -11,6 +14,8 @@ let activeProjectTab = "creations";
 let activeAssetFolderId = null;
 let assetViewMode = "grid";
 let expandedProjectIds = new Set();
+let collapsedWorldIds = new Set();
+let worldCreationSort = new Map();
 let projectSort = "updated";
 let projectSearch = "";
 let projectDialogMode = "create-project";
@@ -22,6 +27,7 @@ let availableSkills = [];
 let skillSearch = "";
 let skillFilter = "all";
 let activeSkillDetail = null;
+let collapsedSkillDirectories = new Set();
 let assetContextTarget = null;
 let activePreviewAssetId = null;
 let activeEditorAssetId = null;
@@ -146,10 +152,32 @@ function renderSidebarHierarchy(project) {
   const tree = el("div", { class: "sidebar-creations hierarchy" });
   for (const creation of sortedCreations(project).filter(item => !item.worldId)) tree.append(sidebarCreationRow(project, creation));
   for (const world of [...(project.worlds || [])].sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || a.title.localeCompare(b.title, "zh-CN"))) {
-    const group = el("section", { class: "sidebar-world-group" },
-      el("div", { class: "sidebar-world-title" }, el("img", { src: "/icons/folder-kanban.svg", alt: "" }), el("strong", { text: world.title }), el("span", { text: String(project.creations.filter(item => item.worldId === world.id).length) }))
+    const groupKey = `${project.id}:${world.id}`;
+    const collapsed = collapsedWorldIds.has(groupKey);
+    const sortMode = worldCreationSort.get(groupKey) || "title";
+    const creations = project.creations.filter(item => item.worldId === world.id);
+    const contentId = `sidebar-world-${project.id}-${world.id}`;
+    const group = el("section", { class: `sidebar-world-group ${collapsed ? "collapsed" : "expanded"}` },
+      el("div", { class: "sidebar-world-title" },
+        el("button", { class: "sidebar-world-main", type: "button", "aria-expanded": collapsed ? "false" : "true", "aria-controls": contentId, onclick: () => { if (collapsed) collapsedWorldIds.delete(groupKey); else collapsedWorldIds.add(groupKey); renderSidebar(); } },
+          el("img", { class: "sidebar-world-chevron", src: "/icons/chevron-down.svg", alt: "" }),
+          el("img", { src: "/icons/folder-kanban.svg", alt: "" }),
+          el("strong", { text: world.title }),
+          el("span", { text: String(creations.length) })
+        ),
+        el("button", { class: "sidebar-world-sort-toggle", type: "button", title: `创作页排序：${sortMode === "title" ? "名称 A–Z" : "创建顺序"}`, "aria-label": `${world.title}创作页排序`, onclick: event => { event.stopPropagation(); const menu = event.currentTarget.nextElementSibling; $$('[data-world-sort-menu]').forEach(item => { if (item !== menu) item.hidden = true; }); menu.hidden = !menu.hidden; } }, el("img", { src: "/icons/arrow-up-down.svg", alt: "" })),
+        el("div", { class: "sidebar-world-sort-menu", "data-world-sort-menu": groupKey, hidden: true },
+          el("strong", { text: "创作页排序" }),
+          el("button", { class: sortMode === "title" ? "active" : "", type: "button", onclick: event => { event.stopPropagation(); worldCreationSort.set(groupKey, "title"); renderSidebar(); } }, "名称 A–Z"),
+          el("button", { class: sortMode === "created" ? "active" : "", type: "button", onclick: event => { event.stopPropagation(); worldCreationSort.set(groupKey, "created"); renderSidebar(); } }, "创建顺序")
+        )
+      )
     );
-    for (const creation of sortedCreations(project).filter(item => item.worldId === world.id)) group.append(sidebarCreationRow(project, creation));
+    if (!collapsed) {
+      const content = el("div", { class: "sidebar-world-creations", id: contentId });
+      for (const creation of sortSidebarCreations(creations, sortMode)) content.append(sidebarCreationRow(project, creation));
+      group.append(content);
+    }
     tree.append(group);
   }
   return tree;
@@ -714,6 +742,51 @@ function updateSkillDetailToggle(skill) {
   $("#skill-detail-toggle-label").textContent = skill.enabled ? "已启用" : "已停用";
 }
 
+function renderSkillFileTree(detail) {
+  const tree = $("#skill-file-tree");
+  tree.replaceChildren();
+
+  function renderNode(item) {
+    if (item.type === "file") {
+      return el("button", {
+        class: `skill-tree-file ${item.path === detail.selectedFile ? "active" : ""}`,
+        type: "button",
+        title: item.path,
+        onclick: () => openSkillDetail(detail.skill.name, item.path)
+      }, el("span", { text: skillFileBadge(item.name) }), el("strong", { text: item.name }));
+    }
+
+    const directoryKey = `${detail.skill.name}:${item.path}`;
+    const collapsed = collapsedSkillDirectories.has(directoryKey);
+    const fileCount = countSkillTreeFiles(item);
+    const branch = el("div", { class: `skill-tree-branch ${collapsed ? "collapsed" : "expanded"}` });
+    branch.append(el("button", {
+      class: "skill-tree-directory",
+      type: "button",
+      "aria-expanded": collapsed ? "false" : "true",
+      onclick: () => {
+        if (collapsed) collapsedSkillDirectories.delete(directoryKey);
+        else collapsedSkillDirectories.add(directoryKey);
+        renderSkillFileTree(detail);
+      }
+    },
+    el("img", { class: "skill-tree-chevron", src: "/icons/chevron-down.svg", alt: "" }),
+    el("img", { class: "skill-tree-folder", src: "/icons/folder-kanban.svg", alt: "" }),
+    el("strong", { text: `${item.name}/` }),
+    el("small", { text: fileCount ? String(fileCount) : "空" })
+    ));
+    if (!collapsed) {
+      const children = el("div", { class: "skill-tree-children" });
+      if (item.children.length) for (const child of item.children) children.append(renderNode(child));
+      else children.append(el("p", { class: "skill-tree-empty", text: "此文件夹为空" }));
+      branch.append(children);
+    }
+    return branch;
+  }
+
+  for (const item of buildSkillFileTree(detail.files)) tree.append(renderNode(item));
+}
+
 async function openSkillDetail(name, file = "SKILL.md") {
   try {
     const detail = await api(`/api/skills/${encodeURIComponent(name)}?file=${encodeURIComponent(file)}`);
@@ -724,11 +797,7 @@ async function openSkillDetail(name, file = "SKILL.md") {
     $("#skill-selected-file").textContent = detail.selectedFile;
     $("#skill-file-content").textContent = detail.binary ? "该文件无法在此预览。" : detail.content;
     updateSkillDetailToggle(detail.skill);
-    const tree = $("#skill-file-tree"); tree.replaceChildren();
-    for (const item of detail.files) {
-      if (item.type === "directory") tree.append(el("div", { class: "skill-tree-directory" }, el("img", { src: "/icons/folder-kanban.svg", alt: "" }), el("span", { text: item.path })));
-      else tree.append(el("button", { class: item.path === detail.selectedFile ? "active" : "", type: "button", onclick: () => openSkillDetail(name, item.path) }, el("span", { text: "MD" }), el("strong", { text: item.path.split("/").pop() })));
-    }
+    renderSkillFileTree(detail);
     if (!$("#skill-detail-dialog").open) $("#skill-detail-dialog").showModal();
   } catch (error) { toast(error.message, "error"); }
 }
@@ -907,7 +976,7 @@ $("#asset-move-form").addEventListener("submit", submitAssetMove);
 $("#project-search").addEventListener("input", event => { projectSearch = event.target.value; renderLibrary(); });
 $("#library-sort-button").addEventListener("click", () => { $("#library-sort-menu").hidden = !$("#library-sort-menu").hidden; });
 $("#sidebar-sort-button").addEventListener("click", () => { $("#sidebar-sort-menu").hidden = !$("#sidebar-sort-menu").hidden; });
-$$('[data-sort]').forEach(button => button.addEventListener("click", () => { projectSort = button.dataset.sort; $("#library-sort-label").textContent = sortLabels[projectSort]; $("#library-sort-menu").hidden = true; $("#sidebar-sort-menu").hidden = true; renderLibrary(); }));
+$$('[data-sort]').forEach(button => button.addEventListener("click", () => { projectSort = button.dataset.sort; $("#library-sort-label").textContent = sortLabels[projectSort]; $("#library-sort-menu").hidden = true; $("#sidebar-sort-menu").hidden = true; renderLibrary(); renderSidebar(); }));
 $("#settings-button").addEventListener("click", () => $("#settings-dialog").showModal());
 $("#start-settings-button").addEventListener("click", () => $("#settings-dialog").showModal());
 $("#import-skill-button").addEventListener("click", () => $("#skill-import-dialog").showModal());
@@ -983,7 +1052,7 @@ $("#canvas-stage").addEventListener("dragover", event => { event.preventDefault(
 $("#canvas-stage").addEventListener("dragleave", event => event.currentTarget.classList.remove("file-dragging"));
 $("#canvas-stage").addEventListener("drop", event => { event.preventDefault(); event.currentTarget.classList.remove("file-dragging"); importCanvasAssets([...event.dataTransfer.files]); });
 window.addEventListener("hashchange", () => { applyRoute(); if (currentRoute() === "workspace") renderWorkspace(); });
-document.addEventListener("click", event => { if (!event.target.closest(".sidebar-creation-row")) $$('[data-creation-menu]').forEach(menu => { menu.hidden = true; }); if (!event.target.closest(".sort-control")) $("#library-sort-menu").hidden = true; if (!event.target.closest(".sidebar-project-section")) $("#sidebar-sort-menu").hidden = true; if (!event.target.closest("#asset-context-menu") && !event.target.closest(".asset-more-button")) closeAssetContextMenu(); });
+document.addEventListener("click", event => { if (!event.target.closest(".sidebar-creation-row")) $$('[data-creation-menu]').forEach(menu => { menu.hidden = true; }); if (!event.target.closest(".sidebar-world-title")) $$('[data-world-sort-menu]').forEach(menu => { menu.hidden = true; }); if (!event.target.closest(".sort-control")) $("#library-sort-menu").hidden = true; if (!event.target.closest(".sidebar-project-section")) $("#sidebar-sort-menu").hidden = true; if (!event.target.closest("#asset-context-menu") && !event.target.closest(".asset-more-button")) closeAssetContextMenu(); });
 window.addEventListener("blur", closeAssetContextMenu);
 
 refreshState();
