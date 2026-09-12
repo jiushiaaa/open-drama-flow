@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OpenDramaFlow · Camera reference</title>
+<style>
+body{margin:0;background:#17191f;color:#e8eaf3;font:16px system-ui}canvas{display:block;max-width:100%;height:auto;margin:auto}footer{display:flex;gap:16px;align-items:center;padding:20px;flex-wrap:wrap}input{flex:1;min-width:180px}button{padding:8px 20px}small{display:block;padding:0 20px 20px;color:#afb8cd}
+</style>
+<footer><button id="play">Play</button><input id="time" type="range" min="0" max="20" step="0.0416666667" value="0" aria-label="Camera time in seconds"><output id="clock">0.00 / 20 s</output></footer>
+<small>Procedural camera/space study · Not depth estimation or motion capture.</small>
+<script type="module">
+import './vision-camera-v1.js';
+const slider=document.querySelector('#time'), button=document.querySelector('#play'), clock=document.querySelector('#clock');
+document.body.prepend(document.querySelector('canvas'));
+let playing=false, previous, current=0;
+function draw(t){current=t;window.renderAt(t);slider.value=t;clock.textContent=`${t.toFixed(2)} / 20 s`;}
+slider.addEventListener('input',()=>draw(Number(slider.value)));
+button.addEventListener('click',()=>{playing=!playing;previous=undefined;if(playing&&Number(slider.value)>=20)draw(0);button.textContent=playing?'Pause':'Play';});
+function tick(now){if(playing&&previous!==undefined){const t=Math.min(20,current+(now-previous)/1000);draw(t);if(t>=20){playing=false;button.textContent='Play';}}previous=now;requestAnimationFrame(tick);}
+requestAnimationFrame(tick);
+</script>
+</html>

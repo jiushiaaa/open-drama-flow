@@ -1,14 +1,124 @@
-# OpenDramaFlow
+<p align="center"><a href="README.md">English</a></p>
 
-[English](README.md)
+<p align="center">
+  <img src="plugins/ai-drama-studio/public/assets/studio-pixel-hero.png" alt="OpenDramaFlow 机器人制片工作室" width="920" />
+</p>
 
-面向 **Windows Codex Desktop** 的本地视频生产框架。由 Codex 组织规划、专业 Skill、模型调用、素材、剪辑与复核，不要求用户手动搭建节点图。
+<h1 align="center">OpenDramaFlow</h1>
 
-![第一集实际制作中的原创环境镜头](production/publish-examples/ending-720p-preview.jpg)
+<p align="center">你来讲故事，Codex 来组织制作。<br />面向 Windows 的 Codex 原生、本地优先视频生产框架。</p>
 
-[720p 生成样例](production/publish-examples/ending-720p-4s.mp4) · [4K 放大对照](production/publish-examples/ending-upscaled-4k-4s.mp4) · [样例来源与边界](production/publish-examples/README.md)
+<p align="center">
+  <img alt="MIT 软件许可" src="https://img.shields.io/badge/License-MIT-62c370" />
+  <img alt="Codex 插件" src="https://img.shields.io/badge/Codex-Plugin-111827" />
+  <img alt="MCP" src="https://img.shields.io/badge/Tools-MCP-3b82f6" />
+  <img alt="Windows" src="https://img.shields.io/badge/Windows-Desktop-2563eb" />
+</p>
 
-两段为同一环境镜头的四秒无声片段。**4K 来自后期放大，不是 Seedance 原生 4K。** 完整第一集、小说原文、第三方参考电影不随仓库发布。
+<p align="center"><a href="#实际作品">实际作品</a> · <a href="#agent-如何完成制作">制作流程</a> · <a href="#现在的工作台">工作台</a> · <a href="#安装">安装</a> · <a href="#目前的不足">不足与边界</a></p>
+
+直接在 Codex 对话里表达创作目标，由 Agent 组织规划、专业 Skill、模型调用、素材、剪辑与复核。画布展示生产成果与关联，**不要求用户手动添加、连接各种节点**。
+
+## 实际作品
+
+**[《从姑获鸟开始》城寨风云篇 · 第一集｜前往小红书观看](https://www.xiaohongshu.com/discovery/item/6aa5351d0000000028029cea)**
+
+[![第一集正式封面，点击观看已发布作品](docs/images/episode-one-cover.jpg)](https://www.xiaohongshu.com/discovery/item/6aa5351d0000000028029cea)
+
+创作者：**欧五花八蒙**。这是实际项目的制作成果，也保留了当前技术的不足；不是“一键生成、首轮即合格”的承诺。小红书可能要求登录或使用 App。作品链接由创作者提供，本次文档更新未独立完整播放线上正片。
+
+### 先看几秒制作效果
+
+![实际片头中的城寨、拳台与锁链镜头动图](production/publish-examples/opening-showcase.gif)
+
+从既有片头选取城寨 → 拳台 → 锁链三段，共六秒。动图为轻量无声预览，不能用于评价原视频画质；完整叙事、声音和剪辑效果请看上面的第一集。
+
+[720p 环境镜头](production/publish-examples/ending-720p-4s.mp4) · [同镜头 4K 超分对照](production/publish-examples/ending-upscaled-4k-4s.mp4) · [可下载样例与来源](production/publish-examples/README.md)
+
+README 用 **GIF 展示动态效果、Mermaid 展示流程图**，MP4 保留普通播放／下载链接，不把视频塞进 SVG 冒充内嵌播放器。**4K 来自后期超分，不是 Seedance 原生 4K。** 完整正片、小说原文和第三方电影不随仓库发布。
+
+## Agent 如何完成制作
+
+下面是创作者正在迭代的制作方法。Harness 提供可追踪的状态与工具，Codex 负责组织执行；独立工具和实验路线不等于全部已内置为 MCP 服务。
+
+```mermaid
+flowchart TD
+    A[创作目标与获准使用的小说原文] --> B[Codex 中的 GPT-6-astra：理解、规划、路由 Skill]
+    B --> C[拍摄脚本：事件、对白、连续性]
+    C --> D[Codex 内置 image-gen：image2.5 工作流称呼]
+    D --> E{图片验收通过？}
+    E -->|修改| D
+    E -->|通过| F[角色与场景素材：固定身份和版本]
+    C --> G[Codex 编写三维白模：空间与运镜预演]
+    F --> H[Codex 编译 Prompt 并绑定参考职责]
+    G --> H
+    H --> I[Seedance 2.5 API：生成视频或定向返修]
+    C --> J[SeedAudio 1.0：独立声音与 BGM 流程]
+    I --> K[运动、身份、对白与连续性检查]
+    K -->|局部修复| H
+    K -->|认可| L[本地 Real-ESRGAN：720p 超分至 4K]
+    L --> M[剪辑混音：已验证 FFmpeg；可选接力 ChatCut]
+    J --> M
+    M --> N[播放、音轨、字幕和交接检查]
+    N --> O[最终成片与交付证据]
+    O --> P[经验候选：批准后进入生产记忆]
+    P -.-> B
+    R[有权使用的动作参考] -.-> S[Video Depth Anything：时序深度视频]
+    S -.-> T[GPT-6-astra 分析：实验性动作迁移]
+    T -.-> H
+```
+
+1. **先确定视觉素材。** 创作者把当前图片流程称为 **image2.5**，历史记录中也有 **image2**；这些称呼不代表插件能保证或指定某个固定 API 模型 ID。默认使用当前 Codex 会话内置图片工具，展示候选，验收后写入项目素材库。只有用户明确要求或内置工具确实失败／不可用才回退到项目图片模型。
+2. **先导演，再生成。** GPT-6-astra 是创作者选用的 Codex 模型，不是插件硬编码的必选模型。Agent 根据原文写拍摄脚本，再编写三维场景和摄影机代码，由 Three.js 等渲染出白模视频，统一空间、站位、运镜和节奏；不是大语言模型直接输出视频，也不代表精细打斗已经可控。
+3. **按职责交付参考。** Codex 把自己编写的 Prompt 和图片、视频、音频、首尾帧等参考通过接口交给 **Seedance 2.5（SD2.5）**。外观、动作、运镜、声音各自分工；问题只修对应镜头，保护已认可内容。
+4. **声音按需独立制作。** **SeedAudio 1.0（用户称 SD audio1.0）** 是独立声音／BGM 路线，第一集已有实际音乐生成记录。合适时保留 Seedance 原生对白和环境声，不是所有声音都重新生成；目前尚未成为插件的通用音乐 MCP 适配器。
+5. **从生成走到成片。** 当前 2.5 适配器配置最高输出 720p，再由本地 Real-ESRGAN 辅助超分到 4K。ChatCut 是创作者希望采用的可选剪辑接力；当前可核验的第一集包装使用 FFmpeg。ChatCut 需要另装插件、配置对应服务，不属于本项目已打包的一键内置功能。
+
+### 实际使用到的两个开源模型
+
+| 开源项目 | 在流程中的作用 | 不能混淆的边界 |
+| --- | --- | --- |
+| [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN) | 本地画面修复与超分；制作使用了 [ncnn Vulkan 版本](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan) | 放大后的 4K 不等于原生 4K，也不保证恢复真实细节。 |
+| [Video Depth Anything](https://github.com/DepthAnything/Video-Depth-Anything) | 把视频参考转成具有时序一致性的深度估计 | 深度不是骨架，不会自动解决双人接触，也不等于训练好了动作迁移模型。 |
+
+工具和权重需要单独安装，并遵守上游许可。另见[模型来源与复现说明](docs/reference-sources.md)。
+
+<details>
+<summary>可直接试用的原创白模机位参考：视频与可编辑源码</summary>
+
+![原创白模运镜预览，不是深度估计输出](production/publish-examples/whitebox-camera/preview.gif)
+
+[下载视频、查看源码与使用方法](production/publish-examples/whitebox-camera/README.md)。这是已有的 Three.js 空间与摄影机路径实验，不是电影深度衍生素材，也不代表已完成动作捕捉。
+
+</details>
+
+## 现在的工作台
+
+以下为 **2026-09-12 从正在运行的工作台重新截取**的真实界面，不注入示例项目。截图是当时状态，不代表所有显示的生产条目都已经验收。
+
+**项目库：管理作品、创作页和素材。**
+
+![最新项目库截图](docs/images/project-library.png)
+
+**无限画布：查看真实产物与关联，对话仍在 Codex 中。**
+
+![最新生产画布截图](docs/images/production-canvas.png)
+
+<details>
+<summary>专业 Skill：可独立折叠的目录与可阅读的完整指引</summary>
+
+![最新技能目录和文件层级](docs/images/skill-browser.png)
+
+</details>
+
+## 目前的不足
+
+- **打斗仍然是这次案例最弱的一环。** 快速攻防、抓握、遮挡、重心转移和左右肢体归属仍会出错。创作者尝试从真实电影武打镜头提取时序深度，再由 GPT-6-astra 分析、尝试迁移；目前效果仍差强人意，尚未实现端到端骨骼动捕迁移与可靠双人接触求解。
+- **白模更适合空间和运镜，不适合承诺精确动作。** 早期动作预演存在变形、穿模，甚至影响最终质量；视频参考是软约束，不是物理约束。
+- **输入功能覆盖不等于生成质量全覆盖。** 多参考、续写、编辑仍受账号权限、模型行为和素材条件影响；局部编辑也可能改动原本要求保留的内容。
+- **外围步骤尚未全部产品化。** SeedAudio 音乐、深度分析、本地超分和 ChatCut 接力需要独立配置；当前有证据的确定性后期是 FFmpeg。
+- **长片仍需要判断与审核。** ASR、抽帧、解码通过不能代替正常速度看听、字幕检查和成片验收；显存、磁盘、云端调用费用也是真实成本。
+- **本地动作库不是可直接公开的数据集。** 收集的电影／教学原片及深度衍生文件尚无已核实的再分发许可。仓库只提供明确整理的样例，参见[公开素材范围](production/publish-examples/README.md#publication-boundary)。
 
 ## 它负责什么
 
