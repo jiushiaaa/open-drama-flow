@@ -21,7 +21,8 @@ test("six supported task contracts preserve typed roles and 30 second requests",
   ]) {
     const result = compile(mode, inputs);
     assert.equal(result.executable, true, JSON.stringify(result.validation));
-    assert.equal(result.requests.video.parameters.duration, 30);
+    assert.equal(result.requests.video.parameters.duration, mode === "video-edit" ? -1 : 30);
+    assert.equal(result.requests.video.parameters.ratio, ["video-edit", "image-to-video", "first-last-frame"].includes(mode) ? "adaptive" : settings.ratio);
     assert.equal(result.requests.video.parameters.generate_audio, false);
     assert.deepEqual(result.requests.video.inputs.map(item => item.providerRole), inputs.map(item => item.referenceRole));
     assert.equal(result.requests.image, null);

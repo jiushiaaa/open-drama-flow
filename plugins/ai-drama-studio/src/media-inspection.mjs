@@ -23,7 +23,7 @@ export async function inspectMediaFile(localPath) {
   const audio = data.streams?.find(item => item.codec_type === "audio");
   const [n, d = 1] = String(video?.avg_frame_rate || "0/1").split("/").map(Number);
   return { duration: Number(data.format?.duration || video?.duration || audio?.duration || 0),
-    video: video ? { width: video.width, height: video.height, fps: d ? n / d : 0, codec: video.codec_name } : null,
+    video: video ? { width: video.width, height: video.height, fps: d ? n / d : 0, codec: video.codec_name, duration: Number(video.duration) || null } : null,
     audio: audio ? { codec: audio.codec_name, channels: audio.channels, sampleRate: Number(audio.sample_rate) } : null,
     format: data.format?.format_name || "" };
 }
@@ -60,8 +60,11 @@ export async function scanMediaSignals(localPath, media = null) {
 
 export async function extractLastFrame(input, output) {
   const media = await inspectMediaFile(input);
-  const time = Math.max(0, media.duration - 1 / (media.video?.fps || 24) - 0.01);
-  await mediaCommand("ffmpeg", ["-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-ss", String(time), "-i", input, "-map", "0:v:0", "-frames:v", "1", output]);
+  // Audio padding can outlast the final video timestamp. Decode a short tail
+  // and reverse its frames instead of seeking beyond the last picture.
+  const time = Math.max(0, (media.video?.duration || media.duration) - 2);
+  await mediaCommand("ffmpeg", ["-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-ss", String(time), "-i", input, "-map", "0:v:0", "-vf", "reverse", "-frames:v", "1", output]);
+  await fs.access(output);
   return output;
 }
 

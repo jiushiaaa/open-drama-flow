@@ -22,7 +22,7 @@ const legacyDisabled = Object.keys(legacySkillIdentifiers)[0];
 await fs.writeFile(path.join(dataRoot,"skill-registry.json"),JSON.stringify({enabled:{[legacyDisabled]:false}}));
 const transport = new StdioClientTransport({
   command:process.execPath, args:[path.join(pluginRoot,"src/mcp-server.mjs")], cwd:pluginRoot,
-  env:{...process.env,AI_DRAMA_DATA_DIR:dataRoot,AI_DRAMA_PORT:String(port),AI_DRAMA_BRIDGE_PORT:"0",AI_DRAMA_BRIDGE_CONTROL_PORT:"0"},
+  env:{...process.env,AI_DRAMA_DATA_DIR:dataRoot,AI_DRAMA_MEDIA_DIR:dataRoot,AI_DRAMA_PORT:String(port),AI_DRAMA_BRIDGE_PORT:"0",AI_DRAMA_BRIDGE_CONTROL_PORT:"0"},
   stderr:"pipe"
 });
 transport.stderr?.on("data",()=>{});
@@ -35,14 +35,16 @@ async function call(name,args={}) {
 try {
   await client.connect(transport);
   const listing = await call("drama_list_skills");
-  assert.equal(listing.count,45);
+  assert.equal(listing.count,specializedSkills.length + 1);
   assert.deepEqual(new Set(listing.skills.map(s=>s.name)),new Set(["ai-drama-producer",...specializedSkills.map(s=>s.name)]));
   assert.equal(listing.skills.find(s=>s.name===legacySkillIdentifiers[legacyDisabled]).enabled,false);
   await call("drama_set_skill_enabled",{name:legacyDisabled,enabled:true});
   let routed=0;
   for(const skill of specializedSkills) {
-    const legacy = Object.entries(legacySkillIdentifiers).find(([,name])=>name===skill.name)[0];
-    for(const request of [`$${skill.name}`,`$ai-drama-studio:${skill.name}`,`$${legacy}`,skill.label]) {
+    const legacy = Object.entries(legacySkillIdentifiers).find(([,name])=>name===skill.name)?.[0];
+    const requests = [`$${skill.name}`,`$ai-drama-studio:${skill.name}`,skill.label];
+    if (legacy) requests.splice(2,0,`$${legacy}`);
+    for(const request of requests) {
       const route = await call("drama_route_skills",{request,maxResults:5});
       assert.equal(route.selected[0]?.name,skill.name,request);
       assert.equal(route.confidence,"high",request);

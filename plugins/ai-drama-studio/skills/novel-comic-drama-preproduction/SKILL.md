@@ -1,7 +1,6 @@
 ---
 name: novel-comic-drama-preproduction
 description: 把授权小说按卷整理为忠于原著、经审批且可直接进入视频生产的剧本、角色场景资产、导演分镜和 Prompt；适用于长篇与无限流小说改编，不负责实际视频生成。
-trigger-words: [小说漫剧, 小说改编漫剧, 按卷改编, 动态漫前期, 开拍前核验, novel adaptation]
 ---
 
 # 小说漫剧前期制片

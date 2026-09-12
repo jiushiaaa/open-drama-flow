@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import { createReadStream } from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
-import { dataRoot, safeId, allowedImageExtensions, allowedVideoExtensions, allowedAudioExtensions, allowedDocumentExtensions, allowedSpreadsheetExtensions } from "./config.mjs";
+import { dataRoot, mediaRoot, safeId, allowedImageExtensions, allowedVideoExtensions, allowedAudioExtensions, allowedDocumentExtensions, allowedSpreadsheetExtensions } from "./config.mjs";
 import { appendEvent, mutateState, readState } from "./store.mjs";
 import { readArkKey } from "./secrets.mjs";
 import { createShotVideo, normalizeVideoClip, probeDuration, probeMedia, renderFinal, srtTimestamp } from "./ffmpeg.mjs";
@@ -26,6 +26,10 @@ const realJobLeaseMs = 60_000;
 
 function projectDir(projectId) {
   return path.join(dataRoot, "projects", projectId);
+}
+
+function projectMediaDir(projectId) {
+  return path.join(mediaRoot, "projects", projectId);
 }
 
 const retryableMoveCodes = new Set(["EACCES", "EBUSY", "ENOTEMPTY", "EPERM"]);
@@ -215,6 +219,7 @@ function safeJobFailure(error) {
   if (code === "APPROVAL_SCOPE_STALE") return { code, message: "制作方案或已锁定素材在审批后发生了变化。旧审批已失效，系统没有继续调用模型；请按当前方案重新创建审批。" };
   if (code === "ASSET_VERSION_CONTENT_CHANGED") return { code, message: "已锁定素材文件的内容与该版本记录不一致。系统已停止生成；请将改动保存为新素材版本并重新审批。" };
   if (code === "PROVIDER_SUBMISSION_UNCERTAIN") return { code, message: "供应商提交结果不确定。系统已停止自动重试以避免重复付费，请先核对供应商任务记录再决定是否新建审批。" };
+  if (code === "STATE_LOCK_TIMEOUT") return { code, message: "本地状态写入锁等待超时。原审批、调用记录和已成功素材保留；恢复时先核对原任务，不重复提交。" };
   if (code === "PLAN_CHANGED_DURING_RENDER") return { code, message: "本地渲染期间制作方案发生变化，旧版本结果未登记为成片；请按最新方案重新渲染。" };
   return { code, message: "任务未完成。已成功产物已保留，请根据失败阶段重试。" };
 }
@@ -619,6 +624,14 @@ export async function deleteProject(projectId) {
   const source = projectDir(projectId);
   const trashRoot = path.join(dataRoot, ".trash");
   const trashedPath = path.join(trashRoot, `${projectId}-${Date.now()}`);
+  // External media stays in place: keep its exact references recoverable rather
+  // than recursively moving a separately configured drive or shared source.
+  const retainedMediaPaths = [...new Set([...project.assets, ...project.outputs].map(item => item.localPath).filter(Boolean))]
+    .filter(file => { const relative = path.relative(source, path.resolve(file)); return relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative); });
+  if (retainedMediaPaths.length) {
+    await fs.mkdir(source, { recursive: true });
+    await fs.writeFile(path.join(source, `${safeId("deleted-project-recovery")}.json`), JSON.stringify({ project, retainedMediaPaths }, null, 2), { flag: "wx" });
+  }
   const moveResult = await moveDirectoryToTrash(source, trashedPath);
   try {
     await mutateState(next => {
@@ -637,7 +650,7 @@ export async function deleteProject(projectId) {
     }
     throw error;
   }
-  return { id: projectId, title: project.title, recoverablePath: trashedPath, sourceCleanupPending: moveResult.sourceRetained };
+  return { id: projectId, title: project.title, recoverablePath: trashedPath, sourceCleanupPending: moveResult.sourceRetained, retainedMediaPaths };
 }
 
 export async function createWorld(projectId, input = {}) {
@@ -831,7 +844,7 @@ export async function importLocalAsset(projectId, localPath, options = {}) {
   const stat = await fs.stat(source);
   if (!stat.isFile() || !stat.size || stat.size > 200 * 1024 * 1024) throw new Error("ASSET_FILE_SIZE_INVALID");
   const id = safeId("asset");
-  const destination = path.join(projectDir(projectId), "imports", `${id}${extension}`);
+  const destination = path.join(projectMediaDir(projectId), "imports", `${id}${extension}`);
   await fs.mkdir(path.dirname(destination), { recursive: true });
   await fs.copyFile(source, destination);
   const sha256 = await fileDigest(destination);
@@ -866,7 +879,7 @@ export async function inspectAsset(projectId, assetId, { preparePlayback = true 
   const evidence = { ...assetVersionEvidence(asset), path: asset.localPath, media, seedanceCompatible: !errors.length, errors, semanticReview: "not-performed" };
   if (preparePlayback && asset.kind !== "image") {
     evidence.signals = await scanMediaSignals(asset.localPath, media);
-    const directory = path.join(projectDir(projectId), "asset-evidence", asset.id, asset.sha256);
+    const directory = path.join(projectMediaDir(projectId), "asset-evidence", asset.id, asset.sha256);
     await fs.mkdir(directory, { recursive: true });
     if (media.audio) evidence.audioPlayback = await extractReviewAudio(asset.localPath, path.join(directory, "listen.wav"));
     if (asset.kind === "video") evidence.frameEvidence = await createReviewEvidencePack({ inputPath: asset.localPath, outputDir: path.join(directory, "frames") });
@@ -888,7 +901,7 @@ export async function prepareReferenceAsset(projectId, assetId, options = {}) {
   const duration = options.durationSeconds ?? (media.duration - start);
   if (kind !== "image" && (!Number.isFinite(start) || start < 0 || !Number.isFinite(duration) || duration < 2 || duration > 30 || start + duration > media.duration + 0.05)) throw new Error("REFERENCE_SEGMENT_RANGE_INVALID");
   const extension = { video: ".mp4", audio: ".wav", image: ".png" }[kind];
-  const directory = path.join(projectDir(projectId), "reference-derivatives");
+  const directory = path.join(projectMediaDir(projectId), "reference-derivatives");
   await fs.mkdir(directory, { recursive: true });
   const destination = path.join(directory, `${safeId("reference")}${extension}`);
   const args = ["-hide_banner", "-loglevel", "error", "-nostdin", "-y", ...(kind !== "image" ? ["-ss", String(start)] : []), "-i", asset.localPath];
@@ -1630,8 +1643,8 @@ async function runLocalRender(jobId, projectId, creationId = null) {
     const brief = normalizeProductionBrief(production.brief, production.brief, { objective: production.logline || production.script?.premise || "", aspectRatio: state.settings.ratio });
     const renderRatio = brief.aspectRatio === "adaptive" ? state.settings.ratio : brief.aspectRatio;
     const renderDimensions = dimensionsForAspectRatio(renderRatio);
-    const clipsDir = path.join(projectDir(projectId), "clips");
-    const renderDir = path.join(projectDir(projectId), "renders", jobId);
+    const clipsDir = path.join(projectMediaDir(projectId), "clips");
+    const renderDir = path.join(projectMediaDir(projectId), "renders", jobId);
     const clips = [];
     const clipDurations = [];
     const inputAssets = [];
@@ -1707,7 +1720,7 @@ async function runLocalRender(jobId, projectId, creationId = null) {
       cursor += clipDurations[index];
       return `${index + 1}\n${srtTimestamp(start)} --> ${srtTimestamp(cursor)}\n${shot.subtitle || " "}\n`;
     }).join("\n");
-    const outputPath = path.join(projectDir(projectId), "outputs", `${jobId}.mp4`);
+    const outputPath = path.join(projectMediaDir(projectId), "outputs", `${jobId}.mp4`);
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
     await renderFinal({ clips, subtitles, outputPath, workingDir: renderDir });
     await mutateState(next => {
@@ -1951,7 +1964,7 @@ async function runRealPipeline(jobId, approvalId) {
         }
         continue;
       }
-      const outputPath = path.join(projectDir(project.id), "assets", `${shot.id}-r${production.planRevision}-p${shot.promptVersion || 1}-seedream.png`);
+      const outputPath = path.join(projectMediaDir(project.id), "assets", `${shot.id}-r${production.planRevision}-p${shot.promptVersion || 1}-seedream.png`);
       try {
         const request = reservation.call.requestSnapshot;
         const result = await withRealJobHeartbeat(jobId, runToken, () => generateSeedreamImage({ apiKey: currentKey, baseUrl: settings.arkBaseUrl, model: request.model, prompt: request.prompt, size: request.parameters?.size || "2K", outputPath, watermark: Boolean(request.parameters?.watermark) }));
@@ -2017,7 +2030,7 @@ async function runRealPipeline(jobId, approvalId) {
       let taskId = call?.providerTaskId || null;
       if (!taskId) {
         let resolvedInputs;
-        try { resolvedInputs = await resolveProviderInputs(state, latest.project, currentShot, approval); }
+        try { resolvedInputs = await withRealJobHeartbeat(jobId, runToken, () => resolveProviderInputs(state, latest.project, currentShot, approval)); }
         catch (error) {
           if (!String(error.message).startsWith("ASSET_BRIDGE_")) throw error;
           await updateRealJob(jobId, runToken, { status: "waiting", stage: "asset-bridge", error: error.message }, "多模态参考等待受控 HTTPS 桥接");
@@ -2119,7 +2132,7 @@ async function runRealPipeline(jobId, approvalId) {
         if (!terminal && !["JOB_LEASE_LOST", "APPROVAL_SCOPE_STALE"].includes(errorMessage)) throw new Error("SEEDANCE_STATUS_UNKNOWN_AFTER_TIMEOUT");
         throw error;
       }
-      const outputPath = path.join(projectDir(project.id), "clips", `${shot.id}-r${call.planRevision}-p${call.promptVersion}-seedance.mp4`);
+      const outputPath = path.join(projectMediaDir(project.id), "clips", `${shot.id}-r${call.planRevision}-p${call.promptVersion}-seedance.mp4`);
       let downloaded;
       try {
         downloaded = await withRealJobHeartbeat(jobId, runToken, () => downloadSeedanceVideo(result, outputPath));
@@ -2176,7 +2189,7 @@ async function runRealPipeline(jobId, approvalId) {
   } catch (error) {
     const failure = safeJobFailure(error);
     if (!runToken) return;
-    const recoverable = ["BACKGROUND_SHUTDOWN", "PROVIDER_SUBMISSION_UNCERTAIN", "SEEDANCE_STATUS_UNKNOWN_AFTER_TIMEOUT", "SEEDANCE_OUTPUT_DOWNLOAD_PENDING"].includes(failure.code);
+    const recoverable = ["BACKGROUND_SHUTDOWN", "PROVIDER_SUBMISSION_UNCERTAIN", "SEEDANCE_STATUS_UNKNOWN_AFTER_TIMEOUT", "SEEDANCE_OUTPUT_DOWNLOAD_PENDING", "STATE_LOCK_TIMEOUT"].includes(failure.code);
     try {
       await updateRealJob(jobId, runToken, { status: recoverable ? "waiting" : "failed", stage: recoverable ? "provider-status-check" : "failed", error: failure.message, errorCode: failure.code }, recoverable ? "真实模型任务状态待核对，系统不会自动重复提交" : "真实模型批次停止，已成功产物已保留");
     } catch (updateError) {
@@ -2191,7 +2204,10 @@ export async function resumeRealPipeline(jobId) {
     if (!target || target.type !== "real-pipeline") throw new Error("REAL_JOB_NOT_FOUND");
     if (target.status === "superseded") throw new Error("APPROVAL_SCOPE_STALE");
     if (target.status === "running" && Date.parse(target.leaseExpiresAt || "") > Date.now()) return { job: target, shouldRun: false };
-    if (!["queued", "running", "waiting"].includes(target.status)) throw new Error("REAL_JOB_NOT_WAITING");
+    // Older workers classified local lock timeouts as failed after persisting the
+    // provider task. Reconcile that exact failure through the original scope.
+    const legacyLockTimeout = target.status === "failed" && target.errorCode === "STATE_LOCK_TIMEOUT";
+    if (!["queued", "running", "waiting"].includes(target.status) && !legacyLockTimeout) throw new Error("REAL_JOB_NOT_WAITING");
     const approval = state.approvals.find(item => item.id === target.approvalId);
     if (!approval || approval.status !== "approved" || approval.jobId !== target.id || !hasExecutionAuthorization(approval)) throw new Error("APPROVAL_REQUIRED");
     assertApprovalScopeCurrent(state, approval);
@@ -2315,7 +2331,7 @@ export async function prepareQualityEvidence(projectId, creationId, outputId) {
   if (!output || output.stale) throw new Error("OUTPUT_NOT_FOUND_OR_STALE");
   const production = productionUnit(project, creationId || null);
   if (Number(output.planRevision || 0) !== Number(production.planRevision || 0)) throw new Error("OUTPUT_PLAN_STALE");
-  const outputDir = path.join(projectDir(projectId), "review-evidence", outputId);
+  const outputDir = path.join(projectMediaDir(projectId), "review-evidence", outputId);
   const manifest = await createReviewEvidencePack({ inputPath: output.localPath, outputDir, shots: production.shots || [], includeTemporal: true });
   const evidence = {
     schema: manifest.schema,

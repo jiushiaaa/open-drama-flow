@@ -1,17 +1,26 @@
-# Completion and visual verification
+# 剪辑完成与可见验证
 
-Before reporting a visual task done:
+先使用当前环境真实存在的剪辑/预览能力；没有工程适配器时使用FFmpeg与本地文件，不假设存在 `project.*` 方法。剧情动画与局部修复另读[连续叙事规则](../../ai-drama-producer/references/narrative-continuity.md)。
 
-1. Run `project.diagnostics`. There must be zero error-severity issues (black
-   gaps, clip overlaps, missing media), or each remaining issue must be
-   intentional and explained.
-2. Run `project.snapshot` at the changed moments and actually inspect the
-   rendered frames. For transitions, include the seam; for captions, choose a
-   frame where text is visible; for grading/effects, compare representative
-   moments.
-3. Run `project.view` on the affected range so the user is left watching the
-   result rather than hunting for it.
+## 每次导出必须检查
 
-Report what changed in plain language and include the new duration. If
-`project.edit` returns entries in `nonUndoable[]`, tell the user. Never claim
-that something was checked unless it was rendered and inspected.
+1. 核对源资产版本、实际裁剪区间、顺序、帧率/PTS与总时长。生成提示词的秒数不能直接充当剪切边界；检查每条源片自己的内部切点。
+2. 完整解码最终文件，检查无意的黑段、丢帧、异常重叠、音轨缺失与尾部残帧。异常若是创作意图，要明确记录。编码成功不等于语义全部通过。
+3. 正常速度播放完整成片并听音。对每个拼接边界、源片切点、用户报告异常与动作交接，逐帧检查两侧连续画面；通常各约0.5秒，不够则扩大。均匀间隔接触表不能排除短促闪回。
+4. 在最终播放文件上查看字幕开始前、发声中和结束后的画面，检查声音同步、文字可读与遮挡。剪掉时间后同步调整音频和字幕；已烧录字幕不重复偏移。
+5. 检查最后一秒及最后一帧；确认输出常见播放器可用，而非只验证无损中间文件。展示当前版本的实际本地视频，不发旧版链接。
+
+## 局部返修的保留证据
+
+- 明确用户指定修改区间与保留项，只处理必要范围；保留原文件，另存新版本。
+- 对闪帧、回跳、动作重复开始，记录错误帧与相邻真实切点，精确重剪；不默认用转场或整段重生成遮盖。
+- 声称未改变其他画面时，比较保留帧对应关系；若要证明像素相同，在无损中间结果上做解码帧校验。普通重编码或超分文件不能宣称字节/像素完全一致。
+- 记录修复前后范围、时长、音字幕偏移、输出SHA256与实际观察。技术扫描、ASR与哈希各自只证明对应项目，不能代替完整观看/听音。
+
+## 报告边界
+
+高清、多内容版本、片头尾/歌词包装或收尾清理时，另读[母版复用与交付保护](postproduction-preservation.md)。这些检查不增加生成权限，不要求重拍已认可画面。
+
+按总控保存质量证据。没有真实播放、听音或足够画面证据的项目保持待核验，不写成通过；用户接受某版不等于内部未执行检查已被执行。简洁说明修改内容与新时长，展示视频供复看。没有真实工程写入时，不声称已写入剪辑软件工程。
+
+报告分开记录“技术检查、实际观察、用户认可、待视听项”。可以先交付技术检查通过的候选供用户播放，但缺少的视听检查仍标待核验；不得把解码、ASR或抽帧通过补写成完整听审。

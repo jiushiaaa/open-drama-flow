@@ -30,6 +30,18 @@ test("ASR fixed endpoint, key headers, embedded audio, exact request ID and time
   assert.deepEqual(result.utterances, [{ text: "你好", startMs: 0, endMs: 500 }]);
 });
 
+test("ASR retains supplied word times without fabricating missing timings", async () => {
+  const result = await runSpeechRequest(snapshot("asr"), { key: "fake-only", audio: Buffer.from("fake-audio"), fetchImpl: async () => new Response(JSON.stringify({ result: {
+    text: "你好", utterances: [{ text: "你好", start_time: 0, end_time: 500, words: [
+      { text: "你", start_time: 0, end_time: 180 }, { word: "好", start_time: 220, end_time: 500 },
+      { text: "invalid", start_time: "unknown", end_time: 510 },
+      { text: "missing", end_time: 510 }, { text: "null", start_time: null, end_time: 510 },
+      { text: "empty", start_time: "", end_time: " " }, { text: "boolean", start_time: false, end_time: true }, null
+    ] }]
+  } }), { headers }) });
+  assert.deepEqual(result.utterances[0].words, [{ text: "你", startMs: 0, endMs: 180 }, { text: "好", startMs: 220, endMs: 500 }]);
+});
+
 test("TTS consumes completed SSE only and requests stock voice / MP3", async () => {
   const output = await runSpeechRequest(snapshot("tts"), { key: "fake-only", fetchImpl: async (url, options) => {
     assert.equal(url, SPEECH.tts.endpoint);

@@ -15,19 +15,33 @@ function wait(milliseconds) {
 async function acquireStateLock() {
   await fs.mkdir(dataRoot, { recursive: true });
   const startedAt = Date.now();
-  while (Date.now() - startedAt < 10_000) {
+  // Concurrent long-episode jobs can spend several seconds serializing state.
+  // Wait for the actual owner; never break a live lock to avoid duplicate calls.
+  while (Date.now() - startedAt < 30_000) {
     try {
       const token = crypto.randomUUID();
       const handle = await fs.open(stateLockPath, "wx");
       await handle.writeFile(JSON.stringify({ pid: process.pid, token, acquiredAt: new Date().toISOString() }), "utf8");
       await handle.close();
       return async () => {
-        try {
-          const owner = JSON.parse(await fs.readFile(stateLockPath, "utf8"));
-          if (owner.token === token) await fs.rm(stateLockPath, { force: true });
-        } catch {}
+        for (let attempt = 0; attempt < 20; attempt += 1) {
+          try {
+            const owner = JSON.parse(await fs.readFile(stateLockPath, "utf8"));
+            if (owner.token === token) await fs.rm(stateLockPath, { force: true });
+            return;
+          } catch (error) {
+            if (!["EACCES", "EBUSY", "EPERM"].includes(error?.code)) return;
+            await wait(50);
+          }
+        }
       };
     } catch (error) {
+      // Windows may report a short sharing violation instead of EEXIST.
+      // Retry acquisition without removing or bypassing another owner's lock.
+      if (["EACCES", "EBUSY", "EPERM"].includes(error?.code)) {
+        await wait(50);
+        continue;
+      }
       if (error?.code !== "EEXIST") throw error;
       try {
         const stat = await fs.stat(stateLockPath);
@@ -51,7 +65,7 @@ async function acquireStateLock() {
           continue;
         }
       } catch (statError) {
-        if (statError?.code !== "ENOENT") throw statError;
+        if (!["ENOENT", "EACCES", "EBUSY", "EPERM"].includes(statError?.code)) throw statError;
       }
       await wait(25 + Math.floor(Math.random() * 50));
     }
@@ -88,14 +102,16 @@ async function atomicWrite(state) {
   const tempPath = `${statePath}.${process.pid}.${crypto.randomUUID()}.tmp`;
   await fs.writeFile(tempPath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
   let lastError = null;
-  for (let attempt = 0; attempt < 8; attempt += 1) {
+  // Windows readers/antivirus may hold a large state file for more than 0.5s.
+  // Keep the original file intact and retry the same atomic rename, bounded.
+  for (let attempt = 0; attempt < 20; attempt += 1) {
     try {
       await fs.rename(tempPath, statePath);
       return;
     } catch (error) {
       lastError = error;
-      if (!["EACCES", "EBUSY", "EPERM"].includes(error?.code) || attempt === 7) break;
-      await wait(20 * (attempt + 1));
+      if (!["EACCES", "EBUSY", "EPERM"].includes(error?.code) || attempt === 19) break;
+      await wait(Math.min(50 * (attempt + 1), 250));
     }
   }
   try { await fs.rm(tempPath, { force: true }); } catch {}

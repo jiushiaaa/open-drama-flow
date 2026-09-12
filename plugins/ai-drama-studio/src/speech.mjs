@@ -62,7 +62,15 @@ export async function runSpeechRequest(snapshot, { key, requestId = randomUUID()
     if (statusCode !== "20000000") throw providerError(statusCode, response.status, logId);
     const data = JSON.parse(raw);
     if (typeof data.result?.text !== "string") throw new Error("SPEECH_TRANSCRIPT_MISSING");
-    const utterances = (data.result.utterances || []).map(item => ({ text: String(item.text || ""), startMs: Number(item.start_time), endMs: Number(item.end_time) }));
+    const utterances = (data.result.utterances || []).map(item => {
+      const utterance = { text: String(item.text || ""), startMs: Number(item.start_time), endMs: Number(item.end_time) };
+      if (Array.isArray(item.words)) utterance.words = item.words.filter(word => word && [word.start_time, word.end_time].every(value =>
+        typeof value === "number" || (typeof value === "string" && value.trim() !== "")
+      )).map(word => ({
+        text: String(word.text || word.word || ""), startMs: Number(word.start_time), endMs: Number(word.end_time)
+      })).filter(word => word.text.trim() && Number.isFinite(word.startMs) && Number.isFinite(word.endMs) && word.startMs >= 0 && word.endMs >= word.startMs);
+      return utterance;
+    });
     return { text: data.result.text, utterances, logId, requestId, providerCode: statusCode };
   }
   const chunks = [];

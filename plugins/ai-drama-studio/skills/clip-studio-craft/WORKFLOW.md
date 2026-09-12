@@ -14,11 +14,13 @@
 
 ---
 
-# Clip Editing Craft — Video Editor plugin
+# Clip Editing Craft
 
-Judgement layer for editing inside this plugin. The method catalog (what each
-`project.*` call does) lives in the plugin's method docs; THIS file is about
-making the edit good. Apply it when planning; don't recite it to the user.
+Use the actual tools available in the current environment. The `project.*`,
+`set_speed`, `cut_silences`, `set_subtitle_style` and `add_text` examples below
+apply only when a connected editor really exposes those methods. Otherwise
+use FFmpeg exports, frame inspection and a local edit manifest; do not wait
+for imaginary methods or report a file export as an editor-project update.
 
 ## Perception before decision
 
@@ -37,7 +39,10 @@ a look works) from clip names, durations or assumptions. Look first:
 
 ## Rhythm and pacing
 
-- **Hook first.** The first 1–3 seconds decide whether anyone keeps watching.
+- The following hook and approximate seven-second advice is a heuristic for
+  short ads and talking-head videos. Narrative scenes, approved openings and
+  continuous performances follow their dramatic beats; no compulsory cut rate.
+- **Hook first.** The first 1–3 seconds help establish attention in short ads.
   Open on motion, a face, or the strongest image — not on a slow establishing
   shot unless the user asked for it.
 - **Vary shot length.** A wall of same-length clips reads as a slideshow.

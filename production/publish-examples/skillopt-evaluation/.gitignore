@@ -1,0 +1,7 @@
+/run-*/
+/test-initial/
+/test-best/
+/isolated/
+/__pycache__/
+/input-hashes.json
+/experiment-result.json

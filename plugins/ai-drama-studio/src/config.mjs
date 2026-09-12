@@ -7,6 +7,8 @@ export const workspaceRoot = path.resolve(pluginRoot, "..", "..");
 const localAppDataRoot = process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local");
 export const runtimeRoot = path.join(localAppDataRoot, "OpenDramaFlow");
 export const dataRoot = path.resolve(process.env.AI_DRAMA_DATA_DIR || path.join(runtimeRoot, "data"));
+// Optional destination for newly created media. Existing asset paths and state stay unchanged.
+export const mediaRoot = path.resolve(process.env.AI_DRAMA_MEDIA_DIR || dataRoot);
 export const runtimeBinRoot = path.join(runtimeRoot, "bin");
 export const userSkillsRoot = path.join(dataRoot, "skills");
 export const publicRoot = path.join(pluginRoot, "public");

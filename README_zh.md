@@ -1,227 +1,99 @@
-<p align="center">
-  <a href="README.md">English</a>
-</p>
+# OpenDramaFlow
 
-<p align="center">
-  <img src="plugins/ai-drama-studio/public/assets/studio-pixel-hero.png" alt="OpenDramaFlow AI 漫剧片场" width="920" />
-</p>
+[English](README.md)
 
-<h1 align="center">OpenDramaFlow</h1>
+面向 **Windows Codex Desktop** 的本地视频生产框架。由 Codex 组织规划、专业 Skill、模型调用、素材、剪辑与复核，不要求用户手动搭建节点图。
 
-<p align="center">
-  面向 Codex PC 桌面版的开源本地 AI 视频生产框架：从商业或叙事目标、结构化镜头和模型审批，到素材、剪辑、复核与成片。
-</p>
+![第一集实际制作中的原创环境镜头](production/publish-examples/ending-720p-preview.jpg)
 
-<p align="center">
-  <img alt="MIT License" src="https://img.shields.io/badge/License-MIT-62c370" />
-  <img alt="Codex Plugin" src="https://img.shields.io/badge/Codex-Plugin-111827" />
-  <img alt="MCP Ready" src="https://img.shields.io/badge/MCP-Ready-3b82f6" />
-  <img alt="Node.js 20+" src="https://img.shields.io/badge/Node.js-20%2B-4f9d45" />
-  <img alt="Windows Desktop" src="https://img.shields.io/badge/Windows-Desktop-2563eb" />
-</p>
+[720p 生成样例](production/publish-examples/ending-720p-4s.mp4) · [4K 放大对照](production/publish-examples/ending-upscaled-4k-4s.mp4) · [样例来源与边界](production/publish-examples/README.md)
 
-<p align="center">
-  <a href="#快速开始">快速开始</a> ·
-  <a href="#生产流程">生产流程</a> ·
-  <a href="#界面展示">界面展示</a> ·
-  <a href="#核心能力">核心能力</a> ·
-  <a href="#codex-插件">Codex 插件</a> ·
-  <a href="#开发与验证">开发与验证</a> ·
-  <a href="#安全边界">安全边界</a>
-</p>
+两段为同一环境镜头的四秒无声片段。**4K 来自后期放大，不是 Seedance 原生 4K。** 完整第一集、小说原文、第三方参考电影不随仓库发布。
 
----
+## 它负责什么
 
-## OpenDramaFlow 是什么？
+创作目标 → 已批准上下文 → 场次与镜头合同 → 明确用途的参考素材 → 有调用边界的任务 → 版本化素材 → 剪辑与复核 → 交付证据。
 
-OpenDramaFlow 不是一个简单的 Prompt 包装器，也不是只能点击一次的视频生成页面。它是一套让 Codex 可以持续操作的本地制作 harness，为整条 AI 漫剧生产链提供可检查、可恢复的项目状态：
+- **46 个内置 Skill**：总控加 45 个专业技能，覆盖小说前期、Seedance 提示词、连续性和后期等；自然语言、显式名称及启用开关共用目录。
+- **一个 IP 一个项目**：分卷／季度、独立创作页、文件夹素材库；移动与重命名不改变资产身份，已用版本不被自动替换。
+- **Codex 对话 + 无限画布**：对话留在 Codex，工作台展示真实产物、预览、播放和生产关系。
+- **可恢复执行**：保存请求摘要、素材版本、调用上限、供应商任务 ID；提交状态未知时先核对原任务，不盲目重复付费。
+- **分层记忆**：候选提炼与生产事实分开，批准后才能进入可信上下文；单个项目经验不自动覆盖其他作品。
+- **有证据的后期**：保护认可片段、检查真实切点、字幕只映射一次；技术检查与实际看听分开记录。
 
-**创作目标 → 已批准上下文 → ShotSpec v2 → 图片资产 → 视频镜头 → 确定性剪辑 → 证据复核 → 本地成片**
+## 安装
 
-剧本、结构化镜头、生成任务、付费审批、素材路径、复核证据和渲染任务都处于同一个工作流中。Codex 通过 MCP 推动整条链路，用户不需要手工新建或连接画布节点。空白项目不会自动注入示例故事、假素材、占位分镜或模拟模型结果。
+需要 Windows、Codex Desktop／CLI、Node.js 20+、npm、FFmpeg。生成需要自备服务商凭据，费用由服务商收取。
 
-OpenDramaFlow 专为 **Windows PC 上的 Codex Desktop** 设计。
+克隆仓库，在 Codex 中打开后可直接说：
 
-## 为什么值得用？
+> 用 scripts/install.ps1 安装这个仓库的 OpenDramaFlow 插件。检查依赖与本地市场，验证技能和 MCP，不进行付费生成。不要打断其他正在制作的任务。
 
-| 需求 | OpenDramaFlow 提供的能力 |
-| --- | --- |
-| 稳定复用制作流程 | 结构化管理项目、人物、场景、分镜、任务、审批和成片 |
-| Codex 全程操作 | 通过 MCP 创建、读取、修改、生成和渲染项目 |
-| 自动选择专业能力 | 44 个专业 Skill 加 1 个总控 Skill，按用户需求自动加载 |
-| 分层生产记忆 | 只有明确批准的系列、分卷/季度和创作页记忆才会进入限额 context pack |
-| 控制真实费用 | 默认自动执行、可选逐批审批；始终冻结输入版本与图片/视频次数上限 |
-| 本地保护密钥 | 使用 Windows DPAPI 加密，MCP 永远不会返回 API Key 明文 |
-| 拒绝伪造产物 | FFmpeg 只合成真实生成或导入的图片与视频 |
-| 可检查质量复核 | 从当前成片确定性抽取证据帧，再由 Codex 或用户实际目检 |
-| 支持中断恢复 | 项目状态、已完成素材和供应商任务可以在重启后继续使用 |
-
-## 生产流程
-
-```mermaid
-flowchart LR
-    A[创作目标] --> B[已批准的分层上下文]
-    B --> C[ShotSpec v2 与分用途 Prompt]
-    C --> D{冻结请求摘要与审批}
-    D -->|图片| E[Codex Image Gen / Seedream]
-    D -->|视频| F[Ark 视频适配器]
-    E --> G[镜头资产库]
-    F --> G
-    G --> H[FFmpeg 剪辑与字幕]
-    H --> I[抽帧证据包]
-    I --> J[Codex 或用户目检]
-    J --> K[已复核本地成片]
-```
-
-1. 创建一个真正的空白项目。
-2. 向 Codex 说明题材、受众、时长、风格和交付目标。
-3. Codex 读取只含当前系列、分卷/季度与创作页已批准记忆的 context pack。
-4. Codex 写入正式计划和有序 ShotSpec v2；`imagePrompt` 只负责静态构图，`videoPrompt` 负责动作与运镜。
-5. OpenDramaFlow 编译并冻结供应商请求摘要、素材版本与调用上限，然后默认自动执行；只有用户选择手动模式时才逐批弹窗审批。
-6. 默认 Codex 内置图片工具（image2）生成库外候选，用户验收确切图片后才入库；仅内置不可用、失败或用户指定时启用 Seedream。当前 Seedance 2.5 适配器支持 4–30 秒、六种输入/任务模式，覆盖多图、视频/音频参考、首尾帧、续写与提示词编辑；每次仍校验实际参数、素材版本与能力。
-7. FFmpeg 组织真实素材，随后系统确定性抽取证据帧；Codex 或用户必须实际查看后才能记录质量通过并生成最终 SHA-256 清单。
-
-## 界面展示
-
-### 项目库
-
-桌面端从真正的空项目库开始。页面中的新手指引只是静态文档，不会向项目状态写入演示内容。
-
-Codex 是对话控制面。画布负责呈现已经持久化的 brief、素材、镜头、任务和成片；生产链不要求用户手工创建或连接节点。
-
-![OpenDramaFlow 项目库](docs/images/project-library.png)
-
-### 本地密钥仓
-
-配置火山方舟 API Key 即可走 Seedance 原生声音方案；可另外配置豆包语音 API Key，按需使用 ASR 对白识别与 TTS 预置音色旁白/补录。两份密钥独立经 Windows DPAPI 加密保存，不进入项目或 Git，换电脑需自行配置。保存 Key 不代表服务权限已开通。声音克隆与独立音乐生成暂不接入。
-
-语音任务通过 `drama_request_speech_job` → `drama_authorize_speech_job` → `drama_get_speech_job` 冻结、执行和查询；默认自动执行，每项仅 1 次调用，无自动重试。用户选择手动模式时才逐项审批。ASR 默认选取 5 秒、上限 120 秒的音频/视频片段；TTS 上限 500 字符。结果进入素材库但仍需审核，转写不会自动进入批准记忆。见[语音验收与边界](docs/doubao-speech-validation.md)。
-
-![OpenDramaFlow API Key 安全仓](docs/images/api-key-vault.png)
-
-## 核心能力
-
-### 创作与生成
-
-- 由 Codex 编写故事梗概、正式剧本、角色设定、场景和分镜。
-- ShotSpec v2 结构化记录镜头目的、主体、起止状态、机位、运动、声音意图、连续性、负面约束、质量风险和验收标准。
-- 静态 `imagePrompt` 与运动优先的 `videoPrompt` 分离；已批准首帧在 I2V 中承担身份、构图和风格约束。
-- Codex 可以领取 Image Gen 任务，生成并展示库外候选；用户验收后才回填确切图片素材。
-- Seedream 5.0 Pro 图片生成适配器。
-- Ark 视频任务的异步创建、轮询、下载和镜头回填，严格受当前适配器已经验证的边界约束。
-- FFmpeg 确定性剪辑、视频规格统一、音频处理和 SRT 字幕烧录。
-
-### 自动 Skill 路由
-
-OpenDramaFlow 当前包含 45 个项目 Skill：
-
-- 1 个 AI 漫剧总控制作 Skill。
-- 44 个 Codex 原生专业 Skill，覆盖漫剧、广告、MV、科普、提示词、拆片、UI 动效和剪辑判断等场景。
-
-`drama_route_skills` 会分析用户原始需求，自动读取最多三个最相关的专业 Skill。用户不需要为每次创作手动安装、勾选或判断 Skill。没有专业命中时，系统自动回退到总控 Skill。
-
-### 审批与恢复
-
-- Codex 按用户创作目标默认自动执行 Seedream、Seedance、ASR/TTS，无需逐次产品审批。用户说“先审批再执行”时，通过 `drama_set_execution_mode(manual)` 开启逐批确认；说“恢复自动”时设置 `automatic`。切换本身不启动任务，不修改 Codex 的沙箱、网络或工具权限。
-- 调用范围冻结请求摘要、计划修订、输入素材版本、供应商参数、执行模式和调用上限；变化后需重新冻结。手动模式仍需本人通过 MCP 表单确认；不会把旧的拒绝记录改成自动授权。
-- 每个批次都有图片与视频调用硬上限。
-- 候选记忆不会直接进入生产；只有明确复核并批准的准确版本，才会按当前创作页、分卷/季度与系列范围进入后续 context pack。
-- 后续步骤失败时，已经成功生成的素材会继续保留。
-- Codex Image Gen 可以让流水线暂停，待真实图片回填后继续执行。
-- 渲染后会生成带哈希的首帧、中间帧、末帧及镜头边界证据包；抽帧完成本身绝不代表视觉验收通过。
-- 项目状态和任务默认保存在 Git 仓库之外。
-
-## 快速开始
-
-### 环境要求
-
-- Windows 10 或 Windows 11
-- Codex Desktop
-- 调用 Seedream 或 Seedance 时所需的火山方舟 API Key
-
-Node.js 20+、FFmpeg、Codex 插件和免账号 HTTPS 辅助程序都会由仓库安装器检查并安装。
-
-### 用一句 Prompt 安装（推荐）
-
-打开 Codex Desktop，直接发送下面这段话。Codex 会完成安装，普通用户不需要手动输入安装命令：
-
-> 请在这台 Windows 电脑上克隆或打开 https://github.com/jiushiaaa/open-drama-flow。先阅读仓库说明并检查 `scripts/install.ps1`，然后在仓库根目录执行它。验证仓库内置的 45 个 Skill 全部存在、Codex 插件已经启用、本地工作台健康接口能够响应。不要索取或输出任何 API Key。完成后提醒我重启 Codex Desktop，再打开 OpenDramaFlow。
-
-如果使用 Fork 仓库，只需把 Prompt 中的地址替换成自己的 Fork 地址。45 个内置 Skill、安装器和 HTTPS 桥实现都跟随 Git 仓库提交，不依赖作者电脑上的本地文件。
-
-### 直接运行安装器（开发备用）
-
-已经克隆仓库时，也可以在仓库根目录运行：
+也可以在仓库运行：
 
 ```powershell
-.\scripts\install.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
 
-安装器会下载 Cloudflare 官方 Windows `cloudflared`，并为本地参考图建立临时 [Quick Tunnel](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/trycloudflare/)。这个过程不需要 Cloudflare 账号、API Token、ngrok 账号或对象存储配置。Quick Tunnel 适合测试和开发；正式团队环境如果需要固定域名或 SLA，可通过 `AI_DRAMA_ASSET_BRIDGE_BASE_URL` 接入自建 HTTPS 地址。
+安装器可补齐缺失依赖并注册本地插件市场。升级时若工作台正在使用，会停止安装以保护缓存；先完成活动任务再依照提示升级。更新后新开任务或重启 Codex：磁盘文件更新不等于当前任务已热加载。
 
-### 启动桌面服务
+工作台 **API Key** 页面配置方舟 Key；豆包语音 Key 可选。凭据使用 Windows DPAPI 保管，不提交 Git，也不通过 MCP 明文返回。
 
-在仓库根目录运行：
+仅调试网页时：
 
 ```powershell
 cd plugins\ai-drama-studio
-npm install
+npm ci
 npm start
 ```
 
-打开 [http://127.0.0.1:4317](http://127.0.0.1:4317)。
+打开[本地工作台](http://127.0.0.1:4317)。仅启动 HTTP 不等于 Codex 已挂载 MCP 插件。
 
-HTTP 服务只监听本机回环地址。项目状态默认保存在 `%LOCALAPPDATA%\OpenDramaFlow\data`，也可以通过 `AI_DRAMA_DATA_DIR` 更改位置。
+## 模型与工具：已接入和未接入分开
 
-## Codex 插件
-
-仓库已经包含 Codex 插件清单、MCP 配置、本地 marketplace 和全部 45 个 Skill。
-
-`scripts/install.ps1` 会自动把仓库注册为本地 marketplace、刷新 `ai-drama-studio@ai-drama-local` 并启动工作台。安装完成后重启 Codex Desktop，使新的 Skill 与 MCP 服务生效。
-
-### MCP 工具
-
-| 工具 | 用途 |
+| 能力 | 当前状态与边界 |
 | --- | --- |
-| `drama_get_state` | 读取项目、分镜、任务、审批和最近事件 |
-| `drama_get_context_pack` | 读取当前生产范围内限额且已批准的记忆上下文 |
-| `drama_review_memory` | 批准、取代或停用某个准确版本的候选记忆 |
-| `drama_route_skills` | 自动识别并加载专业创作 Skill |
-| `drama_list_skills` | 查看当前专业 Skill 目录 |
-| `drama_create_skill` | 直接写入一个会立即加入自动路由的本地 Skill |
-| `drama_set_skill_enabled` | 启用或停用某个 Skill 的自动路由 |
-| `drama_create_project` | 创建不触发模型调用的空白项目 |
-| `drama_update_plan` | 写入正式故事、人物、场景和分镜 |
-| `drama_request_paid_batch` | 冻结请求摘要、素材版本与次数上限；不启动模型 |
-| `drama_authorize_and_start_paid_batch` | 按当前策略启动一个批次：默认 automatic；manual 才要求可信人工确认 |
-| `drama_resume_paid_batch` | 图片任务完成后继续已经批准的流水线 |
-| `drama_claim_image_task` | 领取一个 Codex Image Gen 任务 |
-| `drama_complete_image_task` | 用户验收确切候选图片后，将其回填到对应镜头 |
-| `drama_render_project` | 使用 FFmpeg 把真实素材渲染成本地 MP4 |
-| `drama_prepare_quality_evidence` | 从当前 MP4 抽取带哈希的目检帧，不自动判定通过 |
-| `drama_record_quality_review` | Codex 或用户实际检查输出证据后记录质量结论 |
-| `drama_finalize_delivery` | 复核已检查的文件字节并生成本地 SHA-256 交付清单 |
+| 图片素材 | 默认当前 Codex 内置图片生成工具；候选验收后入库。仅项目明确委托时可由 Agent 检查，不能把“自动模式”当作委托。内置工具确实不可用或用户明确要求时才用项目图片模型。 |
+| Seedance 2.5 | 文生视频、首帧、首尾帧、多模态参考、视频续写、源视频编辑；图片／视频／音频引用职责、原生声音显式开关。 |
+| 参数合同 | 本地 2.5 配置校验最多 30 图、10 视频、10 音频参考及 4–30 秒生成；首帧类跟随素材比例，视频编辑使用 adaptive 比例和 duration=-1。实际账号权限、接口与素材限制仍须验证。 |
+| 素材送达 | 本地已登记素材转换为模型可访问的 HTTPS 或 Ark 资产引用；按需暴露素材，不公开整个库。 |
+| ASR／标准 TTS | 已接入可选豆包语音凭据。没有语音 Key 时采用 Seedance 原生声音方案；独立识别／配音不可用时明确报告，不伪造结果。 |
+| FFmpeg | 本地组片、媒体检查与交付证据；MCP 不可用时，可对已认可文件执行有记录的确定性后期，不能假称已回写 MCP。 |
+| SeedAudio 1.0 | 第一集通过独立制作脚本生成了已认可音乐；**尚未成为通用音乐生成 MCP 适配器**。 |
+| Video Depth Anything | 已用于插件外深度参考实验。深度图不是骨架、身份模型或动作捕捉。 |
+| Real-ESRGAN | 已做本地超分实践并提供对照；不是 Seedance 原生分辨率选项，也不是已内置的一键推理服务。 |
 
-## 项目结构
+[Seedance 历史验证记录](docs/seedance-2.5-validation.md)按日期保留证据。支持输入不保证身份、运动、声音和编辑效果完全正确；视频编辑是生成式修改，不是像素精确的遮罩编辑。声音克隆、专业剪辑软件工程导出仍未接入。
 
-```text
-open-drama-flow/
-├─ .agents/plugins/marketplace.json
-├─ docs/images/
-├─ scripts/install.ps1        # Windows 一步安装器
-├─ plugins/ai-drama-studio/
-│  ├─ .codex-plugin/plugin.json
-│  ├─ public/                 # Windows PC 桌面端界面
-│  ├─ scripts/                # DPAPI 密钥辅助脚本
-│  ├─ skills/                 # 总控与专业 Skill
-│  ├─ src/                    # HTTP、MCP、模型、状态、工作流、FFmpeg
-│  └─ test/
-├─ README.md                  # English
-├─ README_zh.md               # 简体中文
-└─ LICENSE
-```
+## 自动执行不等于自动宣布合格
 
-44 个专业 Skill 已统一为无供应商前缀的标识，默认由总控自动执行。旧启用开关与历史引用兼容迁移，冻结生产记录不改写。升级后需重启 Codex Desktop。具体名称、图片验收边界和维护命令见[Skill 更新说明](docs/skill-runtime-update.md)。
+默认自动执行受当前目标与冻结调用上限约束；手动模式保留可信审批，两者都不能改变 Codex 宿主权限。
+
+图片验收、生产记忆批准、视频质量复核是不同环节。明确委托只对对应项目与范围有效，不能把 Agent 检查记成用户逐图看过。API 成功、ASR 文本、抽帧、解码通过，各自只证明对应事实。
+
+第一集沉淀的重点是：
+
+- 每镜明确事件、空间状态和下一镜交接。
+- 左右肢体按角色自身定义，核对接触、视线、伤势与道具。
+- 局部失败局部修复，保留已认可内容。
+- 以真实切点和帧区间处理字幕、对白及包装偏移。
+- 分别记录技术通过、实际看听、用户认可与待验项目。
+
+项目案例位于总控的分项目参考中，不是所有视频必须套用的风格或剧情。
+
+[SkillOpt 小规模实验](production/publish-examples/skillopt-evaluation/README.md)：现有规则最终合成决策题 4/4 通过，未产出补丁，保留原技能，**没有观察到优化收益，也不代表视频质量提升**。仓库提供输入、可迁移脚本和脱敏结果。
+
+## 数据与公开范围
+
+默认状态目录：`%LOCALAPPDATA%\OpenDramaFlow\data`。
+
+- `AI_DRAMA_DATA_DIR` 改变状态根目录。
+- `AI_DRAMA_MEDIA_DIR` 可为**新**上传、生成和编辑媒体指定独立目录。
+- 不自动迁移已有绝对路径；先复制、核验哈希、更新引用，再移除原件。
+- 删除项目时，外部媒体保留原位，并在本地回收区保存引用恢复清单。
+- 私人 `production/`、下载参考、模型检出与日志不上传；只公开明确整理的 `production/publish-examples/`。
+
+软件许可证不授予小说、电影、音乐、肖像或第三方模型权重的权利。素材使用与再分发资格需单独确认。
 
 ## 开发与验证
 
@@ -229,27 +101,10 @@ open-drama-flow/
 cd plugins\ai-drama-studio
 npm run check
 npm test
+node scripts/sync-skill-manifest.mjs --check
+node scripts/verify-skill-mcp.mjs
 ```
 
-当前回归测试覆盖空项目无模拟数据、仓库自带的全部 45 个 Skill、Skill 导入与持久化开关、代表性创作请求的自动路由、总控回退和确定性成片渲染。
+MCP 验证启动独立临时进程，检查技能目录与路由，**不调用付费模型**。传入安装目录可验证缓存副本；这仍不等于新 Codex 任务已完成会话内直连检查。
 
-## 安全边界
-
-- 不要提交 API Key、供应商 Token、私人素材或项目运行数据。
-- 方舟 API Key 使用 Windows DPAPI 为当前用户加密，且不会通过 MCP 返回。
-- `studio-data`、本地审计目录、依赖、QA 输出和密钥文件均被 Git 排除。
-- 只有真实结果已经下载并关联到项目后，才能声称模型调用成功。
-- 证据包生成不等于视觉通过；返回帧必须被实际打开检查，运动、音频和字幕还要按需要检查完整成片。
-- Seedance 仍要求 HTTPS 或 `asset://` 参考图。OpenDramaFlow 会自动用 Cloudflare Quick Tunnel 为当前本地图生成随机令牌、有效期一小时的 HTTPS 地址，不会公开整个素材库；如果当前网络阻断 Quick Tunnel，任务会安全等待，并可改用 `AI_DRAMA_ASSET_BRIDGE_BASE_URL` 或火山 `asset://` 地址。
-
-## 当前能力边界
-
-- 正式生产前仍应使用自己的模型权限完成一次真实付费端到端验证。
-- Seedance 2.5 适配器已提供多模态参考、首尾帧、续写和提示词驱动编辑等六种任务模式及 4–30 秒输出合同；这不等于账号侧所有模式均已实测，也不等于像素级蒙版编辑。见[已实现范围与待验收项](docs/seedance-2.5-validation.md)。
-- 只有镜头合同声明且本地设置启用时才会请求供应商原生音频。最终是否有可用声音，必须以下载成片真实存在音轨并通过实际听检为证据；模型宣传或请求参数都不能单独证明。
-- 音色克隆、专业 NLE 工程导出和可控 3D 场景仍属于规划能力，等待真实适配器接入。
-- OpenDramaFlow 面向 Windows PC 桌面工作流。
-
-## License
-
-[MIT](LICENSE)
+[本轮迭代与验证](docs/production-iteration-20260912.md) · [模型／参考来源](docs/reference-sources.md) · [工作约定](AGENTS.md) · [插件说明](plugins/ai-drama-studio/README.md) · [MIT 软件许可](LICENSE)

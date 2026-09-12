@@ -7,6 +7,10 @@ description: Route and execute general AI video production through durable brief
 
 Use the local `ai-drama-studio` MCP tools as the production source of truth. Read [execution rules](references/execution-contract.md) first; their automatic/manual policy and acceptance boundaries govern every specialist. Read `references/routing-contract.md` before routing, `references/workflow-contract.md` before changing production state, `references/prompt-contract.md` and [the Seedance guide](references/seedance-prompting.md) before creating or revising shots, and `references/provider-contract.md` before any real model call.
 
+For `project-mtl3tme8-a115bdff` / 《从姑获鸟开始》, read [the current project profile](references/project-profiles/guhuoniao.md) and its linked current style recipe before any image or video design/generation, including standalone image work. Apply the current scoped style instead of historical visual defaults; do not apply this project's style to unrelated productions.
+
+Before continuing this project's next chapter or repairing an accepted sequence, also read its [Chapter 1 lessons and accepted baseline](references/project-profiles/reference-cases/20260907-ch01-lessons.md). Practitioner tutorials are valid learning inputs; label their source separately from whether the method has been tested in this project.
+
 Before generating, editing or importing generated images, read [the image asset contract](references/image-asset-contract.md). Default to the current Codex session's built-in image tool (called image2 by the user), show candidates outside the project library, and import only the exact images the user accepts. This applies in automatic mode and overrides older migrated instructions to inspect and immediately write back. Use the project's image model only on explicit user request or verified built-in-tool unavailability/failure.
 
 The canonical chain is:

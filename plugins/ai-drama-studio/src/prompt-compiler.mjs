@@ -322,6 +322,9 @@ function imageRequestFor(contract, settings, prompt) {
 
 function videoRequestFor(contract, settings, prompt, inputBindings) {
   const nativeAudio = contract.audioModeDeclared ? contract.audioMode === "provider-native" : settings.generateAudio === true;
+  // Seedance 2.5 edits inherit source geometry/duration; ShotSpec keeps the planned seconds.
+  const followsSource = contract.videoInputMode === "video-edit" && /seedance-2-5-/.test(settings.seedanceModel);
+  const followsFirstFrame = ["image-to-video", "first-last-frame"].includes(contract.videoInputMode) && /seedance-2-5-/.test(settings.seedanceModel);
   const operationPrompt = contract.videoInputMode === "video-extend" ? "延长参考视频，承接参考视频结束时的动作与声音；输出后续的新内容。 " : contract.videoInputMode === "video-edit" ? "编辑参考视频，保留未指定修改的内容。 " : "";
   const editPrompt = contract.edit ? ` 仅修改 ${contract.edit.startSeconds}–${contract.edit.endSeconds} 秒：${contract.edit.instruction}。保持：${(contract.edit.preserve || []).join("；")}。` : "";
   return {
@@ -331,8 +334,8 @@ function videoRequestFor(contract, settings, prompt, inputBindings) {
     inputMode: contract.videoInputMode,
     inputs: inputBindings.map(binding => ({ ...binding, providerRole: binding.referenceRole === "first-frame" ? "first_frame" : MEDIA_ROLES[binding.referenceRole] ? binding.referenceRole : "reference_image" })),
     parameters: compactObject({
-      ratio: text(contract.videoParameters.ratio || settings.ratio, 20),
-      duration: contract.duration,
+      ratio: followsSource || followsFirstFrame ? "adaptive" : text(contract.videoParameters.ratio || settings.ratio, 20),
+      duration: followsSource ? -1 : contract.duration,
       watermark: settings.watermark === true,
       return_last_frame: true,
       resolution: text(contract.videoParameters.resolution || settings.resolution, 30),

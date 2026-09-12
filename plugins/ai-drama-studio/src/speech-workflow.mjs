@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
-import { assertInside, dataRoot, safeId } from "./config.mjs";
+import { assertInside, mediaRoot, safeId } from "./config.mjs";
 import { readState, mutateState, appendEvent } from "./store.mjs";
 import { readSpeechKey, hasSpeechKey } from "./secrets.mjs";
 import { inspectMediaFile, mediaCommand } from "./media-inspection.mjs";
@@ -12,7 +12,7 @@ import { executionMode, confirmationOutcome } from "./execution-policy.mjs";
 
 const hash = bytes => createHash("sha256").update(bytes).digest("hex");
 const digest = snapshot => hash(JSON.stringify(snapshot));
-const jobDirectory = id => assertInside(path.join(dataRoot, "speech"), path.join(dataRoot, "speech", id));
+const jobDirectory = id => assertInside(path.join(mediaRoot, "speech"), path.join(mediaRoot, "speech", id));
 const now = () => new Date().toISOString();
 
 function scope(state, projectId, creationId) {

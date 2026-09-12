@@ -1,256 +1,109 @@
-<p align="center">
-  <a href="README_zh.md">简体中文</a>
-</p>
+# OpenDramaFlow
 
-<p align="center">
-  <img src="plugins/ai-drama-studio/public/assets/studio-pixel-hero.png" alt="OpenDramaFlow AI production studio" width="920" />
-</p>
+[简体中文](README_zh.md)
 
-<h1 align="center">OpenDramaFlow</h1>
+A local-first video production harness for **Codex Desktop on Windows**. Codex leads planning, specialist Skills, generation, media organization and editing; you do not have to build a graph by hand.
 
-<p align="center">
-  A Codex-native, local-first production harness for turning a creative brief into a structured commercial or narrative AI video workflow on Windows desktop.
-</p>
+![A real generated environment from episode-one production](production/publish-examples/ending-720p-preview.jpg)
 
-<p align="center">
-  <img alt="License MIT" src="https://img.shields.io/badge/License-MIT-62c370" />
-  <img alt="Codex Plugin" src="https://img.shields.io/badge/Codex-Plugin-111827" />
-  <img alt="MCP Ready" src="https://img.shields.io/badge/MCP-Ready-3b82f6" />
-  <img alt="Node.js 20+" src="https://img.shields.io/badge/Node.js-20%2B-4f9d45" />
-  <img alt="Windows Desktop" src="https://img.shields.io/badge/Windows-Desktop-2563eb" />
-</p>
+[720p generated sample](production/publish-examples/ending-720p-4s.mp4) · [4K upscaled comparison](production/publish-examples/ending-upscaled-4k-4s.mp4) · [Provenance and limitations](production/publish-examples/README.md)
 
-<p align="center">
-  <a href="#quick-start">Quick Start</a> ·
-  <a href="#workflow">Workflow</a> ·
-  <a href="#interface">Interface</a> ·
-  <a href="#capabilities">Capabilities</a> ·
-  <a href="#codex-plugin">Codex Plugin</a> ·
-  <a href="#development">Development</a> ·
-  <a href="#security">Security</a>
-</p>
+These are the same four seconds of an original environment, without audio. **4K is a postproduction upscale, not native Seedance 4K.** The full episode, source novel and third-party reference films are not distributed.
 
----
+## What the harness does
 
-## What is OpenDramaFlow?
+Creative brief → approved context → scene and shot contracts → role-bound references → bounded model tasks → versioned media → edit and review → delivery evidence.
 
-OpenDramaFlow is not a single prompt wrapper or a one-shot video generator. It is a local production harness that gives Codex an inspectable project state and a controlled path through:
+- **46 shipped Skills:** one producer and 45 specialists, including novel preproduction, Seedance prompting, narrative continuity and postproduction craft. Natural-language routing, explicit names and saved enable switches share the catalog.
+- **One project per IP:** optional volume/season groups, independent creation pages and a folder-based asset library. Stable asset IDs and versions survive reorganization.
+- **Codex conversation + canvas:** chat stays in Codex; the workbench displays production artifacts, previews, playback and task relationships.
+- **Durable production state:** frozen request digests, reference versions, call limits, provider IDs and resumable jobs. An unknown submission must be reconciled before retrying.
+- **Scoped memory:** candidate extraction and retrieval are separate from approved production facts. Project-specific methods do not silently become defaults for every project.
+- **Evidence-based editing:** preserve accepted shots, inspect real cut points, map subtitles once, and distinguish decoding/hash checks from actual viewing/listening.
 
-**brief → approved context → ShotSpec v2 → image assets → video shots → deterministic edit → evidence review → local master**
+## Install
 
-Scripts, structured shots, generation tasks, paid-call approvals, media paths, review evidence, and render jobs remain visible and recoverable. Codex drives the workflow through MCP; users are not required to create or connect canvas nodes by hand. The system does not inject sample stories, fake assets, placeholder shots, or simulated provider results into a blank project.
+Prerequisites: Windows, Codex Desktop/CLI, Node.js 20+, npm, FFmpeg. Model generation requires your own provider credentials and incurs provider charges.
 
-OpenDramaFlow targets **Codex Desktop on Windows PC**.
+Clone this repository, open it in Codex, and ask:
 
-## Why use it?
+> Install this repository's OpenDramaFlow plugin using scripts/install.ps1. Check dependencies and the local marketplace, then verify Skills and MCP without generating paid media. Do not interrupt another running production task.
 
-| Need | What OpenDramaFlow provides |
-| --- | --- |
-| Repeatable production | Structured project, character, scene, shot, task, approval, and render state |
-| Agent-native control | MCP tools that let Codex create, inspect, update, generate, and render projects |
-| Automatic creative expertise | 44 specialist Skills plus one producer Skill, selected automatically from the request |
-| Scoped production memory | Only explicitly approved series, volume/season, and creation memory enters a token-bounded context pack |
-| Real cost boundaries | Automatic execution by default, optional manual approval, frozen inputs and hard image/video call caps |
-| Local credential safety | Windows DPAPI storage; plaintext API keys are never returned through MCP |
-| Honest outputs | FFmpeg only assembles real generated or imported assets |
-| Inspectable review | Deterministic evidence frames are extracted from the rendered bytes, then actually inspected by Codex or the user |
-| Restartable work | Provider jobs, completed assets, and project state survive normal restarts |
-
-## Workflow
-
-```mermaid
-flowchart LR
-    A[Creative brief] --> B[Approved scoped context]
-    B --> C[ShotSpec v2 and separate prompts]
-    C --> D{Frozen request digest and approval}
-    D -->|Images| E[Codex Image Gen / Seedream]
-    D -->|Video| F[Ark video adapter]
-    E --> G[Shot asset library]
-    F --> G
-    G --> H[FFmpeg edit and subtitles]
-    H --> I[Frame evidence pack]
-    I --> J[Codex or user inspection]
-    J --> K[Reviewed local master]
-```
-
-1. Create a blank project.
-2. Give Codex the genre, audience, duration, style, and delivery goal.
-3. Codex reads a context pack containing only approved memory for the active series, volume/season, and creation page.
-4. Codex writes the production plan and ordered ShotSpec v2 records. Static composition stays in `imagePrompt`; action and camera motion stay in `videoPrompt`.
-5. OpenDramaFlow freezes the exact provider request digest, asset versions and call caps, then runs automatically by default. Trusted per-batch confirmation applies only when the user selects manual mode.
-6. Codex's built-in image tool (image2) generates candidates outside the asset library by default; import only exact user-accepted images. Seedream is a fallback only on explicit user choice or verified built-in-tool failure/unavailability. The Seedance 2.5 adapter compiles 4–30 second text/image/multimodal video, first+last-frame constraints, and source-video extension/edit requests with explicit audio settings and frozen input versions.
-7. FFmpeg assembles the real inputs. OpenDramaFlow then extracts deterministic evidence frames, which Codex or the user must actually inspect before recording a quality pass and final SHA-256 manifest.
-
-## Interface
-
-### Project library
-
-The desktop interface starts with a truly empty project library and an onboarding guide that never writes demo content into project state.
-
-Codex is the conversational control surface. The canvas reflects persisted briefs, assets, shots, jobs, and outputs; manual node creation or connection is not part of the required production path.
-
-![OpenDramaFlow project library](docs/images/project-library.png)
-
-### Local credential vault
-
-Users configure the Volcengine Ark API key, and optionally a separate Doubao Speech API key. Both are stored independently with Windows DPAPI, never in project/Git data. Without the optional key, use Seedance native sound and actual listening; with it, Codex can run bounded ASR checks or stock-voice TTS automatically within the user-requested scope (manual confirmation only when selected). Saving a key does not establish service entitlement. Cloning and standalone music remain unconnected. Model parameters remain system-managed.
-
-Speech tasks use `drama_request_speech_job` → `drama_authorize_speech_job` → `drama_get_speech_job`. Each frozen scope allows one request, binds the source hash/version or exact text, and never auto-retries. Execution is automatic by default, with per-call confirmation only in manual mode. ASR defaults to a 5-second segment (maximum 120 seconds); TTS is bounded to 500 characters. Results enter the library as unreviewed assets, not automatically approved memory or quality reviews. See [speech validation and limits](docs/doubao-speech-validation.md).
-
-![OpenDramaFlow API key vault](docs/images/api-key-vault.png)
-
-## Capabilities
-
-### Creative production
-
-- Premise, screenplay, character bible, scene, and shot authoring through Codex.
-- Structured ShotSpec v2 plans with purpose, subjects, start/end state, camera, motion, sound intent, continuity, negative constraints, quality risks, and acceptance criteria.
-- Separate static `imagePrompt` and motion-focused `videoPrompt`; an approved first frame carries identity and composition into I2V.
-- Codex Image Gen task claiming and real asset attachment.
-- Seedream 5.0 Pro image adapter.
-- Ark asynchronous video task submission, polling, download, and shot attachment within the installed adapter's verified limits.
-- Deterministic FFmpeg composition with normalized video, audio handling, and SRT subtitles.
-
-### Automatic Skill routing
-
-OpenDramaFlow includes 45 project Skills:
-
-- 1 producer/orchestrator Skill.
-- 44 Codex-native specialist Skills adapted for drama, ads, MV, explainers, prompting, video analysis, UI motion, and editing decisions.
-
-`drama_route_skills` evaluates the user's original wording and loads up to three relevant specialist instructions. Users do not install, tick, or manually select a Skill for each request. When no specialist matches, the producer Skill is used automatically.
-
-### Approval and recovery
-
-- Seedream, Seedance and speech execute the user's requested work automatically by default. Use `drama_set_execution_mode(manual)` only when the user requests per-call confirmation, and `automatic` to return. Changing policy starts no job and never changes Codex host sandbox, network or tool permissions.
-- Frozen scopes bind exact request digests, plan revisions, input versions, provider settings, execution policy and call caps. Changes require re-preparation; manual scopes still need trusted MCP confirmation. Rejected records are never reinterpreted as automatic authorization.
-- Every batch has hard image and video call limits.
-- Candidate memory is excluded until an exact version is explicitly reviewed and approved; later context packs are scoped to the active creation and its volume/season and series.
-- Existing successful outputs are retained when a later provider step fails.
-- Codex Image Gen jobs can pause the pipeline and resume after real images are attached.
-- Render completion is followed by a hashed start/middle/end and shot-boundary frame pack. Extraction itself never marks the video as visually accepted.
-- Project state and jobs are stored outside the repository by default.
-
-## Quick Start
-
-### Requirements
-
-- Windows 10 or Windows 11
-- Codex Desktop
-- A Volcengine Ark API key for Seedream or Seedance calls
-
-Node.js 20+, FFmpeg, the Codex plugin, and the zero-account HTTPS helper are checked and installed by the repository installer.
-
-### Install by prompt (recommended)
-
-Open Codex Desktop and send this single prompt. Codex performs the setup; the user does not need to type installation commands:
-
-> Clone or open https://github.com/jiushiaaa/open-drama-flow on this Windows PC. Read the repository instructions, inspect `scripts/install.ps1`, then run it from the repository root. Verify that all 45 bundled Skills are present, the Codex plugin is enabled, and the local workbench health endpoint responds. Do not request or print any API key. When complete, tell me to restart Codex Desktop and then open OpenDramaFlow.
-
-If you are using a fork, replace the URL in that prompt with your fork URL. All 45 built-in Skills, the installer, and the HTTPS bridge implementation are committed in the repository; they are not copied from the maintainer's computer.
-
-### Direct installer (development fallback)
-
-From an already cloned repository:
+Or run from the repository:
 
 ```powershell
-.\scripts\install.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
 
-The installer uses the official Cloudflare `cloudflared` Windows binary for a temporary [Quick Tunnel](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/trycloudflare/). It requires no Cloudflare account, API token, ngrok account, or public object-storage configuration. Quick Tunnels are intended for testing and development; a team-hosted HTTPS base URL can be supplied through `AI_DRAMA_ASSET_BRIDGE_BASE_URL` when a stable production endpoint is required.
+The installer can install missing dependencies and registers the local marketplace. An active workbench blocks an in-use upgrade to protect its cache. Finish active work first, then follow the installer instructions. Open a fresh Codex task or restart Desktop after updating; an updated disk cache does not replace the tools already loaded into a running task.
 
-### Run the desktop service
+Configure **Ark** and optionally **Doubao Speech** under the workbench's API Key page. Keys are stored using Windows DPAPI, not committed or returned by MCP.
 
-From the repository root:
+For local development only:
 
 ```powershell
 cd plugins\ai-drama-studio
-npm install
+npm ci
 npm start
 ```
 
-Open [http://127.0.0.1:4317](http://127.0.0.1:4317).
+Open [the local workbench](http://127.0.0.1:4317). HTTP alone is not a substitute for loading the Codex MCP plugin.
 
-The HTTP service binds to the loopback interface only. Project state is stored in `%LOCALAPPDATA%\OpenDramaFlow\data` by default. Set `AI_DRAMA_DATA_DIR` to override the location.
+## Model and tool coverage
 
-## Codex Plugin
-
-The repository contains a Codex plugin manifest, MCP configuration, local marketplace entry, and all 45 Skills.
-
-`scripts/install.ps1` registers the repository as a local marketplace, refreshes `ai-drama-studio@ai-drama-local`, and starts the workbench. Restart Codex Desktop after installation so the refreshed Skills and MCP server are loaded.
-
-### MCP tools
-
-| Tool | Purpose |
+| Capability | Current integration and limits |
 | --- | --- |
-| `drama_get_state` | Read projects, shots, jobs, approvals, tasks, and recent events |
-| `drama_get_context_pack` | Read token-bounded approved memory for the active production scope |
-| `drama_review_memory` | Approve, supersede, or disable one exact candidate-memory version |
-| `drama_route_skills` | Select and load specialist creative Skills automatically |
-| `drama_list_skills` | List the available specialist Skill catalog |
-| `drama_create_skill` | Write a new local Skill that immediately joins automatic routing |
-| `drama_set_skill_enabled` | Enable or disable a Skill for automatic routing |
-| `drama_create_project` | Create a blank local project without a model call |
-| `drama_update_plan` | Write the formal story, characters, scenes, and shots |
-| `drama_request_paid_batch` | Freeze request digests, asset versions and call caps without starting a model |
-| `drama_authorize_and_start_paid_batch` | Start exactly one batch under automatic policy, or trusted human confirmation in manual mode |
-| `drama_resume_paid_batch` | Resume an approved pipeline after image tasks are completed |
-| `drama_claim_image_task` | Claim one queued Codex Image Gen task |
-| `drama_complete_image_task` | Attach a real Codex-generated image to its shot |
-| `drama_render_project` | Render available real media into a local MP4 with FFmpeg |
-| `drama_prepare_quality_evidence` | Extract hashed inspection frames from the current rendered MP4 without auto-accepting it |
-| `drama_record_quality_review` | Record checks only after Codex or the user inspects the actual output evidence |
-| `drama_finalize_delivery` | Revalidate reviewed bytes and create the local SHA-256 delivery manifest |
+| Image assets | Default: the current Codex built-in image tool. Candidates enter the library only after acceptance, unless explicit project-scoped delegation permits Agent review. The project's image provider is a fallback on verified unavailability or explicit request. |
+| Seedance 2.5 | Text, first image, first+last frames, multimodal references, video extension and source-video editing contracts; image/video/audio reference roles; explicit native-audio flag. |
+| Parameters | Local 2.5 profile validates up to 30 image, 10 video and 10 audio references and 4–30 second generation. First-frame modes use adaptive ratio; source-video editing uses adaptive ratio and duration `-1`. Actual account/API entitlement and media constraints still apply. |
+| Reference delivery | Registered local media is resolved to provider-reachable HTTPS or Ark asset references. Only required media is exposed, not the whole library. |
+| ASR / standard TTS | Integrated using optional Doubao Speech credentials. Without that key, plan native Seedance sound; independent transcription/TTS is unavailable, not simulated. |
+| FFmpeg | Local assembly, media inspection and delivery checks. Approved local postproduction may use a recorded deterministic workflow when MCP is unavailable; it must not pretend to have updated MCP state. |
+| SeedAudio 1.0 | Used through an independent production script for accepted music cues. **Not yet a general music-generation MCP adapter.** |
+| Video Depth Anything | Used for depth-reference experiments outside the plugin. Depth is not a skeleton, identity model or motion-capture solution. |
+| Real-ESRGAN | Local production upscaling experiment and published comparison. Not a native Seedance resolution option or a bundled one-click inference service. |
 
-## Project structure
+See [Seedance validation history](docs/seedance-2.5-validation.md) for dated evidence. Input support is not a guarantee of exact motion, identity, sound or editing fidelity. Source-video edits are generative, not pixel-exact masked edits. Voice cloning and professional NLE project export remain unintegrated.
 
-```text
-open-drama-flow/
-├─ .agents/plugins/marketplace.json
-├─ docs/images/
-├─ scripts/install.ps1        # Windows one-step installer
-├─ plugins/ai-drama-studio/
-│  ├─ .codex-plugin/plugin.json
-│  ├─ public/                 # Windows desktop web interface
-│  ├─ scripts/                # DPAPI credential helper
-│  ├─ skills/                 # Producer + specialist Skills
-│  ├─ src/                    # HTTP, MCP, providers, state, workflow, FFmpeg
-│  └─ test/
-├─ README.md
-├─ README_zh.md
-└─ LICENSE
-```
+## Execution and review
 
-The 44 specialist Skills now use provider-neutral identifiers, with producer-led automatic execution. Saved switches and historical references remain compatible without rewriting frozen production records. Restart Codex Desktop after upgrading. See the [Skill migration and runtime notes](docs/skill-runtime-update.md).
+Default automatic execution is bounded by the user's objective and frozen call limits. Optional manual mode retains trusted approval. Neither setting overrides Codex host permissions.
 
-## Development
+Image acceptance, production-memory approval and video quality review are distinct. Explicit delegation is recorded for its exact project and scope, never relabeled as the user having viewed an image. An API success, ASR transcript, extracted frame or passing decode is not by itself an audiovisual pass.
+
+Episode-one methods now emphasize:
+- event and spatial state at every shot handoff;
+- actor-relative limbs, object contact, gaze and injury continuity;
+- repairing only the failed interval while retaining accepted sections;
+- real source cut points and frame-based subtitle/audio mappings;
+- recording technical checks, observed checks, user acceptance and unresolved review separately.
+
+Project examples live under the producer's scoped references; they are not universal creative requirements.
+
+[Small SkillOpt experiment](production/publish-examples/skillopt-evaluation/README.md): existing rules passed 4/4 final synthetic decision tests. No patches were produced and the original Skill was retained; **no optimization gain or video-quality improvement is claimed**. Inputs, a portable runner and sanitized results are included.
+
+## Storage and publication
+
+Default state: `%LOCALAPPDATA%\OpenDramaFlow\data`.
+
+- `AI_DRAMA_DATA_DIR`: changes the state root.
+- `AI_DRAMA_MEDIA_DIR`: optional separate root for **new** imported/generated/edited media.
+- Existing absolute paths are not automatically migrated. Copy, hash-verify and update references before removing originals.
+- Deleting a project retains externally stored media and saves a recovery manifest with its references in the local trash.
+- Private `production/`, reference downloads, local model checkouts and runtime logs are excluded. Only curated `production/publish-examples/` is published.
+
+Software licensing does not grant rights to novels, films, music, likenesses or third-party model weights. Supply material you are entitled to use; verify redistribution rights separately.
+
+## Verify and contribute
 
 ```powershell
 cd plugins\ai-drama-studio
 npm run check
 npm test
+node scripts/sync-skill-manifest.mjs --check
+node scripts/verify-skill-mcp.mjs
 ```
 
-The regression suite checks blank-project integrity, all 45 shipped Skill entrypoints, Skill import and persistent toggles, automatic routing, producer fallback, and deterministic media rendering.
+The MCP verifier starts a fresh disposable process, checks catalog/routing and makes **zero paid model calls**. Run it with an installed plugin root to test that copy too. This is distinct from checking direct tool availability in a new Codex task.
 
-## Security
-
-- Never commit API keys, provider tokens, private media, or runtime project data.
-- The Ark API key is encrypted for the current Windows user with DPAPI and is never returned by MCP.
-- `studio-data`, local audits, dependencies, generated QA output, and credential files are excluded from Git.
-- Provider calls are not evidence of success until a real result is downloaded and attached to the project.
-- A generated evidence pack is not a visual pass; the returned frames must be opened and inspected, and motion/audio/subtitles require applicable full-video checks.
-- Seedance still requires an HTTPS or `asset://` reference. OpenDramaFlow automatically exposes the exact local image through a random-token, one-hour HTTPS route using Cloudflare Quick Tunnels; the project never uploads the whole asset library. If the network blocks Quick Tunnels, the job waits safely and can use `AI_DRAMA_ASSET_BRIDGE_BASE_URL` or an Ark `asset://` reference instead.
-
-## Current boundaries
-
-- A real paid end-to-end production should be validated with your own provider entitlement before production use.
-- Seedance 2.5 has six input/task modes, up to 30 image / 10 video / 10 audio references, explicit native audio, and 4–30 second output contracts. The 2.0 profile remains limited to 4–15 seconds. All inputs are version/hash-bound and validated before dispatch; account-specific real generation is still an acceptance gate. See [validation and remaining boundaries](docs/seedance-2.5-validation.md).
-- Extension and temporal content editing are prompt-directed source-video generation, not pixel-exact mask editing. Reference duration/size/format/compliance rules still apply. A model appearing in the account list does not prove all modes are enabled.
-- Provider-native audio can be requested only when enabled and declared by the shot contract. Audio is considered present and usable only when the downloaded output contains an audio stream and the actual result passes the required listening/review evidence; model marketing or a request flag is not proof.
-- Voice cloning, professional NLE project export, and controllable 3D scenes remain planning-only until real adapters are connected.
-- OpenDramaFlow is designed for the Windows PC desktop workflow.
-
-## License
-
-[MIT](LICENSE)
+[Iteration and verification](docs/production-iteration-20260912.md) · [Model/reference sources](docs/reference-sources.md) · [Working agreement](AGENTS.md) · [Plugin details](plugins/ai-drama-studio/README.md) · [MIT software license](LICENSE)

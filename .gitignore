@@ -12,6 +12,14 @@ candidate-staging/
 production-records/
 .qa/
 
+# Private production, third-party research, local models and experimental runs.
+# Only deliberately curated examples are publishable.
+/production/*
+!/production/publish-examples/
+/motion-references/
+/output/
+/tools/
+
 # Local design-audit reports
 plugins/ai-drama-studio/premium-audit.json
 plugins/ai-drama-studio/design-qa.md

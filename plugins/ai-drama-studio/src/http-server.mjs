@@ -7,7 +7,7 @@ import { createHash } from "node:crypto";
 import { Readable } from "node:stream";
 import { fileURLToPath } from "node:url";
 import AdmZip from "adm-zip";
-import { allowedAudioExtensions, allowedDocumentExtensions, allowedImageExtensions, allowedSpreadsheetExtensions, allowedVideoExtensions, assertInside, dataRoot, defaultSettings, host, lockedGenerationSettings, port, publicRoot, safeId, workspaceRoot } from "./config.mjs";
+import { allowedAudioExtensions, allowedDocumentExtensions, allowedImageExtensions, allowedSpreadsheetExtensions, allowedVideoExtensions, assertInside, dataRoot, mediaRoot, defaultSettings, host, lockedGenerationSettings, port, publicRoot, safeId, workspaceRoot } from "./config.mjs";
 import { appendEvent, mutateState, readState } from "./store.mjs";
 import { clearArkKey, hasArkKey, saveArkKey, clearSpeechKey, hasSpeechKey, saveSpeechKey } from "./secrets.mjs";
 import { speechCapabilities } from "./speech.mjs";
@@ -98,7 +98,7 @@ function registeredMediaPath(state, kind, id) {
   const item = collection.find(entry => entry.id === id);
   if (!item?.localPath) throw new Error("FILE_NOT_FOUND");
   const candidate = path.resolve(item.localPath);
-  for (const root of [dataRoot, workspaceRoot]) {
+  for (const root of [dataRoot, mediaRoot, workspaceRoot]) {
     try { return assertInside(root, candidate); }
     catch {}
   }
@@ -136,7 +136,7 @@ async function saveAssetContentVersion(projectId, assetId, content) {
   if (!extension) throw new Error("ASSET_NOT_EDITABLE");
   const source = registeredMediaPath(state, "assets", assetId);
   const version = Math.max(...project.assets.filter(item => item.familyId === asset.familyId).map(item => Number(item.version || 1)), Number(asset.version || 1)) + 1;
-  const destination = path.join(dataRoot, "projects", projectId, "imports", `${safeId("edit")}${extension}`);
+  const destination = path.join(mediaRoot, "projects", projectId, "imports", `${safeId("edit")}${extension}`);
   await fsp.mkdir(path.dirname(destination), { recursive: true });
   const payload = extension === ".docx" ? writeDocxText(await fsp.readFile(source), content) : Buffer.from(String(content || ""), "utf8");
   await fsp.writeFile(destination, payload);
@@ -351,7 +351,7 @@ async function handleApi(req, res, url) {
     if (creationId && !project.creations?.some(creation => creation.id === creationId)) throw new Error("CREATION_NOT_FOUND");
     const previousVersion = versionOfAssetId ? project.assets?.find(asset => asset.id === versionOfAssetId) : null;
     if (versionOfAssetId && !previousVersion) throw new Error("ASSET_NOT_FOUND");
-    const destination = path.join(dataRoot, "projects", projectId, "imports", `${safeId("import")}${extension}`);
+    const destination = path.join(mediaRoot, "projects", projectId, "imports", `${safeId("import")}${extension}`);
     await fsp.mkdir(path.dirname(destination), { recursive: true });
     const payload = Buffer.from(await file.arrayBuffer());
     await fsp.writeFile(destination, payload);

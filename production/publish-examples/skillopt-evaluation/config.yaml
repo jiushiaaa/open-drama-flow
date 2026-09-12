@@ -1,0 +1,38 @@
+_base_: ../../../tools/SkillOpt/configs/_base_/default.yaml
+model:
+  backend: codex_exec
+  optimizer: gpt-6-astra
+  target: gpt-6-astra
+  optimizer_backend: codex_exec
+  target_backend: codex_exec
+  reasoning_effort: low
+  codex_exec_sandbox: read-only
+  codex_exec_profile: ""
+  codex_exec_network_access: false
+  codex_exec_web_search: false
+  codex_exec_approval_policy: never
+train:
+  num_epochs: 1
+  train_size: 4
+  batch_size: 4
+  accumulation: 1
+  seed: 42
+gradient:
+  minibatch_size: 4
+  merge_batch_size: 4
+  analyst_workers: 1
+  failure_only: false
+optimizer:
+  learning_rate: 2
+  min_learning_rate: 2
+  lr_scheduler: constant
+  use_meta_skill: false
+  use_slow_update: false
+evaluation:
+  use_gate: true
+  sel_env_num: 4
+  test_env_num: 4
+  eval_test: false
+env:
+  name: production_decisions
+  exec_timeout: 150

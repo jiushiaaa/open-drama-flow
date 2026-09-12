@@ -13,11 +13,51 @@
         },
         {
           "path": "references/execution-contract.md",
-          "sha256": "4dd366ba5b6c2144e731cbb6368de1f65b9d766c8d83fc737fc0f7a366132941"
+          "sha256": "e79ec00e2d23b263ad304b6754cd754ab28a8f38a8da0c09d879a4bd3ce06be0"
         },
         {
           "path": "references/image-asset-contract.md",
-          "sha256": "d7837549ca3f7dab3dad7e0900c2d780fd85da3d991b46cf2b5d7c53f0434fdf"
+          "sha256": "8b984bc647046ee3bc58f15a0730ce552299d9833ac6ef069b3f45c72d850100"
+        },
+        {
+          "path": "references/narrative-continuity.md",
+          "sha256": "d7df0b69380b5fc075d9cba34210b054a837ac029cc3025e21aa2c3eee848af0"
+        },
+        {
+          "path": "references/project-profiles/fortiche-craft-notes.md",
+          "sha256": "f3fc0a08f7801b2787646e48d1a85082afd5fb26da29e9b3e56c812ce764d1ba"
+        },
+        {
+          "path": "references/project-profiles/guhuoniao-painterly-3d2d.md",
+          "sha256": "12a52188ef0729eba7cb4f06345d4b70adf9781a22b7d7af56740dc24ee69b8e"
+        },
+        {
+          "path": "references/project-profiles/guhuoniao-reference-learning.md",
+          "sha256": "00de95a872fb226781771f36eb6661c3e82ff04b6b8d95e563c4fda167efde0e"
+        },
+        {
+          "path": "references/project-profiles/guhuoniao.md",
+          "sha256": "8b1f774b05e33dcf9b20358aa978d78319f0ff404c56b0592f4f8ad17e03e0de"
+        },
+        {
+          "path": "references/project-profiles/reference-cases/20260906-cyberhero-motion.md",
+          "sha256": "5f221a7c93064ab1992de14603eebe6f3c93ec989e17e41d00d2b995500303f1"
+        },
+        {
+          "path": "references/project-profiles/reference-cases/20260907-ch01-lessons.md",
+          "sha256": "f213da0b14c0a025c5c3c04318d07070f40421b598b886a3c59b4d63a345f495"
+        },
+        {
+          "path": "references/project-profiles/reference-cases/20260907-character-scene-consistency.md",
+          "sha256": "9271fef7868784e0a57b9c431a3912770447db82ba11e47e175935727880552d"
+        },
+        {
+          "path": "references/project-profiles/reference-cases/20260907-higgsfield-blog-craft.md",
+          "sha256": "5ca9af277da59a89d83756065b25b03527bcfeef42a640807cca2287f178350b"
+        },
+        {
+          "path": "references/project-profiles/reference-cases/20260907-higgsfield-six-step-audio.md",
+          "sha256": "23ce6513a5475083e57a9d31e6503b52531e241ca01a129e9ad59ec462df5ec5"
         },
         {
           "path": "references/prompt-contract.md",
@@ -33,7 +73,7 @@
         },
         {
           "path": "references/seedance-prompting.md",
-          "sha256": "7879b8b4a1d75e17b47f4f6c2b19b86ba8fa572e8769f23eb85f0db83a36d985"
+          "sha256": "22fe73eadf0c38e6305bb6b36d23392ca2acf1f92df9a9256ae573316f0d7e5c"
         },
         {
           "path": "references/workflow-contract.md",
@@ -41,7 +81,7 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "ebfac015dc8facc206482c1339fa7c7cddb155ae51ec8cc3c52772ddceccc91e"
+          "sha256": "6fbabe6445a76426a841b69b73d3afdd5f7f144ed643221e291eb1f6881f1b24"
         }
       ]
     },
@@ -268,11 +308,11 @@
         },
         {
           "path": "SKILL.cn.md",
-          "sha256": "894f7bd6b652c84ffa55e8dacb3c02b080661e46c21ef1322edcdcbf26793d76"
+          "sha256": "254074436304a777a0f7eb45149b267a668df754df77fd382d54b515b476f536"
         },
         {
           "path": "SKILL.md",
-          "sha256": "5bc0129bee56b112b94d8ed3dc0bf9080728d3928a7dcfdae9db4fca34242853"
+          "sha256": "ef998a24081acae45741411630e087e09bcce42fed0a13e3801daccd65940e96"
         },
         {
           "path": "WORKFLOW.md",
@@ -1493,16 +1533,20 @@
           "sha256": "c5cd39ad23aeb6335f896611734a25383aa0905349c378becfadafefce0c649f"
         },
         {
+          "path": "references/postproduction-preservation.md",
+          "sha256": "b317446d8ba71ac8ac29914e783e07488b7958363563baa21c9b271bc8fa224c"
+        },
+        {
           "path": "references/verification.md",
-          "sha256": "e704d41c4ad9c568aef79f031c37ed44164c5465795ed26eddb8c30cda918758"
+          "sha256": "dc9c7808e3c530f354e6f24e36ce985f724554888eef1811aa758989f26d1b5c"
         },
         {
           "path": "SKILL.md",
-          "sha256": "caad33e18b5f8decd668675ab81fd41bc0df25d16a9907d104554a7a28e3b702"
+          "sha256": "9863f9d37e2f7e11e383cb1c081ac2aec2c62b02899bed801a900017829ce32e"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "235f5b341a4c778e8b03c84c2ad95b6063e23a5e6031f68a2308647146e838ce"
+          "sha256": "dbf23e9b3f25cc21d318e71d95ab96cc16cfce4e02963aae2c0ebf2df0677e3f"
         }
       ]
     }

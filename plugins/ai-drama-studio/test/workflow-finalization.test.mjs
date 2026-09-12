@@ -7,7 +7,7 @@ import test, { after } from "node:test";
 const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "ai-drama-finalization-"));
 process.env.AI_DRAMA_DATA_DIR = tempRoot;
 
-const { readState } = await import("../src/store.mjs");
+const { readState, mutateState } = await import("../src/store.mjs");
 const {
   authorizeAndStartPipeline,
   claimTask,
@@ -116,4 +116,27 @@ test("successful real-pipeline completion consumes approval in the same terminal
   assert.equal(savedApproval.consumedAt, terminal.job.updatedAt);
   assert.equal(terminal.job.runToken, null);
   assert.equal(terminal.job.leaseExpiresAt, null);
+});
+
+test("legacy lock-timeout recovery retains the original scope and charged tasks", async () => {
+  const { approval, job } = await createApprovedStaticBatch("锁超时恢复", 1, 1);
+  const before = await waitForJob(job.id, current => current.status === "waiting" && current.stage === "codex-images");
+  const saved = before.state.approvals.find(item => item.id === approval.id);
+  const taskIds = before.state.tasks.filter(item => item.approvalId === approval.id).map(item => item.id);
+  await mutateState(state => Object.assign(state.jobs.find(item => item.id === job.id), { status: "failed", errorCode: "STATE_LOCK_TIMEOUT" }));
+  await resumeRealPipeline(job.id);
+  const afterRecovery = await waitForJob(job.id, current => current.status === "waiting" && current.stage === "codex-images");
+  const retained = afterRecovery.state.approvals.find(item => item.id === approval.id);
+  assert.equal(retained.scopeDigest, saved.scopeDigest);
+  assert.equal(retained.usedImageCalls, saved.usedImageCalls);
+  assert.equal(retained.usedVideoCalls, saved.usedVideoCalls);
+  assert.deepEqual(afterRecovery.state.tasks.filter(item => item.approvalId === approval.id).map(item => item.id), taskIds);
+  assert.equal(afterRecovery.state.jobs.filter(item => item.approvalId === approval.id).length, 1);
+  await mutateState(state => Object.assign(state.jobs.find(item => item.id === job.id), { status: "failed", errorCode: "PROVIDER_REJECTED" }));
+  await assert.rejects(resumeRealPipeline(job.id), /REAL_JOB_NOT_WAITING/);
+  await mutateState(state => {
+    Object.assign(state.jobs.find(item => item.id === job.id), { status: "failed", errorCode: "STATE_LOCK_TIMEOUT" });
+    state.approvals.find(item => item.id === approval.id).status = "consumed";
+  });
+  await assert.rejects(resumeRealPipeline(job.id), /APPROVAL_REQUIRED/);
 });

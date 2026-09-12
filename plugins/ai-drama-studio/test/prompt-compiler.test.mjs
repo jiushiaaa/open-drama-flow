@@ -60,7 +60,7 @@ test("compiles an explicit first-frame I2V request with Ark-compatible logical p
   assert.equal(compiled.requests.image, null);
   assert.equal(compiled.requests.video.inputMode, "image-to-video");
   assert.deepEqual(compiled.requests.video.parameters, {
-    ratio: "9:16",
+    ratio: "adaptive",
     duration: 6,
     watermark: false,
     return_last_frame: true,

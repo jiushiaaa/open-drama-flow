@@ -1,0 +1,99 @@
+{
+  "date": "2026-09-12",
+  "upstreamCommit": "79124b37e9a6371e13b753f8bcd7adb1e493ade1",
+  "packageVersion": "0.2.0",
+  "upstreamSummaryVersion": "skillopt-0.1.0",
+  "model": "gpt-6-astra",
+  "reasoningEffort": "low",
+  "splits": {
+    "train": 4,
+    "validation": 4,
+    "test": 4
+  },
+  "epochs": 1,
+  "baselineSelectionScore": 1,
+  "selectedSelectionScore": 1,
+  "finalTestInitialScore": 1,
+  "finalTestSelectedScore": 1,
+  "steps": 1,
+  "acceptedUpdates": 0,
+  "skippedUpdates": 1,
+  "selectedOrigin": "initial_skill",
+  "initialSkillSha256": "1c844993086e5133bd05593975c86df7f91a8914541f82b1a8b797e5d164081e",
+  "selectedSkillSha256": "1c844993086e5133bd05593975c86df7f91a8914541f82b1a8b797e5d164081e",
+  "originalInputHashes": {
+    "cases.json": "08a482ede809feda3c03adab3023f2e4126010016386d18ef92d16cfe17a6d53",
+    "config.yaml": "e5285592c59a5dc938cea179c65f6284927bbd12e4e933f2981c596c24d69566",
+    "initial_skill.md": "1c844993086e5133bd05593975c86df7f91a8914541f82b1a8b797e5d164081e"
+  },
+  "caseScores": {
+    "testInitial": [
+      {
+        "id": "test-timeline",
+        "hard": 1,
+        "soft": 1
+      },
+      {
+        "id": "test-preservation",
+        "hard": 1,
+        "soft": 1
+      },
+      {
+        "id": "test-continuity",
+        "hard": 1,
+        "soft": 1
+      },
+      {
+        "id": "test-cleanup",
+        "hard": 1,
+        "soft": 1
+      }
+    ],
+    "testSelected": [
+      {
+        "id": "test-timeline",
+        "hard": 1,
+        "soft": 1
+      },
+      {
+        "id": "test-preservation",
+        "hard": 1,
+        "soft": 1
+      },
+      {
+        "id": "test-continuity",
+        "hard": 1,
+        "soft": 1
+      },
+      {
+        "id": "test-cleanup",
+        "hard": 1,
+        "soft": 1
+      }
+    ],
+    "validationBaseline": [
+      {
+        "id": "val-timeline",
+        "hard": 1,
+        "soft": 1
+      },
+      {
+        "id": "val-preservation",
+        "hard": 1,
+        "soft": 1
+      },
+      {
+        "id": "val-continuity",
+        "hard": 1,
+        "soft": 1
+      },
+      {
+        "id": "val-cleanup",
+        "hard": 1,
+        "soft": 1
+      }
+    ]
+  },
+  "conclusion": "No patches were produced. Initial Skill retained; no optimization gain observed.",
+  "limitations": "12 synthetic decision cases, 4 train/4 validation/4 final test; not a visual animation benchmark. Single run, no claim of generalization or improved video quality. Read-only/no-tool prompt is not strong file isolation; full CLI trace isolation has not been independently verified."
+}

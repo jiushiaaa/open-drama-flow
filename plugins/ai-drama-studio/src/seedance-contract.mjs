@@ -51,8 +51,12 @@ export function validateSeedanceRequest({ model, inputMode, inputs = [], paramet
   for (const [role, max] of [["reference_image", profile.maxImages], ["reference_video", profile.maxVideos], ["reference_audio", profile.maxAudios]]) {
     if (count(role) > max) add("SEEDANCE_REFERENCE_LIMIT_EXCEEDED", role);
   }
-  if (!Number.isInteger(parameters.duration) || parameters.duration < profile.minimum || parameters.duration > profile.maximum) add("SEEDANCE_DURATION_UNSUPPORTED", "duration");
+  if (inputMode === "video-edit" && profile.version === "2.5") {
+    if (parameters.duration !== -1) add("SEEDANCE_EDIT_DURATION_MUST_FOLLOW_SOURCE", "duration");
+    if (parameters.ratio !== "adaptive") add("SEEDANCE_EDIT_RATIO_MUST_FOLLOW_SOURCE", "ratio");
+  } else if (!Number.isInteger(parameters.duration) || parameters.duration < profile.minimum || parameters.duration > profile.maximum) add("SEEDANCE_DURATION_UNSUPPORTED", "duration");
   if (!profile.ratios.includes(parameters.ratio)) add("SEEDANCE_RATIO_UNSUPPORTED", "ratio");
+  if (profile.version === "2.5" && ["image-to-video", "first-last-frame"].includes(inputMode) && parameters.ratio !== "adaptive") add("SEEDANCE_FRAME_RATIO_MUST_FOLLOW_SOURCE", "ratio");
   if (!profile.resolutions.includes(parameters.resolution)) add("SEEDANCE_RESOLUTION_UNSUPPORTED", "resolution");
   if (typeof parameters.generate_audio !== "boolean") add("EXPLICIT_AUDIO_BOOLEAN_REQUIRED", "generate_audio");
   if (edit && (inputMode !== "video-edit" || !Number.isFinite(edit.startSeconds) || !Number.isFinite(edit.endSeconds) || edit.startSeconds < 0 || edit.endSeconds <= edit.startSeconds || !String(edit.instruction || "").trim())) add("VIDEO_EDIT_RANGE_INVALID", "edit");
