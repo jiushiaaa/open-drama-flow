@@ -17,6 +17,7 @@ production-records/
 /production/*
 !/production/publish-examples/
 /motion-references/
+/research/
 /output/
 /tools/
 

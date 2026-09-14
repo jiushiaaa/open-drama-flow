@@ -94,7 +94,7 @@ Install upstream tools and weights separately and check their licenses. [Source 
 
 ## The workbench today
 
-Captured from the running workbench on 2026-09-12; real project data, not seeded demo content. Screenshots are a point-in-time view, not a guarantee that every displayed production item has passed review.
+Captured on 2026-09-14 from real workbench data. Canvas interactions were checked in an isolated copy of a creation page so validation would not change production layouts. Screenshots are a point-in-time view, not a guarantee that every displayed production item has passed review.
 
 **Project library — projects, creation pages and media.**
 
@@ -103,6 +103,8 @@ Captured from the running workbench on 2026-09-12; real project data, not seeded
 **Infinite canvas — inspect artifacts and production relationships; conversation stays in Codex.**
 
 ![Current production canvas](docs/images/production-canvas.png)
+
+The canvas now integrates native React + TypeScript components from [infinite-canvas](https://github.com/basketikun/infinite-canvas) under its MIT license: pan/zoom, media nodes, selection frames, resizing, connections and minimap. Only this canvas is React; project management, Skills, approved asset versions and the Node/MCP production harness remain ours. Images keep their full proportions; video loads on demand and files open in the existing viewer. This is a scoped component integration, not a whole-product clone. The screenshot shows “Leave a Light On”, not episode-one acceptance. [Integration and build details](plugins/ai-drama-studio/ui/README.md) · [Refresh notes and media distribution guidance](docs/canvas-refresh-20260914.md) (Chinese).
 
 <details>
 <summary>Professional Skills: expandable folders and readable instructions</summary>
@@ -124,7 +126,7 @@ Captured from the running workbench on 2026-09-12; real project data, not seeded
 
 Creative brief → approved context → scene and shot contracts → role-bound references → bounded model tasks → versioned media → edit and review → delivery evidence.
 
-- **46 shipped Skills:** one producer and 45 specialists, including novel preproduction, Seedance prompting, narrative continuity and postproduction craft. Natural-language routing, explicit names and saved enable switches share the catalog.
+- **47 shipped Skills:** one producer and 46 specialists, including novel preproduction, Seedance prompting, narrative continuity and postproduction craft. Natural-language routing, explicit names and saved enable switches share the catalog.
 - **One project per IP:** optional volume/season groups, independent creation pages and a folder-based asset library. Stable asset IDs and versions survive reorganization.
 - **Codex conversation + canvas:** chat stays in Codex; the workbench displays production artifacts, previews, playback and task relationships.
 - **Durable production state:** frozen request digests, reference versions, call limits, provider IDs and resumable jobs. An unknown submission must be reconciled before retrying.

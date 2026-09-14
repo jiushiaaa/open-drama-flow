@@ -4,6 +4,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { dataRoot, mediaRoot, safeId, allowedImageExtensions, allowedVideoExtensions, allowedAudioExtensions, allowedDocumentExtensions, allowedSpreadsheetExtensions } from "./config.mjs";
 import { appendEvent, mutateState, readState } from "./store.mjs";
+import { normalizeCanvasLayout } from "./canvas-layout.mjs";
 import { readArkKey } from "./secrets.mjs";
 import { createShotVideo, normalizeVideoClip, probeDuration, probeMedia, renderFinal, srtTimestamp } from "./ffmpeg.mjs";
 import { createSeedanceTask, downloadSeedanceVideo, generateSeedreamImage, waitForSeedanceTask } from "./ark.mjs";
@@ -764,13 +765,7 @@ export async function updateCreation(projectId, creationId, patch = {}) {
       creation.type = patch.type;
     }
     if (patch.canvas !== undefined) {
-      const viewport = patch.canvas?.viewport || creation.canvas?.viewport || canvasDefaults().viewport;
-      const zoom = Math.min(2, Math.max(0.2, Number(viewport.zoom || 0.78)));
-      const positions = {};
-      for (const [nodeId, value] of Object.entries(patch.canvas?.positions || creation.canvas?.positions || {}).slice(0, 800)) {
-        positions[String(nodeId).slice(0, 120)] = { x: Math.round(Number(value?.x || 0)), y: Math.round(Number(value?.y || 0)) };
-      }
-      creation.canvas = { viewport: { x: Math.round(Number(viewport.x || 0)), y: Math.round(Number(viewport.y || 0)), zoom }, positions };
+      creation.canvas = normalizeCanvasLayout(patch.canvas, creation.canvas);
     }
     if (Array.isArray(patch.assetRefs)) {
       const nextRefs = patch.assetRefs.slice(0, 1000).map(ref => {

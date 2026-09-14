@@ -1,12 +1,12 @@
 {
-  "publishedOn": "2026-09-12",
+  "publishedOn": "2026-09-14",
   "scope": "Creator-selected README showcase; no new paid generation, no third-party film/depth redistribution",
   "episodeLink": "https://www.xiaohongshu.com/discovery/item/6aa5351d0000000028029cea",
   "episodeLinkVerification": "Creator supplied; automated web access failed; not independently played online in this update",
   "screenshots": [
-    {"path": "docs/images/project-library.png", "sha256": "cff54067125788bb7573b9bc26c950ad66fe0929bb2e54f7aedfb845e0956d99"},
-    {"path": "docs/images/production-canvas.png", "sha256": "fa8e926b52c7878a1d8c6ca54b11f1e873366629f47dbc70e41c7002337e8d52"},
-    {"path": "docs/images/skill-browser.png", "sha256": "ba664424840644d7eb771a5735ab9b5af9e3692baafdcce7b94b9935e11fc096"}
+    {"path": "docs/images/project-library.png", "sha256": "33341676d9e41b74761db71372a3d9d3126fce873383717f10c43cddbce34d17"},
+    {"path": "docs/images/production-canvas.png", "sha256": "ee513773134314948b56d6979dc369db819a277a59f836b317639457af33ae66"},
+    {"path": "docs/images/skill-browser.png", "sha256": "a3245133cae469520e179548217f9c2b8c7ed7e2b11b828650916667d39b2484"}
   ],
   "cover": {
     "path": "docs/images/episode-one-cover.jpg",

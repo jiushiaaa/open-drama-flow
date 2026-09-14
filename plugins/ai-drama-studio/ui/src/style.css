@@ -1,0 +1,31 @@
+@import "tailwindcss";
+@source "./";
+:host { display: block; height: 100%; min-height: 0; color: #292524; font-family: Inter, "Segoe UI", "Microsoft YaHei", sans-serif; font-size: 14px; }
+#react-canvas, .odf-canvas { height: 100%; width: 100%; min-height: 0; }
+.odf-canvas { position: relative; overflow: clip; touch-action: none; }
+button { cursor: pointer; }
+button:focus-visible { outline: 2px solid #2f80ff; outline-offset: 3px; }
+.odf-connections { position: absolute; width: 1px; height: 1px; overflow: visible; pointer-events: none; }
+.odf-node-label { position: absolute; z-index: 12; padding: 0 4px; font-size: 12px; color: #78716c; text-align: left; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
+.odf-node-label:hover { color: #292524; }
+.odf-selection { position: absolute; border: 1px solid #2f80ff; background: #2f80ff15; pointer-events: none; z-index: 100; }
+.odf-dock, .odf-node-actions { display: flex; align-items: center; gap: 3px; padding: 6px; border: 1px solid #d6d3ca; border-radius: 12px; background: #fbfaf7f5; color: #57534e; box-shadow: 0 12px 32px #1c191715; }
+.odf-dock { position: absolute; bottom: 48px; left: 24px; z-index: 110; }
+.odf-dock button, .odf-node-actions button { height: 34px; min-width: 34px; border-radius: 7px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.odf-dock button:hover, .odf-dock button[aria-pressed=true], .odf-node-actions button:hover { background: #e7e5df; color: #292524; }
+.odf-dock i { height: 18px; border-left: 1px solid #d6d3ca; margin: 0 4px; }
+.odf-dock output { min-width: 42px; text-align: center; font-size: 12px; font-variant-numeric: tabular-nums; }
+.odf-node-actions { position: absolute; z-index: 75; transform: translateX(-50%); }
+.odf-node-actions button { padding: 0 8px; font-size: 12px; }
+.odf-context-menu { position: absolute; z-index: 120; width: 190px; padding: 6px; border: 1px solid #d6d3ca; border-radius: 12px; background: #fbfaf7; box-shadow: 0 12px 36px #1c19171a; }
+.odf-context-menu button { width: 100%; text-align: left; padding: 10px; border-radius: 6px; font-size: 13px; }
+.odf-context-menu button:hover { background: #e7e5df; }
+.odf-status { position: absolute; bottom: 0; left: 0; right: 0; height: 30px; display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 0 16px; color: #8a8479; background: #fbfaf7d9; font-size: 11px; border-top: 1px solid #d6d3ca66; }
+.odf-status a { text-decoration: none; }
+.odf-selection-count { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #fbfaf7e8; border: 1px solid #d6d3ca; border-radius: 20px; padding: 8px 16px; font-size: 12px; }
+.odf-empty { position: absolute; left: 50%; top: 45%; transform: translate(-50%,-50%); text-align: center; color: #78716c; pointer-events: none; }
+.odf-empty img { width: 60px; margin: 0 auto 16px; }
+.odf-empty h2 { font-size: 17px; margin-bottom: 10px; color: #292524; }
+.odf-empty p { font-size: 12px; }
+.thin-scrollbar { scrollbar-width: thin; scrollbar-color: #a8a29e55 transparent; }
+@media(max-width: 700px) { .odf-status > span:nth-child(2) { display: none; } .odf-dock { left: 12px; } }

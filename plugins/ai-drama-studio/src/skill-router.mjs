@@ -2,6 +2,10 @@ import { listManagedSkills, readManagedSkillInstructions } from "./skill-registr
 import { canonicalSkillName } from "./skill-identifiers.mjs";
 
 const ROUTING_PROFILES = {
+  "creator-method-transfer": {
+    all: [["博主", "教程", "创作资料", "外部资料"], ["借鉴", "学习", "迁移", "复盘"], ["方法", "验证", "实证"]],
+    aliases: ["创作方法转化", "创作方法迁移", "学习素材后验证"]
+  },
   "film-reference-prompt-writer": {
     all: [["电影", "剧照", "影视参考"], ["提示词", "prompt", "出图", "出视频"]],
     aliases: ["电影画面怎么拍", "参考电影的光线构图运镜"]
