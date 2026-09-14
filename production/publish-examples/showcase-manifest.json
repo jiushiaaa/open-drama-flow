@@ -2,6 +2,22 @@
   "publishedOn": "2026-09-14",
   "scope": "Creator-selected README showcase; no new paid generation, no third-party film/depth redistribution",
   "episodeLink": "https://www.xiaohongshu.com/discovery/item/6aa5351d0000000028029cea",
+  "douyinEpisodeLink": "https://v.douyin.com/rD_OP4_kMSI/",
+  "douyinEpisodeLinkVerification": "Creator supplied video link; automated resolution unavailable; not independently played online",
+  "upscaleComparison": {
+    "path": "production/publish-examples/upscale-comparison.gif",
+    "sha256": "fdf778eea96d9136aaa9b5ea7e78bc1fa2c157faef3e4e2be8bb25cd0c658e36",
+    "sourcePaths": ["production/publish-examples/ending-720p-4s.mp4", "production/publish-examples/ending-upscaled-4k-4s.mp4"],
+    "sourceSha256": ["e5a68807d3d06a445011f80ddca54339f1b384621f9a0f63d94bd9ea3cd80c41", "f80e79b933d55cf59ab83514a6d66faa9e2b42f67728bb4aad5e90b150d0034d"],
+    "sourceCropXYWH": [[440,180,480,320], [1320,540,1440,960]],
+    "operation": "synchronized source interval [0,4), scale each crop to 400x266, 8px divider, horizontal stack, 6fps, 96-color palette, Bayer dither scale 3, loop, no audio",
+    "width": 808,
+    "height": 266,
+    "durationSeconds": 4,
+    "frames": 24,
+    "bytes": 3475583,
+    "review": "matched crop first frame inspected; all 24 frames decoded without errors; not a lossless benchmark or new generation"
+  },
   "episodeLinkVerification": "Creator supplied; automated web access failed; not independently played online in this update",
   "screenshots": [
     {"path": "docs/images/project-library.png", "sha256": "33341676d9e41b74761db71372a3d9d3126fce873383717f10c43cddbce34d17"},

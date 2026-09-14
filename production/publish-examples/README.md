@@ -4,6 +4,7 @@ Published 2026-09-12 from selected episode-one environment shots and an original
 
 ## Watch and reuse
 
+- [Published episode on Douyin](https://v.douyin.com/rD_OP4_kMSI/) — creator-supplied video link; automated resolution was unavailable during this update.
 - [Creator's published episode on Xiaohongshu](https://www.xiaohongshu.com/discovery/item/6aa5351d0000000028029cea) — external showcase, supplied by the creator; not independently played online during this documentation update.
 - [Opening montage](opening-showcase.gif) — a muted 6-second GIF: source `[2,4)`, `[9,11)`, `[16,18)` seconds from the existing 20-second `opening-raw-720p.mp4`, in that order. 512×288, 8 fps; selected scenes only, not a continuous shot or quality benchmark.
 - [Original whitebox camera package](whitebox-camera/README.md) — complete rendered video, source scene, pinned dependency and browser playback/scrub controls. **Not a depth-estimation dataset.**
@@ -27,6 +28,10 @@ The inspected local depth collections include movie fight excerpts and online tr
 中文：这次只发布整理后的原创白模、生成镜头展示和作品封面。电影／教学原片及其深度文件暂不上传；需逐条确认再分发授权后，才能作为他人可直接复用的数据包公开。本地原素材与深度文件没有删除。
 
 ## Environment upscale comparison
+
+![Synchronized matched crop: 720p source left, 4K upscale right](upscale-comparison.gif)
+
+The inline preview uses the same four-second interval in both files: crop `(440,180,480,320)` from the 720p source and `(1320,540,1440,960)` from the 4K result. Each crop is scaled to 400×266, separated by an eight-pixel divider and encoded at 6 fps with a 96-color palette. The GIF is a compact preview, not a lossless pixel-quality benchmark; full-resolution clips remain below.
 
 | File | Contents |
 | --- | --- |
