@@ -138,6 +138,21 @@ Skills provide professional workflows, not additional model capabilities. [Brows
 
 Choose your Codex model; the plugin does not require a hard-coded version. SeedAudio 1.0 music production and ChatCut editing are independent extensions requiring extra setup, not bundled plugin services. [Configuration and capability boundaries](docs/production-guide.md#models-and-tools)
 
+<details>
+<summary>Why Video Depth Anything?</summary>
+
+**Give action design a spatial reference, not just a verbal description.** During episode-one production, prompts and hand-built whiteboxes struggled to convey convincing fight distances, approaches, retreats and occlusion. We therefore explore temporal depth from authorized action references to help Codex analyze and plan movement.
+
+[Video Depth Anything](https://github.com/DepthAnything/Video-Depth-Anything) estimates depth across video frames, representing near/far relationships instead of the original colors and textures, with an emphasis on temporal consistency. In this project, it serves three purposes:
+
+- **Inspect spatial relationships.** Compare source and depth video to study relative positions, approaching or receding subjects, occlusion and camera movement.
+- **Translate references into shot design.** Codex analyzes both views to describe action phases and blocking in shooting scripts, whitebox previz and Seedance prompts—without automatically copying the source's characters, costumes or setting.
+- **Run comparative generation experiments.** Where the API permits and inputs are approved, try depth-visualization video as a video reference. Compare results with and without it, recording the asset versions actually submitted.
+
+This is an **optional action-reference experiment**, not a prerequisite for ordinary production. Depth is not a skeleton, joint trajectory or contact force, and this is not a dedicated Seedance depth-control interface. Codex analyzing a reference does not train a model. Reliable gains for complex fights or precise motion transfer have not yet been established.
+
+</details>
+
 ## Known limitations
 
 - **Complex fights still need iteration.** Grips, fast exchanges, occlusion and weight shifts can fail. Whiteboxes and temporal depth do not replace skeletal motion capture or contact solving.
