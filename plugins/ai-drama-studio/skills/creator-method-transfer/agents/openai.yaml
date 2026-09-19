@@ -1,0 +1,5 @@
+interface:
+
+  default_prompt: "使用 $ai-drama-studio:creator-method-transfer，根据我提供的素材与要求完成创作方法转化与实证，并核验所需工具与交付结果。"
+  short_description: "将外部创作资料转化为可检验的动作、表演和运镜方法；用于方法迁移与实验复盘，不替代制作总控。"
+  display_name: "创作方法转化与实证"

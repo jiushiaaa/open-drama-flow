@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import AdmZip from "adm-zip";
+import { specializedSkills } from "../src/skill-catalog.mjs";
 
 const temporaryRoot = await fs.mkdtemp(path.join(os.tmpdir(), "open-drama-flow-skills-"));
 process.env.AI_DRAMA_DATA_DIR = path.join(temporaryRoot, "data");
@@ -15,10 +16,10 @@ test.after(async () => {
   await fs.rm(resolved, { recursive: true, force: true });
 });
 
-test("the forkable plugin ships all 46 built-in Skill entrypoints", async () => {
+test("the forkable plugin ships all catalogued built-in Skill entrypoints", async () => {
   const skills = await registry.listManagedSkills();
-  assert.equal(skills.length, 46);
-  assert.equal(skills.filter(skill => skill.source === "built-in").length, 46);
+  assert.equal(skills.length, specializedSkills.length + 1);
+  assert.equal(skills.filter(skill => skill.source === "built-in").length, specializedSkills.length + 1);
   assert.ok(skills.some(skill => skill.name === "ai-drama-producer"));
   assert.ok(skills.some(skill => skill.name === "novel-comic-drama-preproduction"));
 });
@@ -53,5 +54,5 @@ test("a zip containing one SKILL.md is imported into the local router library", 
   assert.equal(imported.enabled, true);
   const detail = await registry.getManagedSkill("sample-skill", "references/guide.md");
   assert.equal(detail.content, "# Guide\n");
-  assert.equal((await registry.listManagedSkills()).length, 47);
+  assert.equal((await registry.listManagedSkills()).length, specializedSkills.length + 2);
 });

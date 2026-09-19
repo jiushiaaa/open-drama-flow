@@ -1,5 +1,17 @@
 export const specializedSkills = [
   {
+    "slug": "creator-method-transfer",
+    "name": "creator-method-transfer",
+    "legacyIdentifier": false,
+    "label": "创作方法转化与实证",
+    "origin": "core",
+    "description": "将外部创作资料转化为可检验的动作、表演和运镜方法；用于方法迁移与实验复盘，不替代制作总控。",
+    "keywords": ["创作方法转化", "创作方法迁移", "方法论复盘", "借鉴博主", "学习素材后验证"],
+    "excludes": ["只做视频剪辑"],
+    "focus": ["把来源主张改写为可观察的镜头假设", "保持角色、剧情和资产版本，不移植来源私有规则", "区分阅读、白模、实际输入和生成结果证据"],
+    "quality": ["关键接触看不见时不能判通过", "不把实验快照当作当前实测", "不把深度估计冒充骨骼动作捕捉"]
+  },
+  {
     "slug": "3d-animation-short-generator",
     "label": "3D 动画短片",
     "origin": "user",
@@ -1267,4 +1279,4 @@ export const specializedSkills = [
   }
 ];
 
-export const sourceSkillCount = 45;
+export const sourceSkillCount = 46;

@@ -1,110 +1,182 @@
-# OpenDramaFlow
+<p align="center"><a href="README.md">English</a> · 简体中文</p>
 
-[English](README.md)
+<p align="center">
+  <img src="plugins/ai-drama-studio/public/assets/studio-pixel-hero.png" alt="OpenDramaFlow 机器人制片工作室" width="920" />
+</p>
 
-面向 **Windows Codex Desktop** 的本地视频生产框架。由 Codex 组织规划、专业 Skill、模型调用、素材、剪辑与复核，不要求用户手动搭建节点图。
+<h1 align="center">OpenDramaFlow</h1>
 
-![第一集实际制作中的原创环境镜头](production/publish-examples/ending-720p-preview.jpg)
+<p align="center"><strong>你来讲故事，Codex 来组织制作。</strong><br />在 Codex 中，把创意、剧本和参考素材变成视频。</p>
 
-[720p 生成样例](production/publish-examples/ending-720p-4s.mp4) · [4K 放大对照](production/publish-examples/ending-upscaled-4k-4s.mp4) · [样例来源与边界](production/publish-examples/README.md)
+<p align="center">
+  <img alt="MIT 软件许可" src="https://img.shields.io/badge/License-MIT-62c370" />
+  <img alt="Codex 插件" src="https://img.shields.io/badge/Codex-Plugin-111827" />
+  <img alt="MCP" src="https://img.shields.io/badge/Tools-MCP-3b82f6" />
+  <img alt="Windows" src="https://img.shields.io/badge/Windows-Desktop-2563eb" />
+</p>
 
-两段为同一环境镜头的四秒无声片段。**4K 来自后期放大，不是 Seedance 原生 4K。** 完整第一集、小说原文、第三方参考电影不随仓库发布。
+<p align="center"><a href="#作品展示">作品展示</a> · <a href="#快速开始">快速开始</a> · <a href="#制作流程">制作流程</a> · <a href="#内置技能">内置技能</a> · <a href="#文档与开发">文档</a></p>
 
-## 它负责什么
+OpenDramaFlow 是面向 **Windows Codex Desktop** 的开源视频生产插件。它把专业创作 Skill、模型接口、素材版本和本地后期连接起来，让 Codex 从理解目标、拆解镜头一路组织到成片交付。
 
-创作目标 → 已批准上下文 → 场次与镜头合同 → 明确用途的参考素材 → 有调用边界的任务 → 版本化素材 → 剪辑与复核 → 交付证据。
+**左侧 Codex 对话负责创作，右侧插件画布展示素材与成果。** 你不需要从零搭建工作流，也不需要手动添加、连接节点。
 
-- **46 个内置 Skill**：总控加 45 个专业技能，覆盖小说前期、Seedance 提示词、连续性和后期等；自然语言、显式名称及启用开关共用目录。
-- **一个 IP 一个项目**：分卷／季度、独立创作页、文件夹素材库；移动与重命名不改变资产身份，已用版本不被自动替换。
-- **Codex 对话 + 无限画布**：对话留在 Codex，工作台展示真实产物、预览、播放和生产关系。
-- **可恢复执行**：保存请求摘要、素材版本、调用上限、供应商任务 ID；提交状态未知时先核对原任务，不盲目重复付费。
-- **分层记忆**：候选提炼与生产事实分开，批准后才能进入可信上下文；单个项目经验不自动覆盖其他作品。
-- **有证据的后期**：保护认可片段、检查真实切点、字幕只映射一次；技术检查与实际看听分开记录。
+## 为什么使用 OpenDramaFlow
 
-## 安装
+- **用对话带领创作。** 从小说改编、短片到产品广告，根据目标选择专业 Skill、编写分镜和 Prompt，再调用工具执行。
+- **素材与过程看得见。** 项目、分卷／季度、创作页和素材库统一管理；无限画布支持完整图片预览、视频播放与产物关联。
+- **围绕 Seedance 制作。** 按职责组织图片、视频、音频与首尾帧参考，支持视频生成、续写和编辑。
+- **可以修改，也可以接着做。** 保存素材版本、供应商任务 ID 和制作状态，保护已认可片段，减少重复生成。
+- **经验留在项目里。** 将候选经验与已批准设定分开，避免一次实验覆盖角色、剧情和其他项目的规则。
 
-需要 Windows、Codex Desktop／CLI、Node.js 20+、npm、FFmpeg。生成需要自备服务商凭据，费用由服务商收取。
+![OpenDramaFlow 无限画布：素材、镜头与制作关系](docs/images/production-canvas.png)
 
-克隆仓库，在 Codex 中打开后可直接说：
+<details>
+<summary>查看项目库与 Skill 浏览器</summary>
 
-> 用 scripts/install.ps1 安装这个仓库的 OpenDramaFlow 插件。检查依赖与本地市场，验证技能和 MCP，不进行付费生成。不要打断其他正在制作的任务。
+![项目库](docs/images/project-library.png)
 
-也可以在仓库运行：
+![Skill 目录与文件浏览](docs/images/skill-browser.png)
+
+</details>
+
+## 作品展示
+
+### 《从姑获鸟开始》城寨风云篇 · 第一集
+
+**[在抖音观看](https://v.douyin.com/rD_OP4_kMSI/)** · **[在小红书观看](https://www.xiaohongshu.com/discovery/item/6aa5351d0000000028029cea)**
+
+[![第一集封面，点击在抖音观看](docs/images/episode-one-cover.jpg)](https://v.douyin.com/rD_OP4_kMSI/)
+
+从角色与场景设定、镜头生成，到声音、剪辑和包装的完整制作案例。
+
+![片头节选：城寨、拳台与锁链](production/publish-examples/opening-showcase.gif)
+
+### 超分前后
+
+左侧为 **720p 源片**，右侧为 **本地 4K 超分结果**；同步展示同一镜头的相同局部区域。
+
+![同镜头局部对比：左侧 720p，右侧 4K 超分](production/publish-examples/upscale-comparison.gif)
+
+[查看原分辨率样例与处理方法](production/publish-examples/README.md)
+
+## 快速开始
+
+需要 **Windows、Codex Desktop 和 Git**。安装器会检查 Node.js 20+、npm 与 FFmpeg，并尝试补齐缺失依赖。视频生成需要自备方舟 API Key，模型费用由服务商收取。
 
 ```powershell
+git clone https://github.com/jiushiaaa/open-drama-flow.git
+cd open-drama-flow
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
 
-安装器可补齐缺失依赖并注册本地插件市场。升级时若工作台正在使用，会停止安装以保护缓存；先完成活动任务再依照提示升级。更新后新开任务或重启 Codex：磁盘文件更新不等于当前任务已热加载。
+也可以在 Codex 中打开仓库，直接让它执行：
 
-工作台 **API Key** 页面配置方舟 Key；豆包语音 Key 可选。凭据使用 Windows DPAPI 保管，不提交 Git，也不通过 MCP 明文返回。
+> 使用 scripts/install.ps1 安装 OpenDramaFlow。检查依赖并验证插件，不进行付费生成，不打断其他制作任务。
 
-仅调试网页时：
+安装后新开 Codex 任务或重启 Codex，在工作台 **API Key** 页面配置方舟 Key。豆包语音 Key 为可选项，用于独立 ASR／TTS。凭据由 Windows DPAPI 保管。
 
-```powershell
-cd plugins\ai-drama-studio
-npm ci
-npm start
+然后，在 Codex 里描述你的第一个项目：
+
+> 使用 OpenDramaFlow，把我提供的故事制作成一条 15 秒、16:9 的悬疑短片。先梳理事件、角色和镜头，图片使用 Codex 内置工具，候选经我确认后入库；先做一条视频样片，再决定后续制作。请先说明预计调用次数。
+
+默认自动执行当前目标范围内、调用上限明确的任务；图片入库和生产记忆仍保留验收边界。可按项目选择手动审批，不需要手工搭建画布节点。
+
+## 制作流程
+
+```mermaid
+flowchart LR
+    A[创意 / 剧本 / 参考] --> B[Codex 规划 · 选择 Skill]
+    B --> C[拍摄脚本 · 图片与白模预演]
+    C --> D[验收素材 · 编译 Prompt]
+    D --> E[Seedance 视频生成]
+    E --> F{镜头复核}
+    F -->|局部修改| D
+    F -->|通过| G[声音 · 剪辑 · 超分与交付]
 ```
 
-打开[本地工作台](http://127.0.0.1:4317)。仅启动 HTTP 不等于 Codex 已挂载 MCP 插件。
+1. **先导演，再生成。** Codex 根据原文和已批准设定编写拍摄脚本，明确事件、对白、机位、动作和跨镜头连续性；必要时编写三维白模预演。
+2. **参考各司其职。** 图片默认由当前 Codex 内置 image-gen 工具生成，验收后入库；再将 Prompt 与外观、动作、运镜、声音参考送入 Seedance 2.5。
+3. **局部修复，组织交付。** 检查画面、运动、身份、对白与字幕，保护已认可内容，再完成声音、剪辑、可选超分和交付。经验先成为候选，批准后进入生产记忆。
 
-## 模型与工具：已接入和未接入分开
+白模空间与摄影机预演：
 
-| 能力 | 当前状态与边界 |
-| --- | --- |
-| 图片素材 | 默认当前 Codex 内置图片生成工具；候选验收后入库。仅项目明确委托时可由 Agent 检查，不能把“自动模式”当作委托。内置工具确实不可用或用户明确要求时才用项目图片模型。 |
-| Seedance 2.5 | 文生视频、首帧、首尾帧、多模态参考、视频续写、源视频编辑；图片／视频／音频引用职责、原生声音显式开关。 |
-| 参数合同 | 本地 2.5 配置校验最多 30 图、10 视频、10 音频参考及 4–30 秒生成；首帧类与视频续写跟随素材比例，视频编辑使用 adaptive 比例和 duration=-1。实际账号权限、接口与素材限制仍须验证。 |
-| 素材送达 | 本地已登记素材转换为模型可访问的 HTTPS 或 Ark 资产引用；按需暴露素材，不公开整个库。 |
-| ASR／标准 TTS | 已接入可选豆包语音凭据。没有语音 Key 时采用 Seedance 原生声音方案；独立识别／配音不可用时明确报告，不伪造结果。 |
-| FFmpeg | 本地组片、媒体检查与交付证据；MCP 不可用时，可对已认可文件执行有记录的确定性后期，不能假称已回写 MCP。 |
-| SeedAudio 1.0 | 第一集通过独立制作脚本生成了已认可音乐；**尚未成为通用音乐生成 MCP 适配器**。 |
-| Video Depth Anything | 已用于插件外深度参考实验。深度图不是骨架、身份模型或动作捕捉。 |
-| Real-ESRGAN | 已做本地超分实践并提供对照；不是 Seedance 原生分辨率选项，也不是已内置的一键推理服务。 |
+![原创 Three.js 白模运镜预览](production/publish-examples/whitebox-camera/preview.gif)
 
-[Seedance 历史验证记录](docs/seedance-2.5-validation.md)按日期保留证据。支持输入不保证身份、运动、声音和编辑效果完全正确；视频编辑是生成式修改，不是像素精确的遮罩编辑。声音克隆、专业剪辑软件工程导出仍未接入。
+[查看白模视频和可编辑源码](production/publish-examples/whitebox-camera/README.md) · [制作指南与工具配置](docs/production-guide_zh.md)
 
-## 自动执行不等于自动宣布合格
+## 内置技能
 
-默认自动执行受当前目标与冻结调用上限约束；手动模式保留可信审批，两者都不能改变 Codex 宿主权限。
+内置 **47 个 Skill：1 个总控 + 46 个专业技能**。Codex 按任务自动路由，也可以显式指定。以下为代表性技能；点击名称可阅读完整说明。
 
-图片验收、生产记忆批准、视频质量复核是不同环节。明确委托只对对应项目与范围有效，不能把 Agent 检查记成用户逐图看过。API 成功、ASR 文本、抽帧、解码通过，各自只证明对应事实。
+| Skill | 负责什么 | 适用场景 |
+| --- | --- | --- |
+| [AI 漫剧总制片](plugins/ai-drama-studio/skills/ai-drama-producer/SKILL.md) | 规划、路由、制作状态与交付组织 | 从创意到成片的全流程 |
+| [小说漫剧前期制片](plugins/ai-drama-studio/skills/novel-comic-drama-preproduction/SKILL.md) | 原文整理、剧本、角色场景资产与导演分镜 | 长篇小说、分卷改编 |
+| [角色场景分镜板](plugins/ai-drama-studio/skills/character-scene-storyboard/SKILL.md) | 统一角色参考、场景和剧情节点 | 前期设定、分镜设计 |
+| [电影镜头与角色卡](plugins/ai-drama-studio/skills/film-shot/SKILL.md) | 景别、机位、光影与调度 | 电影感镜头、角色一致性 |
+| [Seedance 多模态提示词专家](plugins/ai-drama-studio/skills/seedance-prompt-expert/SKILL.md) | 多参考、首尾帧、续写与编辑 Prompt | 输入职责、声音与连续性约束 |
+| [品牌官方广告](plugins/ai-drama-studio/skills/brand-ad/SKILL.md) | 材质、工艺、Logo 与产品主角 | 15 秒内轻量产品广告 |
+| [二次元漫画／游戏 PV](plugins/ai-drama-studio/skills/anime-game-pv/SKILL.md) | 角色、群像与世界观宣传 | 15 秒内游戏、活动 PV |
+| [电影片头与概念预告](plugins/ai-drama-studio/skills/cinematic-title-sequence/SKILL.md) | 片名、卡司、人物行动与悬念 | 剧集片头、概念预告 |
+| [剪辑判断与精修](plugins/ai-drama-studio/skills/clip-studio-craft/SKILL.md) | 节奏、剪切、转场、字幕与速度 | 已有素材的后期精修 |
+| [视频拆解与复刻](plugins/ai-drama-studio/skills/video-deconstruct/SKILL.md) | 从参考提取镜头证据与结构 | 逐镜分析、反推 Prompt |
+| [创作方法转化与实证](plugins/ai-drama-studio/skills/creator-method-transfer/SKILL.md) | 把教程和参考转成可检验的镜头假设 | 方法学习、动作与运镜实验 |
 
-第一集沉淀的重点是：
+Skill 提供专业工作流，不等于新增模型能力。[浏览全部技能](plugins/ai-drama-studio/skills)
 
-- 每镜明确事件、空间状态和下一镜交接。
-- 左右肢体按角色自身定义，核对接触、视线、伤势与道具。
-- 局部失败局部修复，保留已认可内容。
-- 以真实切点和帧区间处理字幕、对白及包装偏移。
-- 分别记录技术通过、实际看听、用户认可与待验项目。
+## 模型与扩展
 
-项目案例位于总控的分项目参考中，不是所有视频必须套用的风格或剧情。
+| 工具 | 用途 | 接入方式 |
+| --- | --- | --- |
+| Codex 内置 image-gen | 角色、场景与参考图 | 默认图片入口；确认后入库 |
+| Seedance 2.5 | 视频生成、多模态参考、首尾帧、续写、编辑与原生声音 | 插件 API 适配 |
+| 豆包语音 | 独立语音识别与标准 TTS | 可选语音 Key；无 Key 时视频声音交给 Seedance |
+| FFmpeg | 剪辑、混音、字幕、媒体检查与导出 | 本地工具 |
+| [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN) | 本地超分与画面修复 | 单独安装；4K 为后期超分输出 |
+| [Video Depth Anything](https://github.com/DepthAnything/Video-Depth-Anything) | 视频时序深度参考 | 单独安装；实验性动作分析 |
 
-[SkillOpt 小规模实验](production/publish-examples/skillopt-evaluation/README.md)：现有规则最终合成决策题 4/4 通过，未产出补丁，保留原技能，**没有观察到优化收益，也不代表视频质量提升**。仓库提供输入、可迁移脚本和脱敏结果。
+Codex 模型由你选择，不硬编码为某个版本。SeedAudio 1.0 音乐制作与 ChatCut 剪辑可作为独立扩展，需要额外配置，不属于本插件的内置服务。[配置与能力边界](docs/production-guide_zh.md#模型与工具)
 
-## 数据与公开范围
+<details>
+<summary>为什么引入 Video Depth Anything？</summary>
 
-默认状态目录：`%LOCALAPPDATA%\OpenDramaFlow\data`。
+**让动作设计不只依赖文字描述，也能借助真实运动的空间参考。** 在第一集的打斗制作中，仅靠 Prompt 和手工白模，仍难以表达可信的攻防距离、进退关系和遮挡变化。因此，我们探索从有权使用的武打参考中提取时序深度，辅助 Codex 分析和设计动作。
 
-- `AI_DRAMA_DATA_DIR` 改变状态根目录。
-- `AI_DRAMA_MEDIA_DIR` 可为**新**上传、生成和编辑媒体指定独立目录。
-- 不自动迁移已有绝对路径；先复制、核验哈希、更新引用，再移除原件。
-- 删除项目时，外部媒体保留原位，并在本地回收区保存引用恢复清单。
-- 私人 `production/`、下载参考、模型检出与日志不上传；只公开明确整理的 `production/publish-examples/`。
+[Video Depth Anything](https://github.com/DepthAnything/Video-Depth-Anything) 将视频转换为连续的深度估计：用深度而非原始色彩、纹理表示画面中的远近关系，并注重跨帧一致性。它在本项目中的用途是：
 
-软件许可证不授予小说、电影、音乐、肖像或第三方模型权重的权利。素材使用与再分发资格需单独确认。
+- **辅助看清空间。** 将原视频与深度视频对照，观察人物前后位置、接近与远离、遮挡和摄影机运动。
+- **把参考转成拍摄设计。** Codex 结合两者分析动作阶段与镜头调度，再写入拍摄脚本、白模预演和 Seedance Prompt；借鉴运动关系，不默认照搬原片角色、服装与场景。
+- **开展可对照的生成实验。** 在接口允许且输入经过确认时，尝试将深度可视化视频作为视频参考；对比有无该参考的结果，并记录实际提交的素材版本。
 
-## 开发与验证
+这是一条**可选的动作参考实验路线**，不是普通视频制作的必需依赖。它输出深度，不输出骨骼、关节轨迹或接触力，也不是 Seedance 的专用深度控制接口。“Codex 分析参考”不等于训练模型；目前尚未验证它能稳定改善复杂打斗或实现精确动作迁移。
+
+</details>
+
+## 已知局限
+
+- **复杂打斗仍需反复打磨。** 抓握、快速攻防、遮挡和重心变化可能出错；白模与时序深度不能替代骨骼动捕和接触求解。
+- **参考不是硬约束。** 多参考和生成式编辑可能改变身份或要求保留的内容，长片仍需要跨镜头检查与正常速度看听。
+- **生成与本地计算有成本。** 能力取决于账号权限、服务接口和素材条件；超分、深度模型及外围插件需要独立配置。
+
+## 文档与开发
+
+- [制作指南：模型、验收与本地数据](docs/production-guide_zh.md)
+- [插件与 MCP 说明](plugins/ai-drama-studio/README.md)
+- [公开样例与复现素材](production/publish-examples/README.md)
+- [模型和参考来源](docs/reference-sources.md)
+- [画布组件与构建](plugins/ai-drama-studio/ui/README.md)
+- [贡献与工作约定](AGENTS.md)
+
+欢迎提交可复现的问题、工作流改进和专业 Skill。开发检查不调用付费模型：
 
 ```powershell
-cd plugins\ai-drama-studio
+cd plugins/ai-drama-studio
+npm ci
 npm run check
 npm test
 node scripts/sync-skill-manifest.mjs --check
 node scripts/verify-skill-mcp.mjs
 ```
 
-MCP 验证启动独立临时进程，检查技能目录与路由，**不调用付费模型**。传入安装目录可验证缓存副本；这仍不等于新 Codex 任务已完成会话内直连检查。
-
-[本轮迭代与验证](docs/production-iteration-20260912.md) · [模型／参考来源](docs/reference-sources.md) · [工作约定](AGENTS.md) · [插件说明](plugins/ai-drama-studio/README.md) · [MIT 软件许可](LICENSE)
+软件采用 [MIT 许可](LICENSE)。画布使用 [infinite-canvas](https://github.com/basketikun/infinite-canvas) 的 React + TypeScript 组件，保留上游许可与署名。第三方模型、权重和创作素材适用各自许可。

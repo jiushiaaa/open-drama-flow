@@ -1,109 +1,182 @@
-# OpenDramaFlow
+<p align="center">English · <a href="README_zh.md">简体中文</a></p>
 
-[简体中文](README_zh.md)
+<p align="center">
+  <img src="plugins/ai-drama-studio/public/assets/studio-pixel-hero.png" alt="OpenDramaFlow robot production studio" width="920" />
+</p>
 
-A local-first video production harness for **Codex Desktop on Windows**. Codex leads planning, specialist Skills, generation, media organization and editing; you do not have to build a graph by hand.
+<h1 align="center">OpenDramaFlow</h1>
 
-![A real generated environment from episode-one production](production/publish-examples/ending-720p-preview.jpg)
+<p align="center"><strong>Your story. Codex in the director's chair.</strong><br />Turn ideas, scripts and references into video—inside Codex.</p>
 
-[720p generated sample](production/publish-examples/ending-720p-4s.mp4) · [4K upscaled comparison](production/publish-examples/ending-upscaled-4k-4s.mp4) · [Provenance and limitations](production/publish-examples/README.md)
+<p align="center">
+  <img alt="MIT software license" src="https://img.shields.io/badge/License-MIT-62c370" />
+  <img alt="Codex plugin" src="https://img.shields.io/badge/Codex-Plugin-111827" />
+  <img alt="MCP" src="https://img.shields.io/badge/Tools-MCP-3b82f6" />
+  <img alt="Windows" src="https://img.shields.io/badge/Windows-Desktop-2563eb" />
+</p>
 
-These are the same four seconds of an original environment, without audio. **4K is a postproduction upscale, not native Seedance 4K.** The full episode, source novel and third-party reference films are not distributed.
+<p align="center"><a href="#showcase">Showcase</a> · <a href="#quick-start">Quick start</a> · <a href="#production-workflow">Workflow</a> · <a href="#built-in-skills">Skills</a> · <a href="#docs-and-development">Docs</a></p>
 
-## What the harness does
+OpenDramaFlow is an open-source video production plugin for **Codex Desktop on Windows**. It connects specialist Skills, model APIs, versioned assets and local postproduction so Codex can organize a production from the initial brief to delivery.
 
-Creative brief → approved context → scene and shot contracts → role-bound references → bounded model tasks → versioned media → edit and review → delivery evidence.
+**Create in the Codex conversation on the left; inspect assets and results in the plugin canvas on the right.** No manual node building or workflow wiring required.
 
-- **46 shipped Skills:** one producer and 45 specialists, including novel preproduction, Seedance prompting, narrative continuity and postproduction craft. Natural-language routing, explicit names and saved enable switches share the catalog.
-- **One project per IP:** optional volume/season groups, independent creation pages and a folder-based asset library. Stable asset IDs and versions survive reorganization.
-- **Codex conversation + canvas:** chat stays in Codex; the workbench displays production artifacts, previews, playback and task relationships.
-- **Durable production state:** frozen request digests, reference versions, call limits, provider IDs and resumable jobs. An unknown submission must be reconciled before retrying.
-- **Scoped memory:** candidate extraction and retrieval are separate from approved production facts. Project-specific methods do not silently become defaults for every project.
-- **Evidence-based editing:** preserve accepted shots, inspect real cut points, map subtitles once, and distinguish decoding/hash checks from actual viewing/listening.
+## Why OpenDramaFlow
 
-## Install
+- **Conversation-led production.** Adapt a novel, make a short film or plan a product ad. Codex selects specialist Skills, writes shots and prompts, and calls the tools.
+- **A visible production workspace.** Organize projects, volumes/seasons, creation pages and asset folders. Preview full images, play videos and follow relationships on an infinite canvas.
+- **Built around Seedance.** Give image, video, audio and first/last-frame references distinct roles across generation, extension and editing.
+- **Revise and resume.** Preserve asset versions, provider task IDs and production state. Repair affected shots without casually replacing accepted work.
+- **Project-scoped memory.** Keep experimental lessons separate from approved facts so one experiment cannot silently rewrite a character or another project.
 
-Prerequisites: Windows, Codex Desktop/CLI, Node.js 20+, npm, FFmpeg. Model generation requires your own provider credentials and incurs provider charges.
+![OpenDramaFlow infinite canvas: assets, shots and production relationships](docs/images/production-canvas.png)
 
-Clone this repository, open it in Codex, and ask:
+<details>
+<summary>Project library and Skill browser</summary>
 
-> Install this repository's OpenDramaFlow plugin using scripts/install.ps1. Check dependencies and the local marketplace, then verify Skills and MCP without generating paid media. Do not interrupt another running production task.
+![Project library](docs/images/project-library.png)
 
-Or run from the repository:
+![Skill directory and file browser](docs/images/skill-browser.png)
+
+</details>
+
+## Showcase
+
+### 《从姑获鸟开始》城寨风云篇 · Episode 1
+
+**[Watch on Douyin](https://v.douyin.com/rD_OP4_kMSI/)** · **[Watch on Xiaohongshu](https://www.xiaohongshu.com/discovery/item/6aa5351d0000000028029cea)**
+
+[![Episode-one cover—watch on Douyin](docs/images/episode-one-cover.jpg)](https://v.douyin.com/rD_OP4_kMSI/)
+
+A complete production case spanning character and scene design, generated shots, sound, editing and packaging.
+
+![Opening excerpts: city, boxing ring and chains](production/publish-examples/opening-showcase.gif)
+
+### Before and after upscaling
+
+**720p source on the left; local 4K upscale on the right.** Both panels show the same region of the same shot, synchronized.
+
+![Matched crop comparison: 720p source left, 4K upscale right](production/publish-examples/upscale-comparison.gif)
+
+[Original-resolution samples and processing details](production/publish-examples/README.md)
+
+## Quick start
+
+You need **Windows, Codex Desktop and Git**. The installer checks Node.js 20+, npm and FFmpeg and attempts to install missing dependencies. Video generation requires your own Ark API key; provider charges apply.
 
 ```powershell
+git clone https://github.com/jiushiaaa/open-drama-flow.git
+cd open-drama-flow
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
 
-The installer can install missing dependencies and registers the local marketplace. An active workbench blocks an in-use upgrade to protect its cache. Finish active work first, then follow the installer instructions. Open a fresh Codex task or restart Desktop after updating; an updated disk cache does not replace the tools already loaded into a running task.
+Alternatively, open this repository in Codex and ask:
 
-Configure **Ark** and optionally **Doubao Speech** under the workbench's API Key page. Keys are stored using Windows DPAPI, not committed or returned by MCP.
+> Install OpenDramaFlow using scripts/install.ps1. Check dependencies and verify the plugin without paid generation or interrupting other production tasks.
 
-For local development only:
+After installation, open a new Codex task or restart Codex. Configure your Ark key in the workbench's **API Key** page. A Doubao Speech key is optional for standalone ASR/TTS. Credentials are protected with Windows DPAPI.
 
-```powershell
-cd plugins\ai-drama-studio
-npm ci
-npm start
+Then describe your first project in Codex:
+
+> Use OpenDramaFlow to turn my story into a 15-second, 16:9 suspense short. Plan the events, characters and shots first. Use Codex's built-in image tool and import candidates only after I accept them. Make one video sample before continuing, and explain the expected model-call count first.
+
+Automatic execution stays within the current objective and defined call limits; image admission and production memory retain their acceptance boundaries. Manual approval is available per project. Neither mode requires building canvas nodes by hand.
+
+## Production workflow
+
+```mermaid
+flowchart LR
+    A[Idea / script / references] --> B[Codex plans · selects Skills]
+    B --> C[Shooting script · images and whitebox]
+    C --> D[Accept assets · compile prompts]
+    D --> E[Seedance video generation]
+    E --> F{Shot review}
+    F -->|Targeted revision| D
+    F -->|Accepted| G[Sound · edit · upscale and deliver]
 ```
 
-Open [the local workbench](http://127.0.0.1:4317). HTTP alone is not a substitute for loading the Codex MCP plugin.
+1. **Direct before generating.** Codex turns source material and approved settings into a shooting script: events, dialogue, camera, action and continuity. Where useful, it writes a 3D whitebox for spatial and camera previsualization.
+2. **Assign each reference a job.** The current Codex built-in image-gen tool is the default image entry point. Accepted images enter the library; prompts and appearance, motion, camera and sound references go to Seedance 2.5.
+3. **Repair locally and deliver.** Review motion, identity, dialogue and subtitles, preserve accepted content, then organize sound, editing, optional upscaling and delivery. Lessons become candidates before approval into production memory.
 
-## Model and tool coverage
+Whitebox space and camera previsualization:
 
-| Capability | Current integration and limits |
-| --- | --- |
-| Image assets | Default: the current Codex built-in image tool. Candidates enter the library only after acceptance, unless explicit project-scoped delegation permits Agent review. The project's image provider is a fallback on verified unavailability or explicit request. |
-| Seedance 2.5 | Text, first image, first+last frames, multimodal references, video extension and source-video editing contracts; image/video/audio reference roles; explicit native-audio flag. |
-| Parameters | Local 2.5 profile validates up to 30 image, 10 video and 10 audio references and 4–30 second generation. First-frame and source-video extension modes use adaptive ratio; source-video editing uses adaptive ratio and duration `-1`. Actual account/API entitlement and media constraints still apply. |
-| Reference delivery | Registered local media is resolved to provider-reachable HTTPS or Ark asset references. Only required media is exposed, not the whole library. |
-| ASR / standard TTS | Integrated using optional Doubao Speech credentials. Without that key, plan native Seedance sound; independent transcription/TTS is unavailable, not simulated. |
-| FFmpeg | Local assembly, media inspection and delivery checks. Approved local postproduction may use a recorded deterministic workflow when MCP is unavailable; it must not pretend to have updated MCP state. |
-| SeedAudio 1.0 | Used through an independent production script for accepted music cues. **Not yet a general music-generation MCP adapter.** |
-| Video Depth Anything | Used for depth-reference experiments outside the plugin. Depth is not a skeleton, identity model or motion-capture solution. |
-| Real-ESRGAN | Local production upscaling experiment and published comparison. Not a native Seedance resolution option or a bundled one-click inference service. |
+![Original Three.js whitebox camera preview](production/publish-examples/whitebox-camera/preview.gif)
 
-See [Seedance validation history](docs/seedance-2.5-validation.md) for dated evidence. Input support is not a guarantee of exact motion, identity, sound or editing fidelity. Source-video edits are generative, not pixel-exact masked edits. Voice cloning and professional NLE project export remain unintegrated.
+[Whitebox video and editable source](production/publish-examples/whitebox-camera/README.md) · [Production guide and tool setup](docs/production-guide.md)
 
-## Execution and review
+## Built-in Skills
 
-Default automatic execution is bounded by the user's objective and frozen call limits. Optional manual mode retains trusted approval. Neither setting overrides Codex host permissions.
+**47 built-in Skills: one producer and 46 specialists.** Codex routes tasks automatically, or you can name a Skill explicitly. Representative workflows are listed below; each name links to its full instructions.
 
-Image acceptance, production-memory approval and video quality review are distinct. Explicit delegation is recorded for its exact project and scope, never relabeled as the user having viewed an image. An API success, ASR transcript, extracted frame or passing decode is not by itself an audiovisual pass.
+| Skill | Responsibility | Good for |
+| --- | --- | --- |
+| [AI drama producer](plugins/ai-drama-studio/skills/ai-drama-producer/SKILL.md) | Planning, routing, production state and delivery | End-to-end orchestration |
+| [Novel preproduction](plugins/ai-drama-studio/skills/novel-comic-drama-preproduction/SKILL.md) | Source organization, scripts, assets and director's storyboards | Long-form and volume-based adaptations |
+| [Character and scene storyboards](plugins/ai-drama-studio/skills/character-scene-storyboard/SKILL.md) | Align character references, settings and story beats | Preproduction and shot planning |
+| [Film shots and character cards](plugins/ai-drama-studio/skills/film-shot/SKILL.md) | Framing, camera position, lighting and blocking | Cinematic shots and identity consistency |
+| [Seedance prompt expert](plugins/ai-drama-studio/skills/seedance-prompt-expert/SKILL.md) | Multimodal, first/last-frame, extension and editing prompts | Reference roles, sound and continuity constraints |
+| [Brand ads](plugins/ai-drama-studio/skills/brand-ad/SKILL.md) | Materials, craftsmanship, logos and product heroes | Lightweight ads up to 15 seconds |
+| [Anime and game PVs](plugins/ai-drama-studio/skills/anime-game-pv/SKILL.md) | Character, ensemble and world introductions | Game and event promos up to 15 seconds |
+| [Cinematic titles and teasers](plugins/ai-drama-studio/skills/cinematic-title-sequence/SKILL.md) | Titles, cast, character action and suspense | Opening sequences and concept teasers |
+| [Editing craft](plugins/ai-drama-studio/skills/clip-studio-craft/SKILL.md) | Rhythm, cuts, transitions, captions and speed | Refining an existing timeline |
+| [Video deconstruction](plugins/ai-drama-studio/skills/video-deconstruct/SKILL.md) | Extract shot evidence and structure from references | Shot-by-shot analysis and prompt reconstruction |
+| [Creator method transfer](plugins/ai-drama-studio/skills/creator-method-transfer/SKILL.md) | Turn tutorials and references into testable shot hypotheses | Motion, acting and camera experiments |
 
-Episode-one methods now emphasize:
-- event and spatial state at every shot handoff;
-- actor-relative limbs, object contact, gaze and injury continuity;
-- repairing only the failed interval while retaining accepted sections;
-- real source cut points and frame-based subtitle/audio mappings;
-- recording technical checks, observed checks, user acceptance and unresolved review separately.
+Skills provide professional workflows, not additional model capabilities. [Browse all Skills](plugins/ai-drama-studio/skills)
 
-Project examples live under the producer's scoped references; they are not universal creative requirements.
+## Models and extensions
 
-[Small SkillOpt experiment](production/publish-examples/skillopt-evaluation/README.md): existing rules passed 4/4 final synthetic decision tests. No patches were produced and the original Skill was retained; **no optimization gain or video-quality improvement is claimed**. Inputs, a portable runner and sanitized results are included.
+| Tool | Purpose | Integration |
+| --- | --- | --- |
+| Codex built-in image-gen | Characters, scenes and reference images | Default image tool; import after acceptance |
+| Seedance 2.5 | Video, multimodal references, first/last frames, extension, editing and native sound | Plugin API adapter |
+| Doubao Speech | Standalone recognition and standard TTS | Optional speech key; otherwise use Seedance for video sound |
+| FFmpeg | Editing, mixing, captions, inspection and export | Local tool |
+| [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN) | Local upscaling and restoration | Separate installation; 4K is a postproduction upscale |
+| [Video Depth Anything](https://github.com/DepthAnything/Video-Depth-Anything) | Temporally consistent video depth references | Separate installation; experimental motion analysis |
 
-## Storage and publication
+Choose your Codex model; the plugin does not require a hard-coded version. SeedAudio 1.0 music production and ChatCut editing are independent extensions requiring extra setup, not bundled plugin services. [Configuration and capability boundaries](docs/production-guide.md#models-and-tools)
 
-Default state: `%LOCALAPPDATA%\OpenDramaFlow\data`.
+<details>
+<summary>Why Video Depth Anything?</summary>
 
-- `AI_DRAMA_DATA_DIR`: changes the state root.
-- `AI_DRAMA_MEDIA_DIR`: optional separate root for **new** imported/generated/edited media.
-- Existing absolute paths are not automatically migrated. Copy, hash-verify and update references before removing originals.
-- Deleting a project retains externally stored media and saves a recovery manifest with its references in the local trash.
-- Private `production/`, reference downloads, local model checkouts and runtime logs are excluded. Only curated `production/publish-examples/` is published.
+**Give action design a spatial reference, not just a verbal description.** During episode-one production, prompts and hand-built whiteboxes struggled to convey convincing fight distances, approaches, retreats and occlusion. We therefore explore temporal depth from authorized action references to help Codex analyze and plan movement.
 
-Software licensing does not grant rights to novels, films, music, likenesses or third-party model weights. Supply material you are entitled to use; verify redistribution rights separately.
+[Video Depth Anything](https://github.com/DepthAnything/Video-Depth-Anything) estimates depth across video frames, representing near/far relationships instead of the original colors and textures, with an emphasis on temporal consistency. In this project, it serves three purposes:
 
-## Verify and contribute
+- **Inspect spatial relationships.** Compare source and depth video to study relative positions, approaching or receding subjects, occlusion and camera movement.
+- **Translate references into shot design.** Codex analyzes both views to describe action phases and blocking in shooting scripts, whitebox previz and Seedance prompts—without automatically copying the source's characters, costumes or setting.
+- **Run comparative generation experiments.** Where the API permits and inputs are approved, try depth-visualization video as a video reference. Compare results with and without it, recording the asset versions actually submitted.
+
+This is an **optional action-reference experiment**, not a prerequisite for ordinary production. Depth is not a skeleton, joint trajectory or contact force, and this is not a dedicated Seedance depth-control interface. Codex analyzing a reference does not train a model. Reliable gains for complex fights or precise motion transfer have not yet been established.
+
+</details>
+
+## Known limitations
+
+- **Complex fights still need iteration.** Grips, fast exchanges, occlusion and weight shifts can fail. Whiteboxes and temporal depth do not replace skeletal motion capture or contact solving.
+- **References are not hard constraints.** Multimodal generation and editing can alter identity or protected content. Longer productions still require cross-shot review and normal-speed viewing and listening.
+- **Generation and local compute have costs.** Availability depends on account access, provider APIs and input conditions. Upscalers, depth models and optional plugins need separate setup.
+
+## Docs and development
+
+- [Production guide: models, acceptance and local data](docs/production-guide.md)
+- [Plugin and MCP documentation](plugins/ai-drama-studio/README.md)
+- [Public examples and reproducible assets](production/publish-examples/README.md)
+- [Model and reference sources](docs/reference-sources.md)
+- [Canvas components and build](plugins/ai-drama-studio/ui/README.md)
+- [Contribution and working agreement](AGENTS.md)
+
+Reproducible issues, workflow improvements and specialist Skills are welcome. Development checks make no paid model calls:
 
 ```powershell
-cd plugins\ai-drama-studio
+cd plugins/ai-drama-studio
+npm ci
 npm run check
 npm test
 node scripts/sync-skill-manifest.mjs --check
 node scripts/verify-skill-mcp.mjs
 ```
 
-The MCP verifier starts a fresh disposable process, checks catalog/routing and makes **zero paid model calls**. Run it with an installed plugin root to test that copy too. This is distinct from checking direct tool availability in a new Codex task.
-
-[Iteration and verification](docs/production-iteration-20260912.md) · [Model/reference sources](docs/reference-sources.md) · [Working agreement](AGENTS.md) · [Plugin details](plugins/ai-drama-studio/README.md) · [MIT software license](LICENSE)
+Software is [MIT licensed](LICENSE). The canvas uses React + TypeScript components from [infinite-canvas](https://github.com/basketikun/infinite-canvas), with upstream licensing and attribution retained. Third-party models, weights and creative assets retain their own licenses.

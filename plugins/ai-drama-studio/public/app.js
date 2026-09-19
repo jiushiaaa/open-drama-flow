@@ -1,5 +1,6 @@
 import { sortSidebarCreations } from "./sidebar-order.js";
 import { buildSkillFileTree, countSkillTreeFiles, skillFileBadge } from "./skill-file-tree.js";
+import { createCanvasPersistence } from "./canvas-persistence.js";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -32,7 +33,13 @@ let assetContextTarget = null;
 let activePreviewAssetId = null;
 let activeEditorAssetId = null;
 let assetMoveTarget = null;
-let canvasRuntime = { x: 120, y: 90, zoom: 0.78, dragging: null, saveTimer: null, nodeIds: [] };
+let canvasModule = null;
+let canvasView = null;
+let canvasSignature = null;
+const canvasPersistence = createCanvasPersistence(
+  (projectId, creationId, canvas) => api(`/api/projects/${projectId}/creations/${creationId}`, { method: "PATCH", body: JSON.stringify({ canvas }) }),
+  error => toast(`画布布局保存失败：${error.message}`, "error")
+);
 
 function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
@@ -111,6 +118,7 @@ function render() {
 function applyRoute() {
   let route = currentRoute();
   if (!activeProject() && ["project", "workspace"].includes(route)) route = "project-library";
+  if (route !== "workspace" && canvasView) { canvasView.unmount(); canvasView = null; canvasSignature = null; }
   const routeViewIds = { start: "start-view", "project-library": "project-library-view", project: "project-overview-view", workspace: "workspace-view", skills: "skills-view", "project-guide": "project-guide-view" };
   $$(".route-view").forEach(view => { view.hidden = view.id !== routeViewIds[route]; });
   $$(".primary-nav a").forEach(link => link.classList.toggle("active", link.getAttribute("href") === `#${route}` || (route === "project" && link.getAttribute("href") === "#project-library") || (route === "workspace" && link.getAttribute("href") === "#project-library")));
@@ -427,6 +435,7 @@ function openWorkspace(creationId) {
   const creation = activeProject()?.creations?.find(item => item.id === creationId);
   activeWorldId = creation?.worldId || "series";
   go("workspace");
+  applyRoute();
   renderWorkspace();
 }
 
@@ -448,7 +457,7 @@ function buildCanvasGraph(project, creation) {
   const production = creation.plan || project;
   const add = (node, fallback) => {
     const position = saved[node.id] || fallback;
-    nodes.push({ width: 280, height: node.mediaUrl ? 228 : 168, ...node, x: position.x, y: position.y });
+    nodes.push({ width: 300, height: node.mediaUrl ? 280 : 196, ...node, x: position.x, y: position.y });
     return node.id;
   };
   const connect = (source, target, label = "") => { if (source && target) edges.push({ id: `${source}-${target}`, source, target, label }); };
@@ -477,12 +486,12 @@ function buildCanvasGraph(project, creation) {
     (production.shots || []).forEach((shot, index) => {
       const shotMedia = [...(project.assets || [])].reverse().filter(asset => asset.shotId === shot.id);
       const media = shotMedia.find(asset => asset.kind === "video") || shotMedia.find(asset => asset.kind === "image");
-      const id = add({ id: `shot-${shot.id}`, kind: `SHOT ${String(shot.order || index + 1).padStart(2, "0")}`, title: shot.scene || `镜头 ${index + 1}`, body: shot.prompt || shot.subtitle || "等待镜头描述", meta: `${shot.framing || "镜头"} · ${shot.duration || 0}s`, mediaUrl: media?.mediaUrl, mediaKind: media?.kind, assetId: media?.id }, { x: 920 + Math.floor(index / 3) * 370, y: 120 + (index % 3) * 300 });
+      const id = add({ id: `shot-${shot.id}`, kind: `SHOT ${String(shot.order || index + 1).padStart(2, "0")}`, title: shot.scene || `镜头 ${index + 1}`, body: shot.prompt || shot.subtitle || "等待镜头描述", meta: `${shot.framing || "镜头"} · ${shot.duration || 0}s`, mediaUrl: media?.mediaUrl, posterUrl: shotMedia.find(asset => asset.kind === "image")?.mediaUrl, mediaKind: media?.kind, assetId: media?.id }, { x: 920 + Math.floor(index / 3) * 370, y: 120 + (index % 3) * 300 });
       connect(previous, id, index ? "连续镜头" : "进入分镜"); previous = id;
     });
     const shotAssetIds = new Set((project.assets || []).filter(asset => asset.shotId).map(asset => asset.id));
     assets.filter(asset => !shotAssetIds.has(asset.id)).forEach((asset, index) => {
-      const id = add({ id: `asset-${asset.id}`, kind: assetKindLabel(asset.kind), title: asset.originalName || `${assetKindLabel(asset.kind)}素材`, body: `${asset.scope === "series" ? "系列公共" : asset.worldId ? "分卷 / 季度资产" : asset.creationId ? "当前创作" : "项目资产"} · v${asset.version || 1}`, mediaUrl: ["image", "video", "audio"].includes(asset.kind) ? asset.mediaUrl : null, mediaKind: asset.kind, assetId: asset.id }, { x: 920 + Math.floor((production.shots?.length || 0) / 3) * 370 + Math.floor(index / 3) * 370, y: 120 + (index % 3) * 300 });
+      const id = add({ id: `asset-${asset.id}`, kind: assetKindLabel(asset.kind), title: asset.originalName || `${assetKindLabel(asset.kind)}素材`, body: `${asset.scope === "series" ? "系列公共" : asset.worldId ? "分卷 / 季度资产" : asset.creationId ? "当前创作" : "项目资产"} · v${asset.version || 1}`, mediaUrl: ["image", "video", "audio"].includes(asset.kind) ? asset.mediaUrl : null, mediaKind: asset.kind, assetId: asset.id }, { x: 920 + Math.ceil((production.shots?.length || 0) / 3) * 370 + Math.floor(index / 3) * 370, y: 120 + (index % 3) * 300 });
       if (!previous) previous = id; else connect(previous, id, "引用素材");
       previous = id;
     });
@@ -499,138 +508,49 @@ function buildCanvasGraph(project, creation) {
   return { nodes, edges };
 }
 
-function renderCanvasNode(node) {
-  const media = node.mediaUrl ? (node.mediaKind === "video" ? el("video", { src: node.mediaUrl, muted: true, playsinline: true, preload: "metadata" }) : node.mediaKind === "audio" ? el("audio", { src: node.mediaUrl, controls: true, preload: "metadata" }) : el("img", { src: node.mediaUrl, alt: node.title, draggable: "false" })) : null;
-  const previewable = Boolean(node.assetId || node.mediaUrl);
-  const previewLabel = node.mediaKind === "video" ? "播放视频" : node.mediaKind === "image" ? "查看全图" : "打开素材";
-  const preview = () => openAssetPreview(node.assetId, { kind: node.mediaKind, mediaUrl: node.mediaUrl, originalName: node.title });
-  const article = el("article", { class: `canvas-node node-${node.mediaKind || "text"} ${previewable ? "previewable" : ""}`, "data-node-id": node.id, tabindex: previewable ? "0" : null, role: previewable ? "button" : null, "aria-label": previewable ? `${previewLabel}：${node.title}` : null, "aria-haspopup": previewable ? "dialog" : null, style: `left:${node.x}px;top:${node.y}px;width:${node.width}px;min-height:${node.height}px` },
-    el("header", {}, el("span", { text: node.kind }), node.meta ? el("small", { text: node.meta }) : null), media ? el("div", { class: "canvas-node-media" }, media, node.mediaKind !== "audio" ? el("span", { class: "canvas-preview-hint", "aria-hidden": "true", text: node.mediaKind === "video" ? "▶ 播放视频" : "查看全图" }) : null) : null,
-    el("div", { class: "canvas-node-copy" }, el("strong", { text: node.title }), el("p", { text: node.body || "" }))
-  );
-  article.addEventListener("pointerdown", event => beginNodeDrag(event, node.id));
-  if (previewable) {
-    article.addEventListener("click", event => {
-      if (event.target.closest("audio") || canvasRuntime.suppressClick) return;
-      preview();
-    });
-    article.addEventListener("keydown", event => {
-      if (event.target === article && ["Enter", " "].includes(event.key)) { event.preventDefault(); preview(); }
-    });
-  }
-  return article;
-}
-
-function renderWorkspace() {
-  if (canvasRuntime.dragging) return;
+async function renderWorkspace() {
   const project = activeProject();
   const creation = activeCreation() || project?.creations?.[0];
-  if (!project || !creation) return;
+  if (!project || !creation || currentRoute() !== "workspace") return;
   activeCreationId = creation.id;
   const world = project.worlds?.find(item => item.id === creation.worldId);
   $("#workspace-project-link").textContent = project.title;
   $("#workspace-creation-title").textContent = creation.title;
   $("#workspace-world-link").textContent = world?.title || "系列";
   $("#workspace-world-separator").hidden = false;
-  const graph = buildCanvasGraph(project, creation);
-  canvasRuntime.nodeIds = graph.nodes.map(node => node.id);
-  let shouldInitialFit = false;
-  if (canvasRuntime.creationId !== creation.id) {
-    const viewport = creation.canvas?.viewport || { x: 120, y: 90, zoom: 0.78 };
-    canvasRuntime = { ...canvasRuntime, creationId: creation.id, x: viewport.x, y: viewport.y, zoom: viewport.zoom, dragging: null, nodeIds: canvasRuntime.nodeIds };
-    shouldInitialFit = !Object.keys(creation.canvas?.positions || {}).length && graph.nodes.length > 1;
-  }
-  const holder = $("#canvas-nodes");
-  holder.replaceChildren(...graph.nodes.map(renderCanvasNode));
-  $("#canvas-empty").hidden = graph.nodes.length > 0;
-  drawCanvasEdges(graph);
-  applyCanvasTransform();
-  if (shouldInitialFit) requestAnimationFrame(fitCanvas);
-}
-
-function drawCanvasEdges(graph) {
-  const svg = $("#canvas-edges");
-  svg.setAttribute("viewBox", "0 0 3600 2200");
-  svg.replaceChildren();
-  const byId = new Map(graph.nodes.map(node => [node.id, node]));
-  for (const edge of graph.edges) {
-    const source = byId.get(edge.source); const target = byId.get(edge.target);
-    if (!source || !target) continue;
-    const x1 = source.x + source.width; const y1 = source.y + source.height / 2; const x2 = target.x; const y2 = target.y + target.height / 2;
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", `M ${x1} ${y1} C ${x1 + 90} ${y1}, ${x2 - 90} ${y2}, ${x2} ${y2}`);
-    path.setAttribute("data-edge-id", edge.id);
-    svg.append(path);
-  }
-  updateMinimap(graph.nodes);
-}
-
-function applyCanvasTransform() {
-  $("#canvas-world").style.transform = `translate(${canvasRuntime.x}px, ${canvasRuntime.y}px) scale(${canvasRuntime.zoom})`;
-  $("#canvas-zoom-label").textContent = `${Math.round(canvasRuntime.zoom * 100)}%`;
-  updateMinimapViewport();
-}
-
-function updateMinimap(nodes = null) {
-  const graphNodes = nodes || buildCanvasGraph(activeProject(), activeCreation()).nodes;
-  const holder = $("#minimap-nodes"); holder.replaceChildren();
-  for (const node of graphNodes) holder.append(el("i", { style: `left:${node.x / 24}px;top:${node.y / 24}px;width:${Math.max(7, node.width / 24)}px;height:${Math.max(5, node.height / 24)}px` }));
-  updateMinimapViewport();
-}
-
-function updateMinimapViewport() {
-  const stage = $("#canvas-stage"); const viewport = $("#minimap-viewport");
-  if (!stage || !viewport) return;
-  viewport.style.left = `${Math.max(0, -canvasRuntime.x / canvasRuntime.zoom / 24)}px`;
-  viewport.style.top = `${Math.max(0, -canvasRuntime.y / canvasRuntime.zoom / 24)}px`;
-  viewport.style.width = `${Math.min(148, stage.clientWidth / canvasRuntime.zoom / 24)}px`;
-  viewport.style.height = `${Math.min(92, stage.clientHeight / canvasRuntime.zoom / 24)}px`;
-}
-
-function zoomCanvas(delta, anchor = null) {
-  const stage = $("#canvas-stage"); const rect = stage.getBoundingClientRect();
-  const point = anchor || { x: rect.width / 2, y: rect.height / 2 };
-  const previous = canvasRuntime.zoom;
-  const next = Math.min(1.8, Math.max(0.25, previous * delta));
-  const worldX = (point.x - canvasRuntime.x) / previous; const worldY = (point.y - canvasRuntime.y) / previous;
-  canvasRuntime.zoom = next;
-  canvasRuntime.x = point.x - worldX * next; canvasRuntime.y = point.y - worldY * next;
-  applyCanvasTransform(); scheduleCanvasSave();
-}
-
-function fitCanvas() {
-  const nodes = buildCanvasGraph(activeProject(), activeCreation()).nodes;
-  const stage = $("#canvas-stage");
-  if (!nodes.length) { canvasRuntime.x = 120; canvasRuntime.y = 90; canvasRuntime.zoom = 0.78; applyCanvasTransform(); return; }
-  const minX = Math.min(...nodes.map(node => node.x)); const minY = Math.min(...nodes.map(node => node.y));
-  const maxX = Math.max(...nodes.map(node => node.x + node.width)); const maxY = Math.max(...nodes.map(node => node.y + node.height));
-  const zoom = Math.min(1, Math.max(0.28, Math.min((stage.clientWidth - 96) / (maxX - minX), (stage.clientHeight - 96) / (maxY - minY))));
-  canvasRuntime.zoom = zoom; canvasRuntime.x = 48 - minX * zoom; canvasRuntime.y = 48 - minY * zoom;
-  applyCanvasTransform(); scheduleCanvasSave();
-}
-
-function beginNodeDrag(event, nodeId) {
-  if (event.button !== 0 || event.target.closest("audio")) return;
-  event.stopPropagation();
-  canvasRuntime.suppressClick = false;
-  const creation = activeCreation(); const graphNode = buildCanvasGraph(activeProject(), creation).nodes.find(item => item.id === nodeId);
-  canvasRuntime.dragging = { type: "node", nodeId, pointerId: event.pointerId, moved: false, startX: event.clientX, startY: event.clientY, originX: graphNode?.x || 0, originY: graphNode?.y || 0 };
-  event.currentTarget.setPointerCapture(event.pointerId);
-}
-
-function scheduleCanvasSave() {
-  clearTimeout(canvasRuntime.saveTimer);
-  canvasRuntime.saveTimer = setTimeout(saveCanvasState, 350);
-}
-
-async function saveCanvasState() {
-  const creation = activeCreation(); if (!creation) return;
-  const positions = { ...(creation.canvas?.positions || {}) };
-  for (const node of $("#canvas-nodes").children) positions[node.dataset.nodeId] = { x: Math.round(parseFloat(node.style.left)), y: Math.round(parseFloat(node.style.top)) };
-  const canvas = { viewport: { x: Math.round(canvasRuntime.x), y: Math.round(canvasRuntime.y), zoom: canvasRuntime.zoom }, positions };
-  creation.canvas = canvas;
-  try { await api(`/api/projects/${activeProjectId}/creations/${creation.id}`, { method: "PATCH", body: JSON.stringify({ canvas }) }); }
-  catch (error) { toast(error.message, "error"); }
+  const key = `${project.id}/${creation.id}`;
+  try {
+    canvasModule ||= import("./canvas-ui/canvas.js").catch(error => { canvasModule = null; throw error; });
+    const module = await canvasModule;
+    if (currentRoute() !== "workspace" || activeProjectId !== project.id || activeCreationId !== creation.id) return;
+    canvasView ||= module.mountCanvas($("#canvas-root"));
+    const layout = canvasPersistence.pending(project.id, creation.id) || creation.canvas || {};
+    const graph = buildCanvasGraph(project, { ...creation, canvas: layout });
+    const signature = JSON.stringify([key, graph, layout]);
+    if (signature === canvasSignature) return;
+    canvasSignature = signature;
+    canvasView.render({
+      key, graph, layout,
+      save(canvas) {
+        const target = studioState?.projects.find(p => p.id === project.id)?.creations.find(c => c.id === creation.id);
+        if (target) target.canvas = canvas;
+        canvasPersistence.schedule(project.id, creation.id, canvas);
+      },
+      preview(node) {
+        if (node.assetId || node.mediaUrl) {
+          openAssetPreview(node.assetId, { kind: node.mediaKind, mediaUrl: node.mediaUrl, originalName: node.title });
+        } else if (node.id.startsWith("creation-")) {
+          openWorkspace(node.id.slice("creation-".length));
+        } else {
+          const dialog = $("#canvas-text-dialog");
+          $("#canvas-text-title").textContent = node.title;
+          $("#canvas-text-body").textContent = node.body || node.kind;
+          dialog.showModal();
+        }
+      },
+      upload: files => importCanvasAssets(files, project.id, creation.id, creation.worldId)
+    });
+  } catch (error) { toast(`画布加载失败：${error.message}`, "error"); }
 }
 
 function renderStages(project) {
@@ -915,6 +835,19 @@ async function importAssets(files, targetFolderId = activeAssetFolderId) {
   catch (error) { toast(error.message, "error"); }
 }
 
+async function importCanvasAssets(files, projectId, creationId, worldId) {
+  if (!files.length) return;
+  try {
+    for (const file of files) {
+      const form = new FormData();
+      form.append("projectId", projectId); form.append("creationId", creationId);
+      form.append("worldId", worldId || ""); form.append("scope", "creation"); form.append("file", file);
+      await api("/api/assets/import", { method: "POST", body: form });
+    }
+    await refreshState({ quiet: true }); toast(`已导入 ${files.length} 个素材。`, "success");
+  } catch (error) { toast(error.message, "error"); }
+}
+
 async function saveEditedAsset(event) {
   event.preventDefault(); if (!activeEditorAssetId) return;
   const submit = $("#asset-editor-submit"); submit.disabled = true; submit.textContent = "保存中…"; $("#asset-editor-error").textContent = "";
@@ -1012,45 +945,6 @@ for (const config of [
   });
   $("#settings-dialog").addEventListener("close", resetField);
 }
-$("#canvas-zoom-in").addEventListener("click", () => zoomCanvas(1.15));
-$("#canvas-zoom-out").addEventListener("click", () => zoomCanvas(1 / 1.15));
-$("#canvas-fit").addEventListener("click", fitCanvas);
-$("#canvas-minimap-toggle").addEventListener("click", event => { event.currentTarget.classList.toggle("active"); $("#canvas-minimap").hidden = !event.currentTarget.classList.contains("active"); });
-$("#canvas-stage").addEventListener("pointerdown", event => {
-  const leftBlank = event.button === 0 && !event.target.closest(".canvas-node");
-  const middlePan = event.button === 1;
-  if ((!leftBlank && !middlePan) || event.target.closest(".canvas-minimap")) return;
-  event.preventDefault();
-  canvasRuntime.suppressClick = false;
-  canvasRuntime.dragging = { type: "pan", pointerId: event.pointerId, moved: false, startX: event.clientX, startY: event.clientY, originX: canvasRuntime.x, originY: canvasRuntime.y };
-  event.currentTarget.setPointerCapture(event.pointerId);
-  event.currentTarget.classList.add("panning");
-});
-$("#canvas-stage").addEventListener("pointermove", event => {
-  const drag = canvasRuntime.dragging; if (!drag || event.pointerId !== drag.pointerId) return;
-  if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 5) return;
-  drag.moved = true;
-  if (drag.type === "pan") { canvasRuntime.x = drag.originX + event.clientX - drag.startX; canvasRuntime.y = drag.originY + event.clientY - drag.startY; applyCanvasTransform(); }
-  if (drag.type === "node") {
-    const node = $(`[data-node-id="${CSS.escape(drag.nodeId)}"]`); if (!node) return;
-    const x = drag.originX + (event.clientX - drag.startX) / canvasRuntime.zoom; const y = drag.originY + (event.clientY - drag.startY) / canvasRuntime.zoom;
-    node.style.left = `${Math.round(x)}px`; node.style.top = `${Math.round(y)}px`;
-    activeCreation().canvas ||= { viewport: {}, positions: {} }; activeCreation().canvas.positions ||= {}; activeCreation().canvas.positions[drag.nodeId] = { x: Math.round(x), y: Math.round(y) };
-    drawCanvasEdges(buildCanvasGraph(activeProject(), activeCreation()));
-  }
-});
-$("#canvas-stage").addEventListener("pointerup", event => {
-  const drag = canvasRuntime.dragging; if (!drag || event.pointerId !== drag.pointerId) return;
-  canvasRuntime.suppressClick = drag.moved || drag.type === "pan";
-  canvasRuntime.dragging = null; event.currentTarget.classList.remove("panning");
-  if (drag.moved) scheduleCanvasSave();
-});
-$("#canvas-stage").addEventListener("pointercancel", event => { canvasRuntime.suppressClick = true; canvasRuntime.dragging = null; event.currentTarget.classList.remove("panning"); });
-$("#canvas-stage").addEventListener("auxclick", event => { if (event.button === 1) event.preventDefault(); });
-$("#canvas-stage").addEventListener("wheel", event => { event.preventDefault(); const rect = event.currentTarget.getBoundingClientRect(); if (event.ctrlKey) zoomCanvas(event.deltaY < 0 ? 1.1 : 1 / 1.1, { x: event.clientX - rect.left, y: event.clientY - rect.top }); else { canvasRuntime.x -= event.deltaX; canvasRuntime.y -= event.deltaY; applyCanvasTransform(); scheduleCanvasSave(); } }, { passive: false });
-$("#canvas-stage").addEventListener("dragover", event => { event.preventDefault(); event.currentTarget.classList.add("file-dragging"); });
-$("#canvas-stage").addEventListener("dragleave", event => event.currentTarget.classList.remove("file-dragging"));
-$("#canvas-stage").addEventListener("drop", event => { event.preventDefault(); event.currentTarget.classList.remove("file-dragging"); importCanvasAssets([...event.dataTransfer.files]); });
 window.addEventListener("hashchange", () => { applyRoute(); if (currentRoute() === "workspace") renderWorkspace(); });
 document.addEventListener("click", event => { if (!event.target.closest(".sidebar-creation-row")) $$('[data-creation-menu]').forEach(menu => { menu.hidden = true; }); if (!event.target.closest(".sidebar-world-title")) $$('[data-world-sort-menu]').forEach(menu => { menu.hidden = true; }); if (!event.target.closest(".sort-control")) $("#library-sort-menu").hidden = true; if (!event.target.closest(".sidebar-project-section")) $("#sidebar-sort-menu").hidden = true; if (!event.target.closest("#asset-context-menu") && !event.target.closest(".asset-more-button")) closeAssetContextMenu(); });
 window.addEventListener("blur", closeAssetContextMenu);

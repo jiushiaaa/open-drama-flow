@@ -1,6 +1,37 @@
 # Real production examples / 真实制作样例
 
-Published 2026-09-12 from an original environment shot made during episode-one production. No source novel, third-party film, dialogue, music or full episode is included.
+Published 2026-09-12 from selected episode-one environment shots and an original procedural camera study. No source novel, third-party film, dialogue, music or full episode is included. The episode cover is published for showcasing the creator's linked work, not as a general character-asset license.
+
+## Watch and reuse
+
+- [Published episode on Douyin](https://v.douyin.com/rD_OP4_kMSI/) — creator-supplied video link; automated resolution was unavailable during this update.
+- [Creator's published episode on Xiaohongshu](https://www.xiaohongshu.com/discovery/item/6aa5351d0000000028029cea) — external showcase, supplied by the creator; not independently played online during this documentation update.
+- [Opening montage](opening-showcase.gif) — a muted 6-second GIF: source `[2,4)`, `[9,11)`, `[16,18)` seconds from the existing 20-second `opening-raw-720p.mp4`, in that order. 512×288, 8 fps; selected scenes only, not a continuous shot or quality benchmark.
+- [Original whitebox camera package](whitebox-camera/README.md) — complete rendered video, source scene, pinned dependency and browser playback/scrub controls. **Not a depth-estimation dataset.**
+- [Showcase file hashes](showcase-manifest.json) — provenance and verification metadata for this update.
+
+The montage preserves existing shots; no image/video model was called for this publication. The opening overview was sampled at 3-second intervals, and the GIF was fully decoded. The last empty overview tile was unused, not a source black frame. This was not a full-episode audiovisual review.
+
+## Publication boundary
+
+| Material | Published? | Reason / next requirement |
+| --- | --- | --- |
+| Original procedural space/camera reference | Yes: video and source | Editable research example, with limitations stated. |
+| Selected generated environments and episode cover | Yes | Creator-selected showcase; not a license to the underlying novel/IP. |
+| Full episode | External viewing link only | No multi-gigabyte master bundled. |
+| Collected films and martial-arts tutorials | No | Local source records do not establish redistribution rights. |
+| Depth MP4/NPZ derived from those films/tutorials | No | Processing does not establish permission to redistribute the source-derived data. |
+| Model weights, private state, keys and logs | No | Use upstream installation instructions; keep private runtime data local. |
+
+The inspected local depth collections include movie fight excerpts and online training clips. They are **not an openly licensed dataset**. A future reusable depth pack needs source-by-source permission, an explicit distribution license, source/depth alignment, model/checkpoint details and hashes. Do not remove provenance or use depth conversion to evade a provider's input restrictions. This update leaves the local source and depth library untouched.
+
+中文：这次只发布整理后的原创白模、生成镜头展示和作品封面。电影／教学原片及其深度文件暂不上传；需逐条确认再分发授权后，才能作为他人可直接复用的数据包公开。本地原素材与深度文件没有删除。
+
+## Environment upscale comparison
+
+![Synchronized matched crop: 720p source left, 4K upscale right](upscale-comparison.gif)
+
+The inline preview uses the same four-second interval in both files: crop `(440,180,480,320)` from the 720p source and `(1320,540,1440,960)` from the 4K result. Each crop is scaled to 400×266, separated by an eight-pixel divider and encoded at 6 fps with a 96-color palette. The GIF is a compact preview, not a lossless pixel-quality benchmark; full-resolution clips remain below.
 
 | File | Contents |
 | --- | --- |

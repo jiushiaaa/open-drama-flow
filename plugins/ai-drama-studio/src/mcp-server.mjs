@@ -197,7 +197,7 @@ server.registerTool("drama_update_creation", {
     projectId: z.string(), creationId: z.string(), title: z.string().max(80).optional(), worldId: z.string().nullable().optional(),
     type: z.enum(["episode", "world-control", "series-control", "asset-development"]).optional(),
     assetRefs: z.array(z.object({ assetId: z.string(), locked: z.boolean().optional(), version: z.number().int().positive().optional() })).max(1000).optional(),
-    canvas: z.object({ viewport: z.object({ x: z.number(), y: z.number(), zoom: z.number() }).optional(), positions: z.record(z.string(), z.object({ x: z.number(), y: z.number() })).optional() }).optional()
+    canvas: z.object({ viewport: z.object({ x: z.number(), y: z.number(), zoom: z.number() }).optional(), positions: z.record(z.string(), z.object({ x: z.number(), y: z.number(), width: z.number().optional(), height: z.number().optional() })).optional() }).optional()
   }
 }, async ({ projectId, creationId, ...patch }) => result({ creation: await updateCreation(projectId, creationId, patch) }));
 

@@ -121,13 +121,8 @@
           <section class="canvas-pane">
             <header class="canvas-topbar">
               <nav class="canvas-breadcrumbs" aria-label="创作位置"><button type="button" data-route="project-library">项目库</button><span>›</span><button id="workspace-project-link" type="button"></button><span id="workspace-world-separator">›</span><button id="workspace-world-link" type="button"></button><span>›</span><strong id="workspace-creation-title">主创作页</strong></nav>
-              <div class="canvas-controls" role="group" aria-label="画布缩放"><button id="canvas-zoom-out" type="button" title="缩小">−</button><output id="canvas-zoom-label">78%</output><button id="canvas-zoom-in" type="button" title="放大">＋</button><button id="canvas-fit" type="button" title="适应内容">适应</button><button id="canvas-minimap-toggle" class="active" type="button">小地图</button></div>
             </header>
-            <div id="canvas-stage" class="canvas-stage" tabindex="0" aria-label="无限画布：鼠标左键拖动空白区域或按住滚轮拖动画布，滚轮滚动，Ctrl 加滚轮缩放">
-              <div id="canvas-world" class="canvas-world"><svg id="canvas-edges" class="canvas-edges" aria-hidden="true"></svg><div id="canvas-nodes" class="canvas-nodes"></div></div>
-              <div id="canvas-empty" class="canvas-empty" hidden><img src="/assets/studio-pixel-icon.png" alt=""><strong>从一条创作指令开始</strong><span>回到当前 Codex 对话描述目标，或把项目文件拖入画布。</span></div>
-              <div id="canvas-minimap" class="canvas-minimap" aria-label="画布小地图"><div id="minimap-nodes"></div><span id="minimap-viewport"></span></div>
-            </div>
+            <div id="canvas-root" aria-label="创作无限画布"></div>
           </section>
         </div>
       </section>
@@ -156,6 +151,7 @@
     </main>
   </div>
 
+  <dialog id="canvas-text-dialog" class="modal canvas-text-dialog"><header><h2 id="canvas-text-title"></h2><button type="button" class="icon-button" data-close-dialog="canvas-text-dialog" aria-label="关闭文本预览">×</button></header><pre id="canvas-text-body"></pre></dialog>
   <dialog id="project-dialog" class="modal">
     <form id="project-form" method="dialog">
       <header><div><p class="eyebrow">LOCAL PROJECT</p><h2 id="project-dialog-title">新建项目</h2></div><button class="icon-button" type="button" data-close-dialog="project-dialog"><img src="/icons/x.svg" alt=""></button></header>

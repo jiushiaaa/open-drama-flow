@@ -244,7 +244,12 @@ test("a blank project never receives sample production data", { timeout: 15_000 
     assert.match(page, /图片 · 视频 · 音频 · 文档 · 表格/);
     assert.match(page, /\.docx.*\.xlsx.*\.csv/);
     assert.match(page, /id="project-library-view"/);
-    assert.match(page, /id="canvas-stage"/);
+    assert.match(page, /id="canvas-root"/);
+    for (const file of ['canvas.js', 'canvas.css', 'THIRD-PARTY-LICENSES.txt']) {
+      const response = await fetch(`${baseUrl}/canvas-ui/${file}`);
+      assert.equal(response.ok, true, `prebuilt canvas file: ${file}`);
+      assert.ok((await response.text()).length > 100);
+    }
     assert.doesNotMatch(page, /canvas-inspector-resizer|创作检查器|canvas-toolbar|canvas-fit-bottom/);
     assert.match(page, /分卷 \/ 季度/);
     assert.doesNotMatch(page, /新建世界|所属世界|世界总控|生成可用/);

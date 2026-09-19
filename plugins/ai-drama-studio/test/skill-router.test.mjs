@@ -5,10 +5,10 @@ import test from "node:test";
 import { sourceSkillCount, specializedSkills } from "../src/skill-catalog.mjs";
 import { routeSkills } from "../src/skill-router.mjs";
 
-test("all 45 specialist capabilities have distinct canonical Codex entrypoints", async () => {
-  assert.equal(sourceSkillCount, 45);
-  assert.equal(specializedSkills.length, 45);
-  assert.equal(new Set(specializedSkills.map(item => item.name)).size, 45);
+test("all specialist capabilities have distinct canonical Codex entrypoints", async () => {
+  assert.equal(sourceSkillCount, 46);
+  assert.equal(specializedSkills.length, sourceSkillCount);
+  assert.equal(new Set(specializedSkills.map(item => item.name)).size, sourceSkillCount);
   for (const skill of specializedSkills) {
     assert.match(skill.name, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
     assert.equal(skill.name, skill.slug);
@@ -20,7 +20,7 @@ test("all 45 specialist capabilities have distinct canonical Codex entrypoints",
   }
 });
 
-test("each of the 45 specialized capabilities wins for its canonical user intent", async () => {
+test("each specialized capability wins for its canonical user intent", async () => {
   for (const skill of specializedSkills) {
     const request = `请帮我制作${skill.keywords[0]}，按这个专业能力完整处理`;
     const result = await routeSkills(request, 5);
@@ -30,6 +30,7 @@ test("each of the 45 specialized capabilities wins for its canonical user intent
 });
 
 const routingCases = [
+  ["借鉴博主教程，把动作方法迁移到项目并验证", "creator-method-transfer"],
   ["做一条口红唇釉广告，模特与产品质感都要稳定", "lip-product-ad-generator"],
   ["把这张建筑图做成 FPV 一镜到底穿越", "fpv-tour-video-generator"],
   ["做一个 SaaS 登录到结果卡片展开的 UI 动效", "ui-motion"],

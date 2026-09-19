@@ -1,0 +1,62 @@
+{
+  "publishedOn": "2026-09-14",
+  "scope": "Creator-selected README showcase; no new paid generation, no third-party film/depth redistribution",
+  "episodeLink": "https://www.xiaohongshu.com/discovery/item/6aa5351d0000000028029cea",
+  "douyinEpisodeLink": "https://v.douyin.com/rD_OP4_kMSI/",
+  "douyinEpisodeLinkVerification": "Creator supplied video link; automated resolution unavailable; not independently played online",
+  "upscaleComparison": {
+    "path": "production/publish-examples/upscale-comparison.gif",
+    "sha256": "fdf778eea96d9136aaa9b5ea7e78bc1fa2c157faef3e4e2be8bb25cd0c658e36",
+    "sourcePaths": ["production/publish-examples/ending-720p-4s.mp4", "production/publish-examples/ending-upscaled-4k-4s.mp4"],
+    "sourceSha256": ["e5a68807d3d06a445011f80ddca54339f1b384621f9a0f63d94bd9ea3cd80c41", "f80e79b933d55cf59ab83514a6d66faa9e2b42f67728bb4aad5e90b150d0034d"],
+    "sourceCropXYWH": [[440,180,480,320], [1320,540,1440,960]],
+    "operation": "synchronized source interval [0,4), scale each crop to 400x266, 8px divider, horizontal stack, 6fps, 96-color palette, Bayer dither scale 3, loop, no audio",
+    "width": 808,
+    "height": 266,
+    "durationSeconds": 4,
+    "frames": 24,
+    "bytes": 3475583,
+    "review": "matched crop first frame inspected; all 24 frames decoded without errors; not a lossless benchmark or new generation"
+  },
+  "episodeLinkVerification": "Creator supplied; automated web access failed; not independently played online in this update",
+  "screenshots": [
+    {"path": "docs/images/project-library.png", "sha256": "33341676d9e41b74761db71372a3d9d3126fce873383717f10c43cddbce34d17"},
+    {"path": "docs/images/production-canvas.png", "sha256": "ee513773134314948b56d6979dc369db819a277a59f836b317639457af33ae66"},
+    {"path": "docs/images/skill-browser.png", "sha256": "a3245133cae469520e179548217f9c2b8c7ed7e2b11b828650916667d39b2484"}
+  ],
+  "cover": {
+    "path": "docs/images/episode-one-cover.jpg",
+    "sha256": "b8f4a26ebcd9d63317c7ec0f012e4aeae7dc549cd2400dd37b70ad277a1eac13",
+    "sourceBasename": "EP01-cover-image2-v2-author.png",
+    "sourceSha256": "154d76b203948dfe531520d5c6fd25fbdbe65904b74a5aba3dd148a41a000110",
+    "operation": "FFmpeg scale to width 960, JPEG output, preserve aspect ratio"
+  },
+  "openingGif": {
+    "path": "production/publish-examples/opening-showcase.gif",
+    "sha256": "5edd14eabf1306d0c5b68fe0b4e73cf37a612af9a1dcf22f0b92c726ce4bf0c3",
+    "sourceBasename": "opening-raw-720p.mp4",
+    "sourceSha256": "6df66d81ceb97eec90267f610e80dc829c8e50cf13b6b39d67290d756120e204",
+    "sourceIntervalsSeconds": [[2,4],[9,11],[16,18]],
+    "operation": "trim, concatenate, 8 fps, 512x288, 96-color palette, Bayer dither, no audio",
+    "encodedDurationSeconds": 6.01,
+    "frames": 48,
+    "review": "3-second source overview inspected; GIF fully decoded; not full episode review"
+  },
+  "whitebox": {
+    "path": "production/publish-examples/whitebox-camera/space-camera-reference.mp4",
+    "sha256": "b0da4068ccb75a8ee1da1377b49ad8e287319e3a52791c28bd17032db3b803bb",
+    "sourceBasename": "CH02-vision-camera-whitebox-v1.mp4",
+    "operation": "byte-identical copy of existing procedural Three.js render",
+    "durationSeconds": 20,
+    "frames": 480,
+    "width": 1280,
+    "height": 720,
+    "fps": 24,
+    "audio": false,
+    "preview": "production/publish-examples/whitebox-camera/preview.gif",
+    "previewSha256": "36fc62dc330652c41696f82e7e2bcf612591a56089baf8b5b9433ca6d8b37405",
+    "previewOperation": "first six seconds, 8 fps, width 512, 64-color palette, Bayer dither",
+    "review": "five-time-point source overview inspected; video and GIF fully decoded",
+    "not": ["Video Depth Anything output", "skeletal motion capture", "metric depth", "validated fight transfer"]
+  }
+}
