@@ -67,12 +67,12 @@ server.registerTool("drama_get_capabilities", {
 }, async () => {
   const state = await readState();
   const arkConfigured = await hasArkKey();
-  return result({ image: { primary: state.settings.imageProvider, codexImageGen: true, seedream: state.settings.imageProvider === "ark-seedream" && arkConfigured }, video: getSeedanceCapabilityProfile(state.settings), speech: speechCapabilities(await hasSpeechKey(), state.settings), deterministicEdit: { ffmpeg: true, concat: true, subtitles: true, audioPreservation: true }, unavailable: ["voice cloning", "managed music generation", "3D scene editing", "professional NLE project export"] });
+  return result({ image: { primary: state.settings.imageProvider, codexImageGen: true, seedream: state.settings.imageProvider === "ark-seedream" && arkConfigured }, video: getSeedanceCapabilityProfile(state.settings), speech: speechCapabilities(await hasSpeechKey(), state.settings), deterministicEdit: { ffmpeg: true, concat: true, subtitles: true, audioPreservation: true }, unavailable: ["voice cloning", "3D scene editing", "professional NLE project export"] });
 });
 
 server.registerTool("drama_request_speech_job", {
-  description: "Prepare exactly one pending ASR or TTS request. ASR uses a version-bound library audio/video segment (default 5 seconds); TTS uses up to 500 characters and a stock voice. No paid call. Requires the optional locally configured Doubao Speech key; otherwise use Seedance native sound and manual listening, not fake transcription.",
-  inputSchema: { projectId: z.string(), creationId: z.string().optional(), mode: z.enum(["asr", "tts"]), assetId: z.string().optional(), startSeconds: z.number().min(0).optional(), durationSeconds: z.number().min(0.2).max(120).optional(), text: z.string().min(1).max(500).optional(), expectedText: z.string().max(8000).optional() }
+  description: "Prepare exactly one pending ASR, TTS or SeedAudio 1.0 music/song request. Music uses up to 500 characters of prompt/lyrics and returns WAV; requires listening and explicit asset binding. ASR uses a version-bound library audio/video segment (default 5 seconds); TTS uses up to 500 characters and a stock voice. No paid call. Requires the optional locally configured Doubao Speech key; otherwise use Seedance native sound and manual listening, not fake transcription.",
+  inputSchema: { projectId: z.string(), creationId: z.string().optional(), mode: z.enum(["asr", "tts", "music"]), assetId: z.string().optional(), startSeconds: z.number().min(0).optional(), durationSeconds: z.number().min(0.2).max(120).optional(), text: z.string().min(1).max(500).optional(), expectedText: z.string().max(8000).optional() }
 }, async input => result({ job: await requestSpeechJob(input) }));
 
 server.registerTool("drama_authorize_speech_job", {

@@ -67,7 +67,7 @@ export async function requestSpeechJob(input, deps = {}) {
   const project = scope(currentState, input.projectId, input.creationId);
   const id = safeId("speech");
   const snapshot = { projectId: project.id, creationId: input.creationId || null, executionMode: executionMode(currentState.settings), mode: input.mode, profile: SPEECH[input.mode], maxCalls: 1 };
-  if (input.mode === "tts") {
+  if (["tts", "music"].includes(input.mode)) {
     if (typeof input.text !== "string" || !input.text.trim() || input.text.trim().length > 500) throw new Error("SPEECH_TEXT_INVALID");
     snapshot.text = input.text.trim();
   } else {
@@ -108,10 +108,11 @@ export async function authorizeSpeechJob(jobId, elicit, deps = {}) {
   const automatic = snapshot.executionMode === "automatic";
   const detail = snapshot.mode === "asr"
     ? `ASR：将素材「${snapshot.source.name}」v${snapshot.source.version} 的 ${snapshot.audio.startSeconds}–${snapshot.audio.startSeconds + snapshot.audio.durationSeconds} 秒音频发送给豆包语音识别；${snapshot.audio.bytes} 字节；输入 SHA-256 ${snapshot.audio.sha256}`
+    : snapshot.mode === "music" ? `SeedAudio 1.0：根据以下描述生成一段音乐或歌曲，试听后才能绑定：\n${snapshot.text}`
     : `TTS：使用官方预置音色 ${snapshot.profile.speaker}，生成 ${snapshot.text.length} 字旁白（非声音克隆）。全文：\n${snapshot.text}`;
   let answer;
   if (!automatic) try {
-    answer = await elicit({ mode: "form", message: `${detail}\n服务：${snapshot.profile.resourceId}；最多 1 次付费请求（失败也占用本次额度，无自动重试）；按账号服务价格计费，此处不承诺免费。请求摘要：${job.requestDigest}。生成/识别成功不等于声音审核通过。`,
+    answer = await elicit({ mode: "form", message: `${detail}\n服务：${snapshot.profile.resourceId || snapshot.profile.model}；最多 1 次付费请求（失败也占用本次额度，无自动重试）；按账号服务价格计费，此处不承诺免费。请求摘要：${job.requestDigest}。生成/识别成功不等于声音审核通过。`,
       requestedSchema: { type: "object", properties: { confirm: { type: "boolean", title: "批准本次语音调用", default: false } }, required: ["confirm"] } });
   } catch { throw new Error("USER_CONFIRMATION_UNAVAILABLE"); }
   if (!automatic) {
@@ -147,15 +148,15 @@ export async function authorizeSpeechJob(jobId, elicit, deps = {}) {
     providerSucceeded = true;
     const directory = jobDirectory(jobId);
     await fs.mkdir(directory, { recursive: true });
-    const outputPath = path.join(directory, snapshot.mode === "tts" ? "speech.mp3" : "transcript.json");
+    const outputPath = path.join(directory, snapshot.mode === "music" ? "music.wav" : snapshot.mode === "tts" ? "speech.mp3" : "transcript.json");
     const normalize = value => String(value || "").normalize("NFKC").replace(/[\p{P}\p{Z}\s]/gu, "").toLowerCase();
     const transcript = snapshot.mode === "asr" ? { text: output.text, utterances: output.utterances, source: snapshot.source, range: snapshot.audio,
       expectedText: snapshot.expectedText || null, exactTextMatch: snapshot.expectedText ? normalize(snapshot.expectedText) === normalize(output.text) : null,
       reviewStatus: "unreviewed", boundary: "ASR may misrecognize; compare against the actual audio. No automatic quality pass or production memory approval." } : null;
     await fs.writeFile(outputPath, transcript ? JSON.stringify(transcript, null, 2) : output.audio, { flag: "wx" });
-    const media = snapshot.mode === "tts" ? await (deps.inspect || inspectMediaFile)(outputPath) : null;
+    const media = snapshot.mode !== "asr" ? await (deps.inspect || inspectMediaFile)(outputPath) : null;
     if (media && (!media.audio || media.duration <= 0)) throw new Error("SPEECH_OUTPUT_INVALID");
-    const asset = await importLocalAsset(job.projectId, outputPath, { creationId: snapshot.creationId, name: snapshot.mode === "tts" ? "豆包旁白.mp3" : "对白识别.json" });
+    const asset = await importLocalAsset(job.projectId, outputPath, { creationId: snapshot.creationId, name: snapshot.mode === "music" ? "SeedAudio音乐.wav" : snapshot.mode === "tts" ? "豆包旁白.mp3" : "对白识别.json" });
     await mutateState(state => {
       const target = state.speechJobs.find(item => item.id === jobId);
       const saved = scope(state, job.projectId, snapshot.creationId).assets.find(item => item.id === asset.id);
@@ -165,7 +166,7 @@ export async function authorizeSpeechJob(jobId, elicit, deps = {}) {
       saved.requestDigest = job.requestDigest;
       target.status = "succeeded";
       target.finishedAt = now();
-      target.result = { assetId: asset.id, version: asset.version, sha256: asset.sha256, localPath: asset.localPath, media, transcript, reviewStatus: "unreviewed", logId: output.logId, providerCode: output.providerCode };
+      target.result = { assetId: asset.id, version: asset.version, sha256: asset.sha256, localPath: asset.localPath, media, transcript, subtitles: output.subtitles || null, billingDurationSeconds: output.billingDurationSeconds ?? null, reviewStatus: "unreviewed", logId: output.logId, providerCode: output.providerCode };
       const call = state.providerCalls.find(item => item.id === requestId);
       if (call) Object.assign(call, { status: "succeeded", logId: output.logId, finishedAt: now(), outputAssetId: asset.id });
       appendEvent(state, "speech.completed", "语音结果已入素材库，等待内容核验", { projectId: job.projectId, jobId, assetId: asset.id });

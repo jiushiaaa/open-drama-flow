@@ -4,7 +4,8 @@ This release turns observed production failures and successful recovery methods 
 
 ## Runtime changes
 
-- Seedance 2.5 first-frame and first/last-frame generation use adaptive ratio. Source-video editing uses adaptive ratio and duration `-1`, without changing the planned shot duration. Invalid combinations fail locally.
+- Seedance 2.5 first-frame, first/last-frame and source-video extension use adaptive ratio. Source-video editing uses adaptive ratio and duration `-1`; extension retains the planned new duration. Invalid combinations fail locally.
+- 2026-09-17 incident: three Ark `video-extend` submissions reached authentication and task creation but failed with `InvalidParameter.TaskTypeConstraint` because the adapter sent an explicit `16:9` ratio. The local compiler and validator now force `adaptive` for Seedance 2.5 extension requests before a paid batch is frozen; a 1280×720 source still yields 16:9 output.
 - Reference preparation keeps the owning job heartbeat alive. Recoverable state-lock timeouts retain the original frozen scope and provider work rather than paying again.
 - Windows state writes retry transient sharing violations; permanent errors remain failures. Live lock ownership is not silently bypassed.
 - ASR retains actual supplied word timestamps; missing, null, blank and boolean timing fields are not fabricated into zero-millisecond timestamps.

@@ -54,7 +54,10 @@ export function validateSeedanceRequest({ model, inputMode, inputs = [], paramet
   if (inputMode === "video-edit" && profile.version === "2.5") {
     if (parameters.duration !== -1) add("SEEDANCE_EDIT_DURATION_MUST_FOLLOW_SOURCE", "duration");
     if (parameters.ratio !== "adaptive") add("SEEDANCE_EDIT_RATIO_MUST_FOLLOW_SOURCE", "ratio");
-  } else if (!Number.isInteger(parameters.duration) || parameters.duration < profile.minimum || parameters.duration > profile.maximum) add("SEEDANCE_DURATION_UNSUPPORTED", "duration");
+  } else {
+    if (!Number.isInteger(parameters.duration) || parameters.duration < profile.minimum || parameters.duration > profile.maximum) add("SEEDANCE_DURATION_UNSUPPORTED", "duration");
+    if (inputMode === "video-extend" && profile.version === "2.5" && parameters.ratio !== "adaptive") add("SEEDANCE_EXTEND_RATIO_MUST_FOLLOW_SOURCE", "ratio");
+  }
   if (!profile.ratios.includes(parameters.ratio)) add("SEEDANCE_RATIO_UNSUPPORTED", "ratio");
   if (profile.version === "2.5" && ["image-to-video", "first-last-frame"].includes(inputMode) && parameters.ratio !== "adaptive") add("SEEDANCE_FRAME_RATIO_MUST_FOLLOW_SOURCE", "ratio");
   if (!profile.resolutions.includes(parameters.resolution)) add("SEEDANCE_RESOLUTION_UNSUPPORTED", "resolution");

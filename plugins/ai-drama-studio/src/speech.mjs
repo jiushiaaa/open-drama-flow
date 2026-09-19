@@ -4,6 +4,7 @@ import { executionMode } from "./execution-policy.mjs";
 
 // Fixed official endpoints: credentials never go to a user-supplied host or redirect.
 export const SPEECH = Object.freeze({
+  music: Object.freeze({ endpoint: "https://openspeech.bytedance.com/api/v3/tts/create", model: "seed-audio-1.0", format: "wav", sampleRate: 24000 }),
   asr: Object.freeze({ endpoint: "https://openspeech.bytedance.com/api/v3/auc/bigmodel/recognize/flash", resourceId: "volc.bigasr.auc_turbo", model: "bigmodel" }),
   tts: Object.freeze({ endpoint: "https://openspeech.bytedance.com/api/v3/tts/unidirectional/sse", resourceId: "seed-tts-2.0", speaker: "zh_female_vv_uranus_bigtts", format: "mp3", sampleRate: 24000 })
 });
@@ -16,7 +17,8 @@ export function speechCapabilities(configured, settings = {}) {
     guidance: configured
       ? "Seedance 生成原生声音；需要对白核对时申请 ASR，需要旁白/补录时申请 TTS。保存 Key 不代表已开通服务；失败时报告原因，不自动改用另一项付费服务。"
       : "仅用 Seedance 原生声音；有声音意图的镜头显式设 audioMode=provider-native，无声镜头保留 none。不调用独立 ASR/TTS，不宣称完成自动对白核验。",
-    voiceCloning: false, standaloneMusic: false };
+    voiceCloning: false, standaloneMusic: configured,
+    music: { supported: true, available: configured, model: SPEECH.music.model, maxCharactersPerApproval: 500, maxCalls: 1, serviceEntitlementVerified: false } };
 }
 
 function providerError(code, status = 0, logId = "") {
@@ -43,13 +45,17 @@ export async function runSpeechRequest(snapshot, { key, requestId = randomUUID()
   if (snapshot.mode === "asr") {
     if (!Buffer.isBuffer(audio) || !audio.length || audio.length > 4 * 1024 * 1024) throw new Error("SPEECH_AUDIO_INVALID");
     body = { user: { uid: "opendramaflow" }, audio: { data: audio.toString("base64") }, request: { model_name: profile.model, enable_itn: true, enable_punc: true, show_utterances: true } };
+  } else if (snapshot.mode === "music") {
+    if (typeof snapshot.text !== "string" || !snapshot.text.trim() || snapshot.text.length > 500) throw new Error("SPEECH_TEXT_INVALID");
+    body = { model: profile.model, text_prompt: snapshot.text, audio_config: { format: profile.format, sample_rate: profile.sampleRate, enable_subtitle: true },
+      watermark: { aigc_metadata: { enable: true, content_producer: "OpenDramaFlow" } } };
   } else {
     if (typeof snapshot.text !== "string" || !snapshot.text.trim() || snapshot.text.length > 500) throw new Error("SPEECH_TEXT_INVALID");
     body = { user: { uid: "opendramaflow" }, req_params: { text: snapshot.text, speaker: profile.speaker,
       audio_params: { format: profile.format, sample_rate: profile.sampleRate, speech_rate: 0 } } };
   }
   const response = await fetchImpl(profile.endpoint, { method: "POST", redirect: "error", signal: AbortSignal.any([shutdownSignal, AbortSignal.timeout(120000)]),
-    headers: { "Content-Type": "application/json", "X-Api-Key": key, "X-Api-Resource-Id": profile.resourceId, "X-Api-Request-Id": requestId, ...(snapshot.mode === "asr" ? { "X-Api-Sequence": "-1" } : {}) }, body: JSON.stringify(body) });
+    headers: { "Content-Type": "application/json", "X-Api-Key": key, ...(profile.resourceId ? { "X-Api-Resource-Id": profile.resourceId } : {}), "X-Api-Request-Id": requestId, ...(snapshot.mode === "asr" ? { "X-Api-Sequence": "-1" } : {}) }, body: JSON.stringify(body) });
   const rawLogId = response.headers.get("X-Tt-Logid") || "";
   const logId = /^[\w-]{0,100}$/.test(rawLogId) ? rawLogId : "";
   const statusCode = response.headers.get("X-Api-Status-Code");
@@ -57,7 +63,15 @@ export async function runSpeechRequest(snapshot, { key, requestId = randomUUID()
     await response.body?.cancel();
     throw providerError(statusCode || response.status, response.status, logId);
   }
-  const raw = await readBounded(response, snapshot.mode === "tts" ? 20 * 1024 * 1024 : 2 * 1024 * 1024);
+  const raw = await readBounded(response, snapshot.mode === "music" ? 32 * 1024 * 1024 : snapshot.mode === "tts" ? 20 * 1024 * 1024 : 2 * 1024 * 1024);
+  if (snapshot.mode === "music") {
+    const data = JSON.parse(raw);
+    if (data.code != null && ![0, 20000000].includes(Number(data.code))) throw providerError(data.code, response.status, logId);
+    if (typeof data.audio !== "string" || !data.audio.length || !/^[A-Za-z0-9+/\r\n]+={0,2}$/.test(data.audio)) throw new Error("SPEECH_AUDIO_INVALID");
+    const audio = Buffer.from(data.audio, "base64");
+    if (!audio.length) throw new Error("SPEECH_AUDIO_INVALID");
+    return { audio, durationSeconds: data.duration, billingDurationSeconds: data.original_duration, subtitles: data.subtitle || null, logId, requestId, providerCode: data.code ?? null };
+  }
   if (snapshot.mode === "asr") {
     if (statusCode !== "20000000") throw providerError(statusCode, response.status, logId);
     const data = JSON.parse(raw);

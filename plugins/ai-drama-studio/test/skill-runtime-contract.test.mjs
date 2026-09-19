@@ -63,7 +63,7 @@ test('Seedance guide mode table covers actual adapter roles and boundary constra
   for (const [inputMode, inputs] of examples) {
     const edit = inputMode === 'video-edit' ? {startSeconds: 2, endSeconds: 5, instruction: '将桌面杯身改为深蓝色', preserve: ['角色身份']} : null;
     const modeParameters = inputMode === 'video-edit' ? {...parameters, duration: -1, ratio: 'adaptive'} :
-      ['image-to-video', 'first-last-frame'].includes(inputMode) ? {...parameters, ratio: 'adaptive'} : parameters;
+      ['video-extend', 'image-to-video', 'first-last-frame'].includes(inputMode) ? {...parameters, ratio: 'adaptive'} : parameters;
     assert.deepEqual(validateSeedanceRequest({model, inputMode, inputs, parameters: modeParameters, edit}), []);
   }
   assert.ok(validateSeedanceRequest({model, inputMode: 'image-to-video', inputs: [{role: 'reference_image'}], parameters}).length);

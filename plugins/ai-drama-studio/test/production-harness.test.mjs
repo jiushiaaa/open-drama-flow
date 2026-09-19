@@ -600,3 +600,12 @@ test("a non-MP4 output is rendered again before review or delivery", () => {
   assert.equal(guidance.graph.nodes.find(node => node.id === "edit").status, "blocked");
   assert.equal(guidance.nextActions[0].tool, "drama_render_project");
 });
+
+
+test("native audio support is distinct from a disabled default", () => {
+  const profile = getSeedanceCapabilityProfile({ seedanceModel: "doubao-seedance-2-5-260628", generateAudio: false });
+  assert.equal(profile.nativeAudio.supported, true);
+  assert.equal(profile.nativeAudio.defaultEnabled, false);
+  assert.equal(profile.nativeAudio.requestParameter, "generate_audio");
+  assert.equal(profile.accountVerified, false);
+});

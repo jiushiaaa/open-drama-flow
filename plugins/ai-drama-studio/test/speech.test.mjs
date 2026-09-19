@@ -76,3 +76,30 @@ test("invalid TTS limits and changed endpoint fail before dispatch", async () =>
   await assert.rejects(runSpeechRequest({ ...snapshot("tts"), profile: { ...SPEECH.tts, endpoint: "https://example.com" } }, options), /PROFILE_CHANGED/);
   assert.equal(calls, 0);
 });
+
+
+test("music uses the evidenced SeedAudio JSON endpoint with one request", async () => {
+  let calls = 0;
+  const output = await runSpeechRequest(snapshot("music"), { key: "fake-only", requestId: "music-fixture", fetchImpl: async (url, options) => {
+    calls++;
+    assert.equal(url, "https://openspeech.bytedance.com/api/v3/tts/create");
+    assert.equal(options.redirect, "error");
+    const body = JSON.parse(options.body);
+    assert.equal(body.model, "seed-audio-1.0");
+    assert.equal(body.text_prompt, snapshot("music").text);
+    assert.equal(body.audio_config.format, "wav");
+    return new Response(JSON.stringify({ audio: Buffer.from("fixture").toString("base64"), duration: 30, subtitle: [] }));
+  } });
+  assert.equal(calls, 1);
+  assert.equal(output.audio.toString(), "fixture");
+  assert.equal(output.durationSeconds, 30);
+  assert.equal(speechCapabilities(true).standaloneMusic, true);
+  assert.equal(speechCapabilities(false).music.available, false);
+});
+
+test("music rejects missing or malformed audio and enforces its frozen profile", async () => {
+  for (const body of [{}, {audio:"https://untrusted.invalid/a.wav"}, {audio:""}]) {
+    await assert.rejects(runSpeechRequest(snapshot("music"), {key:"fake", fetchImpl:async()=>new Response(JSON.stringify(body))}));
+  }
+  await assert.rejects(runSpeechRequest({...snapshot("music"), text:"x".repeat(501)}, {key:"fake", fetchImpl:async()=>{throw Error("must not dispatch");}}), /TEXT_INVALID/);
+});

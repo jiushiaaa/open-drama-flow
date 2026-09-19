@@ -174,3 +174,24 @@ test("manual confirmation diagnostics distinguish accepted-without-checkmark fro
     assert.equal(result.lastConfirmation.confirmed, false);
   }
 });
+
+
+test("music freezes one call, imports WAV once, leaves lyrics and audio unreviewed", async () => {
+  const fixture = path.join(root, "music-fixture.wav");
+  await mediaCommand("ffmpeg", ["-v", "error", "-f", "lavfi", "-i", "sine=frequency=330:duration=1", fixture]);
+  const project = await createProject({ title: "Music fixture" });
+  const job = await requestSpeechJob({ projectId: project.id, mode: "music", text: "Original instrumental cue" }, deps);
+  assert.equal(job.snapshot.maxCalls, 1);
+  let calls = 0;
+  const result = await authorizeSpeechJob(job.id, accept, {...deps, run: async () => {
+    calls++;
+    return { audio: await fs.readFile(fixture), subtitles: [{text:"candidate"}], billingDurationSeconds:1 };
+  }});
+  assert.equal(result.status, "succeeded");
+  assert.equal(calls, 1);
+  assert.match(result.result.localPath, /\.wav$/);
+  assert.equal(result.result.reviewStatus, "unreviewed");
+  assert.deepEqual(result.result.subtitles, [{text:"candidate"}]);
+  assert.equal((await readState()).projects.find(p=>p.id===project.id).shots.length, 0);
+  await assert.rejects(authorizeSpeechJob(job.id, accept, deps), /NOT_PENDING/);
+});
