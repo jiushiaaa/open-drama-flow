@@ -45,7 +45,7 @@ This is an exceptional fallback, not an equal default. Use it only when the user
 - Timeouts and indeterminate transport errors remain uncertain. Query the recorded task before any retry.
 - The model ID and generation profile are system-managed by the installed adapter; changing them requires a verified adapter migration.
 
-Managed voice cloning, standalone music generation, mask-based pixel editing, controllable 3D scene editing, and professional NLE project export remain unconnected. Native Seedance sound is not a substitute for a controllable voice service. If a Skill requires these features, state the boundary rather than inventing an adapter. All six video modes have isolated contract/workflow tests; account-specific paid acceptance must still be verified by actual bounded calls under the selected execution policy. Never report mocked provider fixtures as real generation results.
+Managed voice cloning, mask-based pixel editing, controllable 3D scene editing, and professional NLE project export remain unconnected. Native Seedance sound is not a substitute for a controllable voice service. If a Skill requires these features, state the boundary rather than inventing an adapter. All six video modes have isolated contract/workflow tests; account-specific paid acceptance must still be verified by actual bounded calls under the selected execution policy. Never report mocked provider fixtures as real generation results.
 
 ## Optional Doubao speech
 
@@ -54,7 +54,7 @@ Managed voice cloning, standalone music generation, mask-based pixel editing, co
 - TTS: official `https://openspeech.bytedance.com/api/v3/tts/unidirectional/sse`, resource `seed-tts-2.0`, fixed stock voice `zh_female_vv_uranus_bigtts`, MP3 / 24 kHz, at most 500 characters per approval. This is not voice cloning or music generation.
 - `drama_request_speech_job` freezes one request, source versions/hash, execution policy and parameters without submitting it. `drama_authorize_speech_job` reserves and dispatches one call automatically in automatic mode; manual mode requires an accepted trusted MCP form. HTTP does not expose an approval/execution route. In manual mode cancel, absent confirmation or absent elicitation means zero calls. Error/timeout consumes the one attempt and never triggers automatic retry or service switching.
 - `drama_get_speech_job` returns durable status, request ID/digest, provider code/log ID and versioned output evidence. Interrupted tasks become uncertain when their owner is gone; do not resubmit them automatically. If provider success is followed by local import failure, preserve the job output directory for manual recovery instead of paying again.
-- Service availability and actual quality are separate from credential configuration. ASR produces unreviewed transcript evidence with relative timestamps and source offset. TTS produces an unreviewed library asset, not a replaced soundtrack. Use explicit asset binding and existing revision/approval rules after listening. Cloning and independent music remain out of scope.
+- Service availability and actual quality are separate from credential configuration. ASR produces unreviewed transcript evidence with relative timestamps and source offset. TTS produces an unreviewed library asset, not a replaced soundtrack. Use explicit asset binding and existing revision/approval rules after listening. Cloning remains out of scope. Music follows the same explicit binding rule.
 
 Official contracts: [ASR flash](https://www.volcengine.com/docs/6561/1631584), [TTS V3](https://www.volcengine.com/docs/6561/1598757), [ByteDance TTS sample](https://github.com/bytedance/agentkit-samples/blob/main/skills/byted-text-to-speech/scripts/text_to_speech.py).
 
@@ -65,3 +65,10 @@ Official capability references: [Seedance 2.5 announcement](https://seed.bytedan
 FFmpeg may deterministically concatenate, crop/scale, time, subtitle, preserve/mix available audio and encode a local file. The current delivery scope is one reviewed local MP4 per creation page; create separate pages for additional aspect ratios or variants. A successful FFmpeg command proves only that rendering completed.
 
 It does not prove that the story, identity, brand, continuity, subtitles, sound or acceptance criteria are correct. Delivery requires actual inspection, a passed evidence-based review, revalidation that the file has not changed, and a SHA-256 manifest from `drama_finalize_delivery`.
+
+
+## SeedAudio music/song requests
+
+`drama_request_speech_job(mode="music", text=...)` freezes one prompt (up to 500 characters), profile and digest without dispatch. Use the existing authorize/get speech-job tools. The fixed endpoint is `https://openspeech.bytedance.com/api/v3/tts/create`, model `seed-audio-1.0`, JSON `text_prompt` with WAV / 24 kHz audio_config; the contract was migrated from local production receipts, not inferred from TTS support. Returned base64 is bounded/validated, then decoded media is inspected and imported as an **unreviewed** WAV. Provider lyric timestamps remain review candidates. Credentials never go to user-supplied hosts or redirects. No automatic retry or voice cloning. New-account entitlement is unverified until a real bounded call succeeds; mocked regression tests are not live entitlement evidence.
+
+A timeout remains uncertain; query the original job and use its request/log IDs before considering another paid submission. Native Seedance audio support and the default-enabled setting are distinct fields. Image/video reference geometry must be checked even when the provider ratio is adaptive.

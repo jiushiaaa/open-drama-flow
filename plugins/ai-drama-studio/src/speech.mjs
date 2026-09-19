@@ -12,7 +12,7 @@ export const SPEECH = Object.freeze({
 export function speechCapabilities(configured, settings = {}) {
   return { configured, strategy: configured ? "seedance-plus-speech" : "seedance-native",
     asr: { available: configured, resourceId: SPEECH.asr.resourceId, maxSecondsPerApproval: 120 },
-    tts: { available: configured, resourceId: SPEECH.tts.resourceId, speaker: SPEECH.tts.speaker, maxCharactersPerApproval: 500 },
+    tts: { available: configured, resourceId: SPEECH.tts.resourceId, speaker: SPEECH.tts.speaker, configurableSpeaker: true, speakerSelection: "verified stock voice ID frozen per job; no cloning", maxCharactersPerApproval: 500 },
     executionMode: executionMode(settings), requiresPaidApproval: executionMode(settings) === "manual", serviceEntitlementVerified: false,
     guidance: configured
       ? "Seedance 生成原生声音；需要对白核对时申请 ASR，需要旁白/补录时申请 TTS。保存 Key 不代表已开通服务；失败时报告原因，不自动改用另一项付费服务。"
@@ -37,6 +37,12 @@ async function readBounded(response, limit) {
   return Buffer.concat(chunks).toString("utf8");
 }
 
+export function speechSpeaker(value) {
+  if (value === undefined) return SPEECH.tts.speaker;
+  if (typeof value !== "string" || !/^[A-Za-z0-9_\-]{1,100}_bigtts$/.test(value)) throw new Error("SPEECH_SPEAKER_INVALID");
+  return value;
+}
+
 export async function runSpeechRequest(snapshot, { key, requestId = randomUUID(), audio, fetchImpl = fetch } = {}) {
   const profile = SPEECH[snapshot.mode];
   if (!profile || JSON.stringify(snapshot.profile) !== JSON.stringify(profile)) throw new Error("SPEECH_PROFILE_CHANGED");
@@ -51,7 +57,7 @@ export async function runSpeechRequest(snapshot, { key, requestId = randomUUID()
       watermark: { aigc_metadata: { enable: true, content_producer: "OpenDramaFlow" } } };
   } else {
     if (typeof snapshot.text !== "string" || !snapshot.text.trim() || snapshot.text.length > 500) throw new Error("SPEECH_TEXT_INVALID");
-    body = { user: { uid: "opendramaflow" }, req_params: { text: snapshot.text, speaker: profile.speaker,
+    body = { user: { uid: "opendramaflow" }, req_params: { text: snapshot.text, speaker: speechSpeaker(snapshot.speaker),
       audio_params: { format: profile.format, sample_rate: profile.sampleRate, speech_rate: 0 } } };
   }
   const response = await fetchImpl(profile.endpoint, { method: "POST", redirect: "error", signal: AbortSignal.any([shutdownSignal, AbortSignal.timeout(120000)]),

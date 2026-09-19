@@ -195,3 +195,11 @@ test("music freezes one call, imports WAV once, leaves lyrics and audio unreview
   assert.equal((await readState()).projects.find(p=>p.id===project.id).shots.length, 0);
   await assert.rejects(authorizeSpeechJob(job.id, accept, deps), /NOT_PENDING/);
 });
+
+
+test("changing a frozen speaker cannot silently change a paid TTS call", async () => {
+  const job = await ttsJob();
+  assert.ok(job.snapshot.speaker.endsWith("_bigtts"));
+  await mutateState(state=>{state.speechJobs.find(j=>j.id===job.id).snapshot.speaker="fixture_other_bigtts";});
+  await assert.rejects(authorizeSpeechJob(job.id,accept,deps),/SNAPSHOT_CHANGED/);
+});

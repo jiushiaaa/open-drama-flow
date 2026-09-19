@@ -180,3 +180,6 @@ node scripts/verify-skill-mcp.mjs
 ```
 
 软件采用 [MIT 许可](LICENSE)。画布使用 [infinite-canvas](https://github.com/basketikun/infinite-canvas) 的 React + TypeScript 组件，保留上游许可与署名。第三方模型、权重和创作素材适用各自许可。
+
+
+[第二集复盘与第三集制作门槛 / Episode two production lessons](docs/production-iteration-20260919.md) — identity evidence, causal action beats, shot handoffs, native audio capability and bounded SeedAudio music.

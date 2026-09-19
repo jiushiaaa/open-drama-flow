@@ -13,7 +13,7 @@
         },
         {
           "path": "references/execution-contract.md",
-          "sha256": "e79ec00e2d23b263ad304b6754cd754ab28a8f38a8da0c09d879a4bd3ce06be0"
+          "sha256": "099b56b652cb0fff60ef0885a5063396e9ea9d94d3ec95dd0319fac950b8564f"
         },
         {
           "path": "references/image-asset-contract.md",
@@ -21,7 +21,7 @@
         },
         {
           "path": "references/narrative-continuity.md",
-          "sha256": "d7df0b69380b5fc075d9cba34210b054a837ac029cc3025e21aa2c3eee848af0"
+          "sha256": "d216be23dad1b02069778bc0168694fed3e1fa298eea6355ac600c46bc827c8d"
         },
         {
           "path": "references/project-profiles/fortiche-craft-notes.md",
@@ -37,7 +37,7 @@
         },
         {
           "path": "references/project-profiles/guhuoniao.md",
-          "sha256": "8b1f774b05e33dcf9b20358aa978d78319f0ff404c56b0592f4f8ad17e03e0de"
+          "sha256": "cfd4afb051ef876e30e2db35936eefa89efba3a33bc4a896f850937a6e492836"
         },
         {
           "path": "references/project-profiles/reference-cases/20260906-cyberhero-motion.md",
@@ -65,7 +65,7 @@
         },
         {
           "path": "references/provider-contract.md",
-          "sha256": "84a2f2432c4e13b5223c5c57ec26c69a74a91807e2f3ba2cd48fecb6fd7ec56e"
+          "sha256": "42bb550d50cee1d9cd5d985fdde2b15c8603d847ea49c984622edb904ee8123b"
         },
         {
           "path": "references/routing-contract.md",
@@ -73,7 +73,7 @@
         },
         {
           "path": "references/seedance-prompting.md",
-          "sha256": "22fe73eadf0c38e6305bb6b36d23392ca2acf1f92df9a9256ae573316f0d7e5c"
+          "sha256": "10e71880835a7ce2a960df761adb2d06f0d4b8e24376bcd0b5c6cf57544878af"
         },
         {
           "path": "references/workflow-contract.md",
@@ -94,7 +94,7 @@
         },
         {
           "path": "references/action-and-space.md",
-          "sha256": "ed39e22af26c961aca9777a71910f19a086747815c312c38d618cc29aff808bd"
+          "sha256": "c33a5da3fd4bff848d27e83ef50c198fe0309be551e702c467a16106ea55175a"
         },
         {
           "path": "references/camera-and-transitions.md",
@@ -130,11 +130,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "59bc807785aec50880564644e2c173e2ea67d3e5077b49e3740e80db8782aff1"
+          "sha256": "5e01cb6c46d85874d242b8d5126f86c027a285d3c9cf29bdd0e908eec99c5b3d"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "9e2096d90e855c6216ee1f4917e2b6677b93b01ca83eaf79e1bd9dd9b2c45350"
+          "sha256": "f99249efdd50db302af59abdb3910eb56dff35c10d969f02ea16a7d662afd8bc"
         }
       ]
     },
@@ -171,11 +171,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "d9e0d5570082b30105512e5899b2b690bdc02d7db63f11807162eb9afc5353e5"
+          "sha256": "1d79a4d14faad2736c89a2316534517b62200430582b0b74188a90634092b7ad"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "8d9f2b58f77cc03db14bfecb9d2f2f7432eaf09faa83da779a6763bc2cbf4c40"
+          "sha256": "e325ebcce258f3b335f2769b4c7aa3858cd06003e44d1154df8ce3e402a584f7"
         }
       ]
     },
@@ -192,11 +192,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "5a6a6b57990953aedb05c9ddaf19b730a86ec41dbfe30b9a5449cd6499566829"
+          "sha256": "b79369f9f4091997e2b65bfb3acb22ef34ad9cff3860dafe4a51e8dd3894c4cd"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "3eadbbe9abfbb127246bdca6d178d5e66c6137ef174017bed95b08acc9575b34"
+          "sha256": "181445418c5caec7e0f2dadfbe4901600599dc9959a22fb8596575a5564d17ec"
         }
       ]
     },
@@ -213,11 +213,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "0beb8f366b8dc23c2f7771a74fdfc280e202ff60c0a9d916fa41c7e670f69255"
+          "sha256": "bf1aebc8754218e9771f08a3e7219aa945c2478b82bafcad10a148867b85f9d9"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "91ed58df30dd8e231729e4fbdc29929d51003dfd5eb5bb9d3bbb228293d2a6fa"
+          "sha256": "34fd0e36487c7eda98ad9335241bb820b3346ef2a01a026f73f222acb2613f04"
         }
       ]
     },
@@ -234,11 +234,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "0e71f13963e67a9696db2ee8d0d99c63f28db9404db36c13848460dc49470afc"
+          "sha256": "52fedc5cf92f03f152c4a3cad39573d013c407925a27dcf22eb19c4f65dd81b5"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "030cd8872cb585dde3f753c254048b0886a100e207f361d938ef5db60ff26cfd"
+          "sha256": "24c2496678859899c8746351cb78c338a51f28f3b68bfbd8ecc83727bb6072a3"
         }
       ]
     },
@@ -267,11 +267,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "2c6ab67b67bc62f1c3104b100008428135227b5b1566c455a19a070d8bdd05e7"
+          "sha256": "db91416563c36a3e2b443bb7a6224e8e46682cd8eeb115ccf88f3f553d44dcc2"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "7de52f251225b25e24ea861679c13e2ae102011905bb58f76fb2b22a9e86a8fe"
+          "sha256": "0fb792055dcddf1bf697e54ea11bb737cb618196e873b05ae054c8f78f151d03"
         }
       ]
     },
@@ -295,16 +295,20 @@
           "sha256": "6a6876b7e337c1c8fd7c334251cddae5a0317b773420f4de555e8bd052b91282"
         },
         {
+          "path": "references/recurring-character-bible.md",
+          "sha256": "afde3fc78c6c9f94484a4961a84cc2e544f4a40799a164242c1789ee6b4239d8"
+        },
+        {
           "path": "references/style-dictionary.md",
           "sha256": "9cd2f6a1c2ee8c26ca672ba52d7c3f490aab9079fba39812afe4ec1f326638af"
         },
         {
           "path": "SKILL.md",
-          "sha256": "e428adfc6fa84d94b42d71010515403e6202d5fae1b9b20cfd1170677c1f3c2f"
+          "sha256": "2dd11943c6dad8f196818708fea878bf7b9f1fbd3ebd665393096a8ea6970962"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "a9e4f9b72d5596e9436f8a1c23d14877d1c90b0139b3a36d6da5411d39d607b0"
+          "sha256": "3db0ad6bd934142e42f58962b4e89ee18413abb75ede039e283a88eacc76d429"
         }
       ]
     },
@@ -365,11 +369,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "ef998a24081acae45741411630e087e09bcce42fed0a13e3801daccd65940e96"
+          "sha256": "f48490d1b16b1f1ea0b99bb0d7eaff167444762386e7dc65c2eef8ddab72aebc"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "3b8be039f145b36caf9e012a3a3ab2d65098d203521cc74c200bc9d42157f6d4"
+          "sha256": "e5cde5d1cd0006d66e29380bb649e720ec349b6dfc58c7d2ad74f760927e0fdc"
         }
       ]
     },
@@ -394,11 +398,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "ea79829ee049a7e89b5814749aa9a9acce8c63c022fb6bdb8e972125f65903fe"
+          "sha256": "9374bfa268a863edd5b800bcb4081b3030e6926f479185f8a43ae0d4aeeedfaa"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "7b1430793ae84b4077b7c0f8a829151e06de7406c63e025a2211e32313c3334a"
+          "sha256": "deee210da426e13853748942dbcb651b4aca05553db0e5535755fe8f1a4be242"
         }
       ]
     },
@@ -415,11 +419,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "b5aeed74f714b243597255ff337c01c0846500cb7722708d8c81db6fe1c10ffb"
+          "sha256": "c6f9d1bb64f29ad8aeae88ef6c3dbef563f0576407b38c2e4e9e3d869e541c5e"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "f19de87c56685083886fe383970b62fba09b1e96101cdf94acd6e2fc882fc71c"
+          "sha256": "1490471fd6ccf348b308a8cafd85046c6120f55e4690294101616748afb8d76b"
         }
       ]
     },
@@ -440,11 +444,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "b1782fb3f3aaba27f9f42700edde4e1f13b91291a10e9106d844ac810825b27f"
+          "sha256": "bf14c452070e8332db4a6602db72874223160a92f9485d28df12f9004ed2160c"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "5acf75e6056e8cda35cffb2fe86d73cdda7827ced38b0ff2d904e23703f045b7"
+          "sha256": "139f736cc17ca7d8d3b842db6cb858d2b11ae1542dcce28d219441357b307ea6"
         }
       ]
     },
@@ -485,11 +489,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "8778fa17223e6de12ae37501a82f3fa77b2f09de9ef979188d575cf702135c9f"
+          "sha256": "a6a41b9a361f9f7cbee9b652920e76a0fdc04dbb665f2ca8e88676e8ce4bc586"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "25f9423e9e78b3de712ecf42cf283f165bc43641a2da2f1c9a53da3023f1b220"
+          "sha256": "5f27e5c297692bde06229cf234f6c114ade76f4cda220ed76790a0bc369950d4"
         }
       ]
     },
@@ -518,11 +522,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "2d22ea45a5006f0f9181ae466a21fc33532ce38fd45432d69236b45064632598"
+          "sha256": "31b46c0a7305c0c7d1e5e5c30252897329d6eb9b0bf219ca983eead9d9875efd"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "684eca3637e5c2ef40708e532f65ff4a6658aa8525c0f9bd609dd226f9e898f0"
+          "sha256": "c4c5d70f88ff00525259ced4874678c567416191c22343adccb583c978784b6b"
         }
       ]
     },
@@ -539,11 +543,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "90a4ba8bb4171f9b76b7dd0f1436bcfc00305ddc66ec2186240421e1d4a765e2"
+          "sha256": "647a4c2b35b0f18e97768f5e275c681020f40e7d06b950b7e498386b72c060a8"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "6d8fd421a18d3d4b1e3256ab0eb5c89e831f5daa7057d073bfe0d413b66b4b92"
+          "sha256": "916617ab10df2842776250c4704652887158234f68007e947e4d6e3d3babe176"
         }
       ]
     },
@@ -604,15 +608,15 @@
         },
         {
           "path": "references/video-extend.md",
-          "sha256": "a0e0d275d2757e66fa9618d545dd3774217c4ab12126ee8bfd9d45f91bdfd5cc"
+          "sha256": "cd41f4b5de3f9495718fec6971356a01d13b24d1867a26ecbf6ad29ac375682c"
         },
         {
           "path": "SKILL.md",
-          "sha256": "709ae83095ce0bf9c274a2a397638588adf313d870acb05bc5cbfa1f9f2d5e9c"
+          "sha256": "578baa27106f2b771f01c6ce9ef00f5d092beb580b927acfd4751acf2004d496"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "8561e2f75ed66e7c0a354ec4c2f7d7e4f3b30c4855152ecd216a21d10b2b7207"
+          "sha256": "32c7d24db055af11bed5cba4317aa37cf938e7cedcd52a0b21f17fdd662e6143"
         }
       ]
     },
@@ -629,11 +633,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "07e8344fd077ee095b617819b1a03e58174ad9705cbf8bc7b0016ba21831ac96"
+          "sha256": "2def34dd2e32914cdb0fe8ccaaa0a02b3e7a7e33bed5d7cf375f75064e5b5ce4"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "313d5ff15ec56104a7050f8b7a99a728e46d247d1fc95b927857bd0eacb478eb"
+          "sha256": "a54395eeb71ab99a4763b33116438d69a90d1ba84a2a001ea593fabbf8b0133f"
         }
       ]
     },
@@ -658,11 +662,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "c9e77fb4ae51ff1487cb3f6ffd104fa4e43a86c7d4641c93af0916727aebd5b9"
+          "sha256": "5c0f52d7c22520fd9b312cd54e345be6b701d95321a8d1f0edd974c18f384bdd"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "ef631bf2d04838f71b8fdf972f63b91f78c3eebb4090300d7b0117b99fd72218"
+          "sha256": "97cc048cd8e6030d51b0c28e76a7b8ad2706bff879c3f1b9ff5a32e71adc3af4"
         }
       ]
     },
@@ -691,11 +695,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "29cb3a2fd2e2842a827fa161d078bbc733fe64c97a508860d6e174634cc17d8c"
+          "sha256": "e2f0977bea4726c636c5ac84606c76a10895d4e914d601e664709b4d28845baf"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "4b3733a9892fa82d6bf0f3fcdab7fc0d6777986ce14ba17b81bd8e9d84024347"
+          "sha256": "4c9065d9d313924457a9ae6cafbb4ba03540ef0c9ed85fe52d5468100815202b"
         }
       ]
     },
@@ -728,11 +732,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "3556198524fcfccf19aa8ba3d22885fc0778f2dae0408b519b3c8916f0af973a"
+          "sha256": "605230aac8c442b4d0ececd446814e30eabcd62b7d4c407e134f69ccdd389a87"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "ab11127d60b531d7157801b571230f6ed30ed7656967822150ff35a751d0b23d"
+          "sha256": "6c586a858ffb8f9edffa403c2904231ed5874715d5c8231859df32488c974ee5"
         }
       ]
     },
@@ -749,11 +753,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "b283f880d5d9d59975efd5f213fdeb30682f810e73768c982a13d4d1de1a32d2"
+          "sha256": "e4fd67b2969a5037aebbdd57e461b024039a1ecd0c4694787f9f09022dcf0800"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "57355fa10706c3cd05e3923793d73519782bf5f40e41c6bb27579752618c8aba"
+          "sha256": "01b2ebd0fef4817f00e241b9c13031e051b74f41bb1e50eb003c742a3d522f9d"
         }
       ]
     },
@@ -770,11 +774,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "dec99a9c62b0e36cc0b8d64af21081d53f7b8c5192fe6dbb0447653a564a17a1"
+          "sha256": "339f585c243e951c42598a79d7a3de162bcc602a7cee08c61ee91c0509948079"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "95a03c9ba8094dd12db106773f554577968360dbe0701427de262e1b9275f20a"
+          "sha256": "c1d1bc5c65d2f389b00d56ea4e34fd9b52f7dd81a0b7b5d0f9cf573713a06ab0"
         }
       ]
     },
@@ -819,11 +823,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "accf7d5e71f3c0def0eb3a52560655af1bf16e6298eb1efa6c6afd47d8401692"
+          "sha256": "123203ff8efcfb1646409a0bbb29148fa46f84088f7f22fb580b6b21fda2468f"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "e93182ca8fdaf86ea3c6d1b2d7289b8df6ccadf622ca14b47b5d34615adfe05c"
+          "sha256": "ab2d3342d504e269d2201ad2c03fdda36b7bd716179990826b6f384247f9157a"
         }
       ]
     },
@@ -840,11 +844,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "5319ab0e5910bf875fe673f7db25e08d844a72ffe969fd25d5e207d1d8d7bf47"
+          "sha256": "2075efaebc4a2f992decb79908e1e8b38d310e9ccf35c07ad539abb420631f5d"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "49e77da17ab2c5bacb16c5b18f57230b9a55184e5372a4dd8328eb911e5df871"
+          "sha256": "c20a52b1f90401741432a8f080f60d38f1bb87ba34741e10321195bf68df3301"
         }
       ]
     },
@@ -861,11 +865,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "1e22a7e9ce6ce2ebf61c5ffed1b4bbf582440ce7dde46bee774e255a2bd013d2"
+          "sha256": "94d538b66261cbe55412f7716cce66aff0582df65d6523e0fe9dfd2ced126392"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "e6792fab4b18a70d51e762ac25077f11d9b1bfcf6145bd1aad0cfbd425d7813f"
+          "sha256": "4161d2fb26d6235eda24ba689ead0c6f8731378809204e93bf0225b31904e1df"
         }
       ]
     },
@@ -882,11 +886,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "baf2129a3e806d8a3adab4569e053c332bbd9addfa298e6c4a5dc5c90d4954ae"
+          "sha256": "ceb041ccea0789d132dcb116cfe64bf24140ac268432286aedb746258d6ebe22"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "3586124cc8461af8c431d0e01e32ca3cd52a25ceaf35072b4cf49a8f1f63026b"
+          "sha256": "b7fa7d8d5dc43f7fdaf3633836ec1386d26b0b589423e4d42cc6870adeb4f7dd"
         }
       ]
     },
@@ -903,11 +907,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "e8eb7d875aa6b66c68309c02c16730b054183b8b6dc1e65235979194fc95b07c"
+          "sha256": "3c62941012abf72daee208fd64be14dfacd4398ba378ea6ac5f88ac046fb2625"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "d3ca331ce6eff4eb6c4fb01cecf9b74229a3df42f0c909ae2c79788f23d49b3d"
+          "sha256": "b65af15efdd45ac883af879ea99d523f97d0720b444bfdf65483dad4ad90dc06"
         }
       ]
     },
@@ -932,11 +936,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "55d439a000acb6f34f316ea1edcfafeb903fef8f5444ac176e391a242c7e983a"
+          "sha256": "fb3af28314ac7ea74fb4cb86bffa343676eff1059b3118da8b1c24899524ffff"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "c59df2d0647ed8ce89ea923de6035d1e0733be36c0ce1bf442a9828d5211894e"
+          "sha256": "d91fc6a8f38f1620d428bdbf3cc92ea2f1c88384131d856c29ec9c3f1ed5dc76"
         }
       ]
     },
@@ -953,11 +957,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "ea4a28a4df6244e2ea027bb21b17328759c1c78791477337485a5af196e2b6cf"
+          "sha256": "5d924a13dad0581d8ef1541d342ff93b5abd9ca7a526f6ebd207becd2fd7d792"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "d0d8ed9ba1e8e95906ce2a993e63598a0cc7246eb7b93041e6cbdfda00ce22de"
+          "sha256": "6dcf3df3645d03dd2277e2eb5afc938033a7f878c9443a646c8d3dc021761bbc"
         }
       ]
     },
@@ -974,11 +978,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "6f2385839b1854dd2e70fc0f54a861fdb28c6711e37a666fef606ecad3fbad1a"
+          "sha256": "cd1a82761b83dc6f1b81ae5ae2c74a47e9647585956aafc2c83f471dcc8c4fde"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "72b9d63011bcd11fe8bdedddb53424bc6f15ccadde9b7b972f4ea591fc80f587"
+          "sha256": "ebc67f83a3d2e38fbd30e1a7b9ff2cfdf50e0f749611bc580590a40c2261ab5b"
         }
       ]
     },
@@ -995,11 +999,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "57363773445977620ed453efd18276a10d16d86b076ec1cda36ce34c3eb01ed5"
+          "sha256": "5e231dc6151b594ba0e3581eb3b749be402e46a235c6c278fecb4a10eb18f74b"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "6e991eaf402b4131b6a4467550de3526545c3ba2a97a14b91c7d6e650390362b"
+          "sha256": "2c91fbd270814240daa5655e3be6908d8b289f3c9ba38f12036cc8795f75905f"
         }
       ]
     },
@@ -1028,11 +1032,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "38f9f62a73b4468128e1b7bd1813220df55bc039f344e88df0255ec8db7787f5"
+          "sha256": "c9ddc90c0f1ae360d4d778e166acfeea5b84131e80ee0a1e21ea4c31d079c68d"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "55916a9bfe0bb09f282ab4f0ac711f9827272bb448b641489f4b9fa7ef5587d1"
+          "sha256": "71fc4a280988750ce2a842fcdeb75a8989a6ebf17ac5f0dc93206b6b7b3fb391"
         }
       ]
     },
@@ -1049,11 +1053,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "05e06f17d8219079439fbc5c598bd8832fda217d73327d198270e97554ac2b92"
+          "sha256": "7533e977c647be1e4d163d870f1527e154925d32a1e7406fe9e72d0ab7a3a6dd"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "ea1a79db760d6e1d734b366c91f4547b23c57efd523784d27fac52ec1b427468"
+          "sha256": "975b5e533d09cb3663b812b61e6741d36905ab49d52041cf82f884fffe08be5e"
         }
       ]
     },
@@ -1070,11 +1074,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "4800b9597f3c77bc2509331f9b0cafbf3bd8e03302a3990f275170f7510efec6"
+          "sha256": "03cca4f128a4601bdf2fd5712f418c8804f1b023e5db55bbe26d0ab4857ba4a3"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "c3f02987ce8228ce4432da7d7530f318e42e71e2dcdfdbd350fd8a0003c9300c"
+          "sha256": "43cbeea2ac8a2cf45cc76fdc2871e4895acf77667fa688b56aec2db700bd4fd3"
         }
       ]
     },
@@ -1091,11 +1095,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "a4c22378ead1aed7b79439ffbf9b113ad61384e947741b78888d058cf1e0d3a6"
+          "sha256": "214a36e95496ef418b387a20e7a55586fef9feef35e1362570aea5a87987f8eb"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "97f5f22c47dcd6c4a838c3b0a47519bc8e3c27f449ac068f9fc4c2a3b87f86b0"
+          "sha256": "6989e738cbeba3a316abc49b29502596defbf1cefa93cde93ebd25e5f4390427"
         }
       ]
     },
@@ -1136,11 +1140,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "d04bf0bfc32377789e17f455001355ea72cd04c8c2996ff1469408c16973174e"
+          "sha256": "64606ac66df5f9bde766f9cbd7ff1d8936d3fc09a78bd72f8fa1d3a712fdfff7"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "78b26edd2d1e7585140e9119658778ed316ee4410de49b830b92f9037b8858d3"
+          "sha256": "33c7717e98165e23f15f899c55f7ee5fb42604e834b84c50195b10d641dd0759"
         }
       ]
     },
@@ -1177,11 +1181,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "45996cce0e0480a98778677b171b70d7d57b7379d30651ef18f48f76e0895fee"
+          "sha256": "b23b57900da2d97823b70b7aa34ea34a9cc277b734853b07a770d781ec857cd9"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "fb06340a7a05d90a9aaa9e9d21de1f6b07ec4ac22cf478d6d44bf7bf0ffd348b"
+          "sha256": "59d7ba2868c269216745240bb413e5796ffdd1a0543fc5ccd13656f2480b9daf"
         }
       ]
     },
@@ -1206,11 +1210,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "5ef79f3994d8eca31ae66bb95627b8c316c4357b4e5fbbee3842dc10ed122809"
+          "sha256": "830e26e1ffdfa75fd1cea4cb05e92c5a09f5a0d3a9e30016dff358c01a888526"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "f77c354e6317d26a0150045257c4d13f9e04b357e8ebc5a1901eec9a217e4502"
+          "sha256": "516c0433acd23c32b4ac61605232514a4aea0c803aac93297f885befd1ee434f"
         }
       ]
     },
@@ -1243,11 +1247,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "fdf2e5d398edd286550924f787189aeb8af54fb7b90eb25ed23f2516c71e404d"
+          "sha256": "a883b4640bf22e2739ebf08fd30da57e8f4e9a75a3f9acb19ebb1603d5777c5c"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "7b09f85886ede5f0ea85f6de579008d1e25e6d812907ff3a5108f9af3d209395"
+          "sha256": "7c25653e536f097a65a2d4d56c395d32e8b34c0dc296693c50c8bfced67a2783"
         }
       ]
     },
@@ -1292,11 +1296,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "a7f13753269366bc8ab2cb62f4e5a7adf821e28007385d004b53b2d73d3a275e"
+          "sha256": "16a961da8dcd0a0434bc2155ede1977ef2e1534e13abb118f7d43569ecdb592a"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "1182d406aa4617dd27903bbaa53d0100f0599c49270f6b3d72e89ca4996f958b"
+          "sha256": "0af0c76b1f4c41b9679b206e9305def16bd7451cc971c93944503788e3c4cfcb"
         }
       ]
     },
@@ -1333,11 +1337,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "ee896bd995b262c3358f32cbbb09c796aeab30a5c6543d21548aad06af8dfbbc"
+          "sha256": "a768515ef1a03b681d84ad86db7938b75ecae1c5f04816cc1e8e5ccd56e05b6b"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "e026355997c78e8d215a66390f0eaf28cdea4e81ac3fab00a12d53733b305838"
+          "sha256": "0c884a9ce46bb896984c2d8ecda50b6c4b950acfc37ea5f6676b0179cca75257"
         }
       ]
     },
@@ -1362,11 +1366,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "6f747803de52dc188629375f854b9526b4cdddcfb0eb9f74facadbab779aed9c"
+          "sha256": "65b13cdbe9036e94395aea3f984d077983f3c5541f69ff251bc94c05adc2b603"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "0ab4cb12446fe0582697e6399666b279377082ff3cfa95695aae7bbd384bac1c"
+          "sha256": "ca3635ae756091f23f653b0ed482f575e944e924f15eb52da6b24d0352555248"
         }
       ]
     },
@@ -1431,11 +1435,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "dad28104cb72e7217d31a8574b916c14a84b512b2c3d4acf832cac3f370faf8c"
+          "sha256": "138f5db07650e3bc1bd0d219808ee90e6508a33b2f4f8641eba54809ef8659d0"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "c0d8b9af3ea14633f482b51f00f441194f4c0c34b25e29a7191e413b4abf0837"
+          "sha256": "cd2e88174d47d0720368c70a8f48a98ce1082f2c2ae46d651b41a7de8dbd600a"
         }
       ]
     },
@@ -1468,11 +1472,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "e1f4464a2244057ef85497c79c94a52d8184a4924eee8ec9ce5a3127a7707ff4"
+          "sha256": "c02f68141d911f0bea05e0890e06bf2a646d59005ff3b3bc0db10c779339aec4"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "8126b21370242bb4fc400208be52517a0e72dfee54beba336cc55471f7070260"
+          "sha256": "a1b14c21ffdc5153fff9da7c01b90f86b8f7e55fb24fd15546bdc955b5b57b58"
         }
       ]
     },
@@ -1549,11 +1553,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "550ad6496725453f9061ac9584b0678d7bee4d6f8ff781009f58c85d0614fcfc"
+          "sha256": "9a105d1b716dedb24d454acb429edf6d268b25db78fef9465fc13217ae518afc"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "9bf8b0c44499b9ead3b0eda265f3b1219c940afabe75cc7bcf901d7b515df757"
+          "sha256": "7bad8cf3ae7d97263700aa6e6d5e0fc645fcfda676f574c101320ca6905f9bd5"
         }
       ]
     },
@@ -1570,11 +1574,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "1870de6e12051ac2322c2b5ff17e9104cf70a065f0024859d4832515dabbdbd9"
+          "sha256": "cd1a5bfad8087387e4de1b0122f978c74a419fd1ae89448baae0c93212e5ceae"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "d1c28cd2f1b8c236f6ad8ce9219446245b1bf18419892fbcac1cc87cd2da8eed"
+          "sha256": "5c210316f67559abc908e4b640a7e28b89d7495a386d0892051c5e0f588a23b5"
         }
       ]
     },
@@ -1595,11 +1599,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "9863f9d37e2f7e11e383cb1c081ac2aec2c62b02899bed801a900017829ce32e"
+          "sha256": "81c56bdfdc186ee3c66b42f0ef52bc3d7cfe159995895e662688adf7fb68022f"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "dbf23e9b3f25cc21d318e71d95ab96cc16cfce4e02963aae2c0ebf2df0677e3f"
+          "sha256": "54333a005128451401addf0ade3d28e302a4e626270fd823edcb8c082d6584a3"
         }
       ]
     }

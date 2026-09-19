@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 const root = await fs.mkdtemp(path.join(os.tmpdir(), "odf-multimodal-"));
 process.env.AI_DRAMA_DATA_DIR = root;
+process.env.AI_DRAMA_MEDIA_DIR = root;
 process.env.LOCALAPPDATA = root; // Fake test credential only. Never read the real account key.
 process.env.AI_DRAMA_BRIDGE_PORT = "0";
 process.env.AI_DRAMA_ASSET_BRIDGE_BASE_URL = "https://references.invalid";

@@ -32,7 +32,7 @@
 - 视频主路线为当前适配器支持的 Seedance。需要原生声音时显式使用 `audioMode: provider-native`；静音用 `none`。不能只在提示词里写“有声音”而忽略开关。
 - 豆包语音 **ASR 与标准音色 TTS 已接入**，是否可用取决于当前配置、权限和实际响应。可用时用 `drama_request_speech_job` 冻结单次范围 → `drama_authorize_speech_job` 按 automatic/manual 执行 → `drama_get_speech_job` 查询。没有语音 Key 时仍可用 Seedance 原生声音，不阻断视频制作。
 - ASR 仅是带来源的识别证据，需要对照原音；不是自动字幕验收或生产记忆。TTS 产物要试听，再显式绑定所需镜头，不静默替换已确认音轨。
-- 独立音乐生成、声音克隆、3D 编辑器、剪辑软件工程写入仍未接入。现成授权音频或 Seedance 原生声音可以使用，但不能冒充这些独立能力。常规剪辑、字幕、混音使用 FFmpeg。
+- SeedAudio 1.0 独立音乐/歌曲通过 drama_request_speech_job(mode=music) 冻结一次请求，沿用语音调用的授权、去重与失败恢复规则；需要语音 Key 和对应服务权限，生成后必须试听再显式绑定。声音克隆、3D 编辑器、剪辑软件工程写入仍未接入。现成授权音频或 Seedance 原生声音可以使用，但不能冒充这些独立能力。常规剪辑、字幕、混音使用 FFmpeg。
 - 其他模型资料 的示例、私有字段、工具菜单与供应商名只作迁移/比较材料，不是可调用接口。生产提示词先读[Seedance 专业指南](seedance-prompting.md)，并以当前适配器合同校验，不以教程或模型品牌推断能力。
 
 ## 完成证据

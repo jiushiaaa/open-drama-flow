@@ -103,3 +103,13 @@ test("music rejects missing or malformed audio and enforces its frozen profile",
   }
   await assert.rejects(runSpeechRequest({...snapshot("music"), text:"x".repeat(501)}, {key:"fake", fetchImpl:async()=>{throw Error("must not dispatch");}}), /TEXT_INVALID/);
 });
+
+
+test("stock voice selection is honored without permitting malformed identifiers", async () => {
+  const speaker = "fixture_verified_male_bigtts"; // fixture only, not an advertised provider voice
+  await runSpeechRequest({...snapshot("tts"),speaker}, {key:"fake",fetchImpl:async(url,options)=>{
+    assert.equal(JSON.parse(options.body).req_params.speaker,speaker);
+    return new Response('data: {"code":0,"data":"YWJj"}\n\ndata: {"code":20000000}\n');
+  }});
+  await assert.rejects(runSpeechRequest({...snapshot("tts"),speaker:"https://example.invalid"}, {key:"fake",fetchImpl:async()=>assert.fail("invalid voice dispatched")}),/SPEAKER_INVALID/);
+});

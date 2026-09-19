@@ -180,3 +180,6 @@ node scripts/verify-skill-mcp.mjs
 ```
 
 Software is [MIT licensed](LICENSE). The canvas uses React + TypeScript components from [infinite-canvas](https://github.com/basketikun/infinite-canvas), with upstream licensing and attribution retained. Third-party models, weights and creative assets retain their own licenses.
+
+
+[第二集复盘与第三集制作门槛 / Episode two production lessons](docs/production-iteration-20260919.md) — identity evidence, causal action beats, shot handoffs, native audio capability and bounded SeedAudio music.
