@@ -132,7 +132,7 @@ options:
 
 按 `references/prompt-blueprint.md` 写唯一 `final_seedance_prompt`。它必须完整包含七段结构、实际音乐/歌词或 BGM 声明、8–10 个 Shot、逐镜动作—空间—运镜、Typography Layer A/B/C、Rhythm/Cut 和全局生成锁；不以字符数量代替专业质量；去重后保留清晰的动作、参考和声音。
 
-按实际 Seedance 能力冻结一个有界视频任务，显式设置 audioMode: provider-native 表达所需歌曲、人声和音效；实际结果必须听音复核。独立音乐生成未接入，不另派音乐 Agent。
+按实际 Seedance 能力冻结一个有界视频任务，显式设置 audioMode: provider-native 表达所需歌曲、人声和音效；实际结果必须听音复核。独立音乐可用SeedAudio 1.0语音任务mode=music，单次冻结并试听；不自行额外派发音乐Agent。
 
 先把 `final_seedance_prompt` 完整展示给用户；展示代码块里的字符串就是 Seedance 2.5 的最终 prompt。随后只通过 总控冻结请求和授权执行链运行，不依赖额外 video agent：
 

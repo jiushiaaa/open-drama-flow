@@ -65,7 +65,7 @@
         },
         {
           "path": "references/provider-contract.md",
-          "sha256": "42bb550d50cee1d9cd5d985fdde2b15c8603d847ea49c984622edb904ee8123b"
+          "sha256": "41dd5286ddbe7cadfdd8dda27a0025a9e592bbf3010c487485707d5f9d9c4b39"
         },
         {
           "path": "references/routing-contract.md",
@@ -365,7 +365,7 @@
         },
         {
           "path": "SKILL.cn.md",
-          "sha256": "254074436304a777a0f7eb45149b267a668df754df77fd382d54b515b476f536"
+          "sha256": "3bf12fcd38f853127b669eeb3cffeb36127975609d3b088ea3ece9808b3ee824"
         },
         {
           "path": "SKILL.md",
@@ -1173,7 +1173,7 @@
         },
         {
           "path": "references/runtime-tools-contract.md",
-          "sha256": "6662128de6341b126694dc6c0cab5c6f375ee6d6f63d30afcede75cfec4c2c2e"
+          "sha256": "2d53b038f8d803b853d1df059daae82668475ebe2565adccc3d502f91ca9f6ef"
         },
         {
           "path": "references/vox-style-guide.md",
@@ -1185,7 +1185,7 @@
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "59d7ba2868c269216745240bb413e5796ffdd1a0543fc5ccd13656f2480b9daf"
+          "sha256": "a7ffba7a680d92cdfa774c7caa08c827af3686ccff5a172182dc940ebc5e7671"
         }
       ]
     },
@@ -1251,7 +1251,7 @@
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "7c25653e536f097a65a2d4d56c395d32e8b34c0dc296693c50c8bfced67a2783"
+          "sha256": "36310cf4b20813b2d2b6654355ba02d28253270af9ccd3efcabdca5b83b1a710"
         }
       ]
     },
@@ -1341,7 +1341,7 @@
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "0c884a9ce46bb896984c2d8ecda50b6c4b950acfc37ea5f6676b0179cca75257"
+          "sha256": "71ed623890b27d2247624eef57cb03e92d60ef52ca5684da4482b857da2e3aff"
         }
       ]
     },
