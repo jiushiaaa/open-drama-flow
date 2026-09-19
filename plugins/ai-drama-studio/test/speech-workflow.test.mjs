@@ -203,3 +203,12 @@ test("changing a frozen speaker cannot silently change a paid TTS call", async (
   await mutateState(state=>{state.speechJobs.find(j=>j.id===job.id).snapshot.speaker="fixture_other_bigtts";});
   await assert.rejects(authorizeSpeechJob(job.id,accept,deps),/SNAPSHOT_CHANGED/);
 });
+
+
+test("changing frozen TTS direction fails before dispatch", async () => {
+  const project=await createProject({title:"Direction fixture"});
+  const job=await requestSpeechJob({projectId:project.id,mode:"tts",text:"你好",contextText:"用粤语轻松地说"},deps);
+  assert.equal(job.snapshot.contextText,"用粤语轻松地说");
+  await mutateState(state=>{state.speechJobs.find(j=>j.id===job.id).snapshot.contextText="改变";});
+  await assert.rejects(authorizeSpeechJob(job.id,accept,deps),/SNAPSHOT_CHANGED/);
+});

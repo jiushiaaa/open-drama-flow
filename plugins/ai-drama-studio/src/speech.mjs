@@ -12,7 +12,7 @@ export const SPEECH = Object.freeze({
 export function speechCapabilities(configured, settings = {}) {
   return { configured, strategy: configured ? "seedance-plus-speech" : "seedance-native",
     asr: { available: configured, resourceId: SPEECH.asr.resourceId, maxSecondsPerApproval: 120 },
-    tts: { available: configured, resourceId: SPEECH.tts.resourceId, speaker: SPEECH.tts.speaker, configurableSpeaker: true, speakerSelection: "verified stock voice ID frozen per job; no cloning", maxCharactersPerApproval: 500 },
+    tts: { available: configured, resourceId: SPEECH.tts.resourceId, speaker: SPEECH.tts.speaker, configurableSpeaker: true, contextInstruction: { supported: true, parameter: "req_params.additions.context_texts", maxCharacters: 500 }, speakerSelection: "verified stock voice ID frozen per job; no cloning", maxCharactersPerApproval: 500 },
     executionMode: executionMode(settings), requiresPaidApproval: executionMode(settings) === "manual", serviceEntitlementVerified: false,
     guidance: configured
       ? "Seedance 生成原生声音；需要对白核对时申请 ASR，需要旁白/补录时申请 TTS。保存 Key 不代表已开通服务；失败时报告原因，不自动改用另一项付费服务。"
@@ -43,6 +43,12 @@ export function speechSpeaker(value) {
   return value;
 }
 
+export function speechContextText(value) {
+  if (value === undefined) return undefined;
+  if (typeof value !== "string" || !value.trim() || value.length > 500) throw new Error("SPEECH_CONTEXT_INVALID");
+  return value.trim();
+}
+
 export async function runSpeechRequest(snapshot, { key, requestId = randomUUID(), audio, fetchImpl = fetch } = {}) {
   const profile = SPEECH[snapshot.mode];
   if (!profile || JSON.stringify(snapshot.profile) !== JSON.stringify(profile)) throw new Error("SPEECH_PROFILE_CHANGED");
@@ -59,6 +65,11 @@ export async function runSpeechRequest(snapshot, { key, requestId = randomUUID()
     if (typeof snapshot.text !== "string" || !snapshot.text.trim() || snapshot.text.length > 500) throw new Error("SPEECH_TEXT_INVALID");
     body = { user: { uid: "opendramaflow" }, req_params: { text: snapshot.text, speaker: speechSpeaker(snapshot.speaker),
       audio_params: { format: profile.format, sample_rate: profile.sampleRate, speech_rate: 0 } } };
+  }
+  const contextText = speechContextText(snapshot.contextText);
+  if (contextText !== undefined) {
+    if (snapshot.mode !== "tts" || !speechSpeaker(snapshot.speaker).includes("_uranus_")) throw new Error("SPEECH_CONTEXT_REQUIRES_TTS2");
+    body.req_params.additions = JSON.stringify({ context_texts: [contextText] });
   }
   const response = await fetchImpl(profile.endpoint, { method: "POST", redirect: "error", signal: AbortSignal.any([shutdownSignal, AbortSignal.timeout(120000)]),
     headers: { "Content-Type": "application/json", "X-Api-Key": key, ...(profile.resourceId ? { "X-Api-Resource-Id": profile.resourceId } : {}), "X-Api-Request-Id": requestId, ...(snapshot.mode === "asr" ? { "X-Api-Sequence": "-1" } : {}) }, body: JSON.stringify(body) });

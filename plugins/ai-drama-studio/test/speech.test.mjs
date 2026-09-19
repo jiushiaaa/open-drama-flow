@@ -113,3 +113,17 @@ test("stock voice selection is honored without permitting malformed identifiers"
   }});
   await assert.rejects(runSpeechRequest({...snapshot("tts"),speaker:"https://example.invalid"}, {key:"fake",fetchImpl:async()=>assert.fail("invalid voice dispatched")}),/SPEAKER_INVALID/);
 });
+
+
+test("TTS2 freezes direction separately from spoken dialogue using JSON-string additions", async () => {
+  const contextText="请用地道香港粤语，自然带笑地说。";
+  await runSpeechRequest({...snapshot("tts"),contextText}, {key:"fake",fetchImpl:async(url,options)=>{
+    const body=JSON.parse(options.body);assert.equal(body.req_params.text,snapshot("tts").text);
+    assert.equal(typeof body.req_params.additions,"string");
+    assert.deepEqual(JSON.parse(body.req_params.additions),{context_texts:[contextText]});
+    return new Response('data: {"code":0,"data":"YWJj"}\n\ndata: {"code":20000000}\n');
+  }});
+  for(const contextText of ["", "x".repeat(501), {}, ["one","two"]]){
+    await assert.rejects(runSpeechRequest({...snapshot("tts"),contextText},{key:"fake",fetchImpl:async()=>assert.fail("must reject before dispatch")}),/CONTEXT_INVALID/);
+  }
+});

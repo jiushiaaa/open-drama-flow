@@ -6,7 +6,7 @@ import { readState, mutateState, appendEvent } from "./store.mjs";
 import { readSpeechKey, hasSpeechKey } from "./secrets.mjs";
 import { inspectMediaFile, mediaCommand } from "./media-inspection.mjs";
 import { importLocalAsset } from "./workflow.mjs";
-import { SPEECH, runSpeechRequest, speechSpeaker } from "./speech.mjs";
+import { SPEECH, runSpeechRequest, speechSpeaker, speechContextText } from "./speech.mjs";
 import { launchBackground } from "./background-jobs.mjs";
 import { executionMode, confirmationOutcome } from "./execution-policy.mjs";
 
@@ -63,6 +63,7 @@ async function verifySnapshot(job, state) {
 export async function requestSpeechJob(input, deps = {}) {
   if (!(await (deps.hasKey || hasSpeechKey)())) throw new Error("SPEECH_KEY_NOT_CONFIGURED");
   if (!SPEECH[input.mode]) throw new Error("SPEECH_MODE_INVALID");
+  if (input.contextText !== undefined && input.mode !== "tts") throw new Error("SPEECH_CONTEXT_REQUIRES_TTS2");
   const currentState = await readState();
   const project = scope(currentState, input.projectId, input.creationId);
   const id = safeId("speech");
@@ -70,7 +71,14 @@ export async function requestSpeechJob(input, deps = {}) {
   if (["tts", "music"].includes(input.mode)) {
     if (typeof input.text !== "string" || !input.text.trim() || input.text.trim().length > 500) throw new Error("SPEECH_TEXT_INVALID");
     snapshot.text = input.text.trim();
-    if (input.mode === "tts") snapshot.speaker = speechSpeaker(input.speaker);
+    if (input.mode === "tts") {
+      snapshot.speaker = speechSpeaker(input.speaker);
+      const contextText = speechContextText(input.contextText);
+      if (contextText !== undefined) {
+        if (!snapshot.speaker.includes("_uranus_")) throw new Error("SPEECH_CONTEXT_REQUIRES_TTS2");
+        snapshot.contextText = contextText;
+      }
+    }
   } else {
     const asset = project.assets.find(item => item.id === input.assetId && !item.stale && ["video", "audio"].includes(item.kind));
     if (!asset?.sha256) throw new Error("SPEECH_SOURCE_REQUIRED");
@@ -110,7 +118,7 @@ export async function authorizeSpeechJob(jobId, elicit, deps = {}) {
   const detail = snapshot.mode === "asr"
     ? `ASR：将素材「${snapshot.source.name}」v${snapshot.source.version} 的 ${snapshot.audio.startSeconds}–${snapshot.audio.startSeconds + snapshot.audio.durationSeconds} 秒音频发送给豆包语音识别；${snapshot.audio.bytes} 字节；输入 SHA-256 ${snapshot.audio.sha256}`
     : snapshot.mode === "music" ? `SeedAudio 1.0：根据以下描述生成一段音乐或歌曲，试听后才能绑定：\n${snapshot.text}`
-    : `TTS：使用官方预置音色 ${snapshot.speaker || snapshot.profile.speaker}，生成 ${snapshot.text.length} 字旁白（非声音克隆）。全文：\n${snapshot.text}`;
+    : `TTS：使用官方预置音色 ${snapshot.speaker || snapshot.profile.speaker}，生成 ${snapshot.text.length} 字旁白（非声音克隆）。表演指令：${snapshot.contextText || "默认"}。全文：\n${snapshot.text}`;
   let answer;
   if (!automatic) try {
     answer = await elicit({ mode: "form", message: `${detail}\n服务：${snapshot.profile.resourceId || snapshot.profile.model}；最多 1 次付费请求（失败也占用本次额度，无自动重试）；按账号服务价格计费，此处不承诺免费。请求摘要：${job.requestDigest}。生成/识别成功不等于声音审核通过。`,
