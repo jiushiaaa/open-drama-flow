@@ -43,3 +43,7 @@ description: 用专业景别、机位、光影和调度设计影视镜头与角�
 - [references/character-sheet-formats.md](./references/character-sheet-formats.md)
 - [references/shot-language.md](./references/shot-language.md)
 - [references/visual-styles.md](./references/visual-styles.md)
+
+## 灯光与导演方法迁入
+
+涉及灯光、多人调度和长镜头时，读[有动机的灯光与调度](references/motivated-lighting-blocking.md)，记录光源地标、相对关系、运镜触发和信息揭露。

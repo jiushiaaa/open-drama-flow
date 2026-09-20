@@ -129,6 +129,10 @@
           "sha256": "873bca780245685c931a967433c0e443fc8887a6b5d31929f2c8dfc2f9d6b289"
         },
         {
+          "path": "references/prompt-claims-and-directing.md",
+          "sha256": "348dc26faf59ac4f81998c3d2148976667378aca907fa68690485ef10e6b697d"
+        },
+        {
           "path": "references/storyboard-transfer.md",
           "sha256": "ab993ba7cf3366c6a147d7678a134aafeae54502e0c44abe8261c3c75bf27263"
         },
@@ -138,11 +142,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "f72869b5b91593ac98b335654babf7c20a5a105031c39f9cabe7899100642bd7"
+          "sha256": "3d4dc9a809b561635a2a7c72f5fd9c221bfec4bafbaad8bb02ead9c149acd4c4"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "f99249efdd50db302af59abdb3910eb56dff35c10d969f02ea16a7d662afd8bc"
+          "sha256": "2466c4b9bca33b2e4054094c6da58742743e43b3bb7a9ed336dc87d836fb2092"
         }
       ]
     },
@@ -525,6 +529,10 @@
           "sha256": "78e52faa2a2d7762b1a7302d83dd7a2e5791a0fb0ce451cebf429097894c8be2"
         },
         {
+          "path": "references/motivated-lighting-blocking.md",
+          "sha256": "fb634e8dffc3d4a8e1289cc15bc712da2d392add8e2e42b2252294d792f87ddf"
+        },
+        {
           "path": "references/shot-language.md",
           "sha256": "3a1c2f6ad310b695995eca36b6e745f2c9795445a8c1f241c45922f8c5007ad4"
         },
@@ -534,11 +542,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "597342c02fe8fe8e6d3b8b3940436f0d3f2233983135dbbf4c7b7b73b2687f79"
+          "sha256": "034b005045bd22115fb04c21ca4ca103443df49df731d9a22558414f85dd8ef5"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "c50923db41f648d4e283910638709866644e13196da7abb13a7f49ddae017e20"
+          "sha256": "2fdcec96a3d201af1ea0b9a0a42cd8628ad03c804721555649a17bb0ad735a27"
         }
       ]
     },
@@ -624,11 +632,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "578baa27106f2b771f01c6ce9ef00f5d092beb580b927acfd4751acf2004d496"
+          "sha256": "78cf2d5b12b60b12fd5110efd0e7fd535b5a33e720436f02f4e0801e88464168"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "32c7d24db055af11bed5cba4317aa37cf938e7cedcd52a0b21f17fdd662e6143"
+          "sha256": "f39109604a6978fd510828ac1d86816911c8ad2f9ba4c9bfda274023fb677c15"
         }
       ]
     },
@@ -969,11 +977,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "5d924a13dad0581d8ef1541d342ff93b5abd9ca7a526f6ebd207becd2fd7d792"
+          "sha256": "96d24a2d607666927b73c153e041e56a947e664869313c512f5a81247f24aef5"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "6dcf3df3645d03dd2277e2eb5afc938033a7f878c9443a646c8d3dc021761bbc"
+          "sha256": "748f9cf72ad5eff014503f33dee4d65acc6e74305c9cdcea11a2df30e8cddbe8"
         }
       ]
     },

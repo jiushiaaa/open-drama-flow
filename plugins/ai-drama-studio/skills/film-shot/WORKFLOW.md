@@ -84,3 +84,7 @@ Step 5: 出图后跑通用 5 维基线（构图 / 光影 / 主体 / 质量 / 规
 | 3D / CG | `Medium: stylized 3D render, CG animation style.` | `NOT photoreal, NOT anime, NOT 2D illustration` |
 
 > **整组所有视图必须锁同一种媒介**——别第 1 张写实、第 2 张动漫，跨视图一致性立刻崩。
+
+## 灯光与导演方法迁入
+
+涉及灯光、多人调度和长镜头时，读[有动机的灯光与调度](references/motivated-lighting-blocking.md)，记录光源地标、相对关系、运镜触发和信息揭露。

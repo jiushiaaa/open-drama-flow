@@ -39,3 +39,7 @@ description: 制作悬疑、生存、恋爱、职场等题材的沉浸式第一�
 ## 专业资料索引
 
 - 本 Skill 的完整专业细节位于 [WORKFLOW.md](./WORKFLOW.md)。
+
+## 灯光与导演方法迁入
+
+设计第一视角前，读[灯光、相对调度与POV](../film-shot/references/motivated-lighting-blocking.md)，先绑定观察角色，再以听见、呼吸、落脚和转头解释运动。

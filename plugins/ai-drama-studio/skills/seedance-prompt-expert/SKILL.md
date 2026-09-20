@@ -53,3 +53,7 @@ description: 为 Seedance 2.5 编译多图、视频、音频、首尾帧、续�
 - [references/text-to-video.md](./references/text-to-video.md)
 - [references/pattern-grammars.md](./references/pattern-grammars.md)
 - [references/text-ui-layout.md](./references/text-ui-layout.md)
+
+## 灯光与导演方法迁入
+
+编译导演意图时，读[灯光与空间调度](../film-shot/references/motivated-lighting-blocking.md)；涉及算力、注意力锁定等外部说法时，读[技术说法的证据边界](../creator-method-transfer/references/prompt-claims-and-directing.md)。

@@ -248,3 +248,7 @@ third-person shot, external shot of protagonist, protagonist face, over-the-shou
 1. “做一个普通剧情短片，男女主在咖啡厅对话。”
 2. “给产品做一个开箱展示视频。”
 3. “生成一张角色三视图设定图。”
+
+## 灯光与导演方法迁入
+
+设计第一视角前，读[灯光、相对调度与POV](../film-shot/references/motivated-lighting-blocking.md)，先绑定观察角色，再以听见、呼吸、落脚和转头解释运动。
