@@ -115,7 +115,7 @@ node scripts/agent-setup.mjs --print-config
 
 macOS 也可直接运行 `bash scripts/install.sh generic`，完成依赖安装、隔离验证与配置输出。生成的配置选择通用 Agent 模式，合并时请保留 `env` 字段。
 
-**配置 API Key：**方舟 Key 用于 Seedance 视频；非 Codex 宿主还需开通同一 Key 对应的 Seedream 生图，或选择 fal / Replicate 生图 Key。在工作台「API Key」和「用量与工具」中保存，豆包语音可选。Windows 使用 DPAPI、macOS 使用系统钥匙串保管凭据，不写入仓库。工作台地址以 `drama_get_state` 返回值为准，默认 Codex 使用 4317，通用 Agent 使用 4319。
+**配置 API Key：**打开工作台「供应商与 API」，选择预设并填写凭据，接口地址和已支持的模型已预填。默认方舟 / Seedance、可选豆包语音；非 Codex 宿主还需配置生图 API，也可添加兼容媒体协议的自定义供应商。Windows 使用 DPAPI、macOS 使用系统钥匙串保管凭据，不写入仓库。工作台地址以 `drama_get_state` 返回值为准，默认 Codex 使用 4317，通用 Agent 使用 4319。
 
 ### 开始第一个项目
 
@@ -229,17 +229,23 @@ Skill 提供专业工作流，不等于新增模型能力。[浏览全部技能]
 
 ### 生成供应商
 
-以下列出的是**已实现的具体接口，不代表接入了供应商旗下所有模型**。默认仍为方舟与豆包语音。可选的 fal / Replicate 适配器已通过模拟接口测试，**尚未完成真实账号实测**；密钥、服务权限、余额、模型可用性与结果下载仍需通过小用量端到端测试确认。
+「供应商与 API」提供 **11 个区域／服务预设、22 个能力配置**。以下是具体接口，**不代表供应商旗下所有模型和模式**。新增适配器通过模拟接口测试，**未做真实账号实测**；保存密钥不等于服务开通、余额充足或生成成功。详见[接入范围、官方来源与价格边界](docs/provider-settings.md)。
 
 | 供应商／入口 | 模型与支持用途 | 能力边界 |
 | --- | --- | --- |
 | Codex 内置 image-gen | 角色、场景与参考图 | 当前 Codex 任务提供的默认图片入口；确认后入库 |
 | 火山方舟 | Seedance 2.5 视频；Seedream 文生图 | Seedream 是非 Codex 宿主的默认 API 生图入口；Seedance 输入与模式受所选模型及接口约束 |
 | 豆包语音 | ASR、标准 TTS、SeedAudio 1.0 音乐 | 需单独的可选语音配置及服务权限；未配置时使用 Seedance 原生视频声音 |
+| MiniMax · 国内／国际站 | image-01；Hailuo 2.3；speech-2.8-hd TTS | 两站接口、密钥、币种隔离；文本输入；视频 768P、6 秒 |
+| 阿里云百炼 · 北京 | Wanx 2.1 turbo 文生图；Wan 2.7 文生视频 | 文本输入；视频 720P、5 秒 |
+| 腾讯云混元 | TextToImageLite 文生图；混元文生视频 | SecretId + SecretKey 签名；文本输入；视频 720P |
+| 可灵 · 国际 API | Kling v3 文生图；Kling 3.0 文生视频 | API Key 鉴权；文本输入；视频 720P、5 秒、无声 |
+| 智谱 | GLM-Image；CogVideoX-3 | 文本输入；quality 视频、原生声音 |
+| Runway | Gen-4 Image；Gen-4.5 视频 | 文本输入；720P；视频 5 秒 |
 | fal | Wan 2.2 A14B 文生视频；FLUX Schnell 文生图 | 实验性适配；当前仅接收文本，不等同于 Seedance 的多参考与编辑能力 |
 | Replicate | FLUX Schnell 文生图 | 实验性适配；目前未接入 Replicate 视频生成 |
 
-在 Codex 中，API 生图是用户明确指定或内置工具确实不可用／失败时才启用的备用路线；在其他 Agent 中，配置生图 API 是正常路线。两者都先生成库外候选，验收后入库，保留已冻结的调用上限。新增的独立 Seedream 候选接口已做模拟测试，真实账号验证另行进行。
+在 Codex 中，API 生图是用户明确指定或内置工具确实不可用／失败时才启用的备用路线；在其他 Agent 中，配置生图 API 是正常路线。两者都先生成库外候选，验收后入库，保留已冻结的调用上限。切换默认供应商不改变旧任务；独立 TTS 首选不改变豆包 ASR／音乐入口。自定义供应商必须兼容已支持的媒体协议，不是填入任意聊天 API 就能生成视频。
 
 ### 本地工具与可选扩展
 
@@ -281,7 +287,7 @@ Codex 模型由你选择，不硬编码为某个版本。SeedAudio 1.0 音乐通
 - [制作指南：模型、验收与本地数据](docs/production-guide_zh.md)
 - [阶段合同、恢复与决策记录](plugins/ai-drama-studio/docs/production-contracts.md)
 - [统一工具能力、本地声音后期与费用记录](plugins/ai-drama-studio/docs/toolchain.md)
-- 工作台「用量与工具」支持费用趋势、请求日志、定价、供应商配置与本地超分任务；默认方舟 / 豆包语音，可选 fal / Replicate 的有限输入适配。账户账单需单独配置只读凭据。
+- 「用量详情」按供应商、模型筛选，分币种显示费用趋势与请求日志。官方定价预设附来源和规格，可按账号优惠修改；未知价格保持未知，估算不等于账单，改价仅影响后续调用。供应商配置、本地超分与账单设置使用独立页面，账户账单需单独配置只读凭据。
 - [插件与 MCP 说明](plugins/ai-drama-studio/README.md)
 - [公开样例与复现素材](production/publish-examples/README.md)
 - [模型和参考来源](docs/reference-sources.md)

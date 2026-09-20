@@ -1,4 +1,8 @@
 .production-console { padding: 36px 40px; overflow: auto; height: 100%; min-height: 0; color: #17233a; }
+html.responsive-console-route, .responsive-console-route body { min-width: 0; }
+.responsive-console-route .desktop-shell { grid-template-columns: 258px minmax(0, 1fr); }
+.production-console .console-panel, .production-console .console-form > * { min-width: 0; }
+.production-console summary { overflow-wrap: anywhere; }
 .production-console header h1 { margin: 4px 0 12px; font-size: 28px; }
 .production-console p, .console-note { color: #718097; line-height: 1.65; }
 .console-filters, .console-tabs, .console-pagination, .console-key-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
@@ -33,3 +37,8 @@
 .console-actual { background: #55b98b; }
 @media (max-width: 1000px) { .production-console { padding: 24px; } .console-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 650px) { .console-form, .console-metrics { grid-template-columns: 1fr; } }
+@media (max-width: 650px) {
+  .responsive-console-route .desktop-shell { grid-template-columns: minmax(0, 1fr); }
+  .responsive-console-route .sidebar { position: static; height: auto; }
+  .responsive-console-route .sidebar-project-section { max-height: 180px; }
+}

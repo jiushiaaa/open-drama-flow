@@ -87,7 +87,7 @@ export async function clearSpeechKey() { await runPowerShell("clear", "", speech
 
 const extraProviders = new Set(["fal", "replicate", "volc-billing-ak", "volc-billing-sk"]);
 function providerSecretPath(provider) {
-  if (!extraProviders.has(provider)) throw new Error("SECRET_PROVIDER_INVALID");
+  if (!extraProviders.has(provider) && !/^vendor-[a-z0-9][a-z0-9-]{0,60}-(apikey|accesskey|secretkey)$/.test(provider)) throw new Error("SECRET_PROVIDER_INVALID");
   return path.join(secretDir, `${provider}.key`);
 }
 export async function hasProviderKey(provider) {

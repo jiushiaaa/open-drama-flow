@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/desktop-overrides.css">
   <link rel="stylesheet" href="/production-console.css">
+  <link rel="stylesheet" href="/provider-settings.css">
 </head>
 <body>
   <div class="desktop-shell">
@@ -22,9 +23,9 @@
         <a class="nav-create active" href="#start"><img src="/icons/plus.svg" alt="">开始创作</a>
         <a class="nav-item" href="#project-library"><img src="/icons/folder-kanban.svg" alt="">项目库</a>
         <a class="nav-item" href="#skills"><img src="/icons/sparkles.svg" alt="">Skill</a>
-        <a class="nav-item" href="#production-console"><img src="/icons/settings-2.svg" alt="">用量与工具</a>
+        <a class="nav-item" href="#production-console"><img src="/icons/settings-2.svg" alt="">用量详情</a>
         <a class="nav-item" href="#project-guide"><img src="/icons/book-open.svg" alt="">项目新手指引</a>
-        <button id="settings-button" class="nav-item" type="button"><img src="/icons/key-round.svg" alt="">API Key</button>
+        <a id="settings-button" class="nav-item" href="#providers"><img src="/icons/key-round.svg" alt="">供应商与 API</a>
       </nav>
 
       <section class="sidebar-project-section" aria-labelledby="sidebar-project-title">
@@ -166,25 +167,6 @@
 
   <dialog id="delete-dialog" class="modal danger-modal"><form id="delete-form" method="dialog"><header><div><p class="eyebrow">LOCAL DELETE</p><h2 id="delete-dialog-title">删除项目？</h2></div><button class="icon-button" type="button" data-close-dialog="delete-dialog"><img src="/icons/x.svg" alt=""></button></header><p id="delete-dialog-copy"><span id="delete-target-kind">项目</span>删除后无法从界面恢复，项目删除会保留在本机回收目录。确认删除“<strong id="delete-target-name"></strong>”吗？</p><footer><button class="button subtle" type="button" data-close-dialog="delete-dialog">取消</button><button id="delete-submit" class="button danger" type="submit">删除项目</button></footer></form></dialog>
 
-  <dialog id="settings-dialog" class="modal settings-modal">
-    <div class="credential-vault">
-      <header><div><p class="eyebrow">LOCAL CREDENTIAL VAULT</p><h2>API Key</h2></div><button class="icon-button" type="button" aria-label="关闭 API Key 配置" data-close-dialog="settings-dialog"><img src="/icons/x.svg" alt=""></button></header>
-      <p class="vault-description">密钥仅在本机保存：Windows 使用 DPAPI，macOS 使用系统钥匙串，不进入项目或 Git 仓库。Codex 默认内置生图；其他 Agent 需配置生图 API Key，方舟 Key 可同时用于 Seedream 图片与 Seedance 视频。更换电脑后请重新配置。</p>
-      <form id="credential-form" class="credential-block">
-        <div class="credential-heading"><div><strong>火山方舟 API Key</strong><p>用于 Seedance 2.5 视频与原生声音生成。</p></div><span id="credential-chip" class="status-chip">读取中</span></div>
-        <label for="ark-api-key">方舟密钥</label><div class="secret-field"><input id="ark-api-key" type="password" autocomplete="off" spellcheck="false" minlength="12" maxlength="512" required><button id="secret-toggle" class="button subtle" type="button" aria-label="显示方舟密钥" aria-pressed="false">显示</button></div><p id="ark-key-error" class="field-error" role="status"></p>
-        <div class="credential-actions"><button id="clear-key-button" class="button danger-ghost" type="button">清除方舟密钥</button><button id="save-key-button" class="button primary" type="submit">安全保存</button></div>
-      </form>
-      <form id="speech-credential-form" class="credential-block">
-        <div class="credential-heading"><div><strong>豆包语音 API Key <span class="optional-label">可选</span></strong><p>用于 ASR 对白识别与 TTS 旁白 / 补录；不是方舟密钥。</p></div><span id="speech-credential-chip" class="status-chip">读取中</span></div>
-        <label for="speech-api-key">豆包语音密钥</label><div class="secret-field"><input id="speech-api-key" type="password" autocomplete="off" spellcheck="false" minlength="12" maxlength="512" required><button id="speech-secret-toggle" class="button subtle" type="button" aria-label="显示豆包语音密钥" aria-pressed="false">显示</button></div><p id="speech-key-error" class="field-error" role="status"></p>
-        <div class="credential-actions"><button id="clear-speech-key-button" class="button danger-ghost" type="button">清除语音密钥</button><button id="save-speech-key-button" class="button primary" type="submit">安全保存</button></div>
-      </form>
-      <section class="capability-block sound-strategy" aria-live="polite"><strong id="sound-strategy-title">声音方案</strong><p id="sound-strategy-description"></p><small>保存不等于服务开通；ASR / TTS 默认自动执行，仅在你要求时逐项审批。未配置时无需补填，也不影响 Seedance 原生声音创作。</small></section>
-      <section class="capability-block"><dl><div><dt>图片资产</dt><dd>Codex Image Gen</dd></div><div><dt>视频镜头</dt><dd>Seedance 2.5</dd></div><div><dt>素材桥</dt><dd id="bridge-status">按需自动连接</dd></div></dl></section>
-      <footer><button class="button subtle" type="button" data-close-dialog="settings-dialog">完成</button></footer>
-    </div>
-  </dialog>
 
   <dialog id="skill-import-dialog" class="modal skill-import-modal">
     <form id="skill-import-form" method="dialog">

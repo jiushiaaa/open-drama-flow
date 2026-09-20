@@ -53,7 +53,7 @@ FFmpeg afftdn 频谱降噪，不是人声分离或声音克隆。需显式选择
 
 ### Real-ESRGAN 可恢复超分
 
-工作台「用量与工具 → 本地超分」配置 NCNN 可执行文件、权重目录、模型、GPU 和 tile；不自动下载不明权重。也可调用 `drama_configure_upscale({runtime})`，runtime 包含 executable、modelsDirectory、model、gpu、tile。
+工作台「供应商与 API → 本地超分与账单同步设置」配置 NCNN 可执行文件、权重目录、模型、GPU 和 tile；不自动下载不明权重。也可调用 `drama_configure_upscale({runtime})`，runtime 包含 executable、modelsDirectory、model、gpu、tile。
 
 1. `drama_create_upscale_job({sourcePath,sourceSha256,longEdge:3840,chunkFrames:120})`：准备新任务，可携带 projectId / creationId / shotId。
 2. `drama_start_upscale_job({jobId})`：后台运行；相同入口恢复暂停/失败任务。
@@ -72,11 +72,15 @@ FFmpeg afftdn 频谱降噪，不是人声分离或声音克隆。需显式选择
 
 ## 多供应商
 
-默认依然是 Codex 内置图片、方舟 Seedance 和豆包语音。工作台「用量与工具 → 供应商与 API Key」可保存路由偏好及 fal / Replicate 密钥；密钥仅保存在 Windows DPAPI 凭据文件，不进入项目状态、日志或版本库。方舟、豆包语音仍在原 API Key 面板。
+默认依然是 Codex 内置图片、方舟 Seedance 和豆包语音。工作台「供应商与 API」统一管理所有凭据、路由、官方预设与自定义媒体协议；不再使用旧 API Key 面板。Windows DPAPI / macOS 钥匙串保存密钥，不进入项目状态、日志或版本库。完整厂商清单、接口来源和固定规格见[供应商说明](../../../docs/provider-settings.md)。
 
 | 适配器 | 本版输入 | 结果 |
 | --- | --- | --- |
 | 方舟 Seedance | 现有高级参考/任务类型，按实时能力校验 | 视频 |
+| 方舟 Seedream | 独立文生图候选；非 Codex 默认 API | 图片候选 |
+| MiniMax 国内／国际 | image-01；Hailuo 2.3 768P 6 秒；speech-2.8-hd | 图片／视频／TTS 候选 |
+| 阿里／腾讯／可灵／智谱／Runway | 文本输入；各自固定模型规格，见实时目录 | 图片／视频候选 |
+| 豆包语音 | 已接入资源与权限约束 | ASR／TTS／音乐 |
 | fal Wan 2.2 | 仅文本；17–161 帧、16 fps；480p / 580p / 720p | 视频候选 |
 | fal FLUX Schnell | 仅文本；一张 | 图片候选 |
 | Replicate FLUX Schnell | 仅文本；一张 | 图片候选 |
@@ -85,17 +89,17 @@ FFmpeg afftdn 频谱降噪，不是人声分离或声音克隆。需显式选择
 
 新任务冻结 prompt、参数、制作方案摘要和单次调用上限；manual 使用可信 MCP 确认，automatic 按已授权任务执行。提交前持久化预约，网络超时后标记 submission-unknown，绝不自动重发。已知任务仅按原 ID 查询；下载失败不触发新生成。结果留在项目库外候选区，明确验收后才可导入。云供应商没有返回任务 ID 的不确定提交需要在供应商控制台核对，不能新建 requestKey 绕过这一要求。
 
-选择 fal 视频后，旧 Ark 批次入口会提示正确工具，不会偷偷继续调用 Ark；已冻结的原任务不受新偏好影响。其他供应商不继承 Seedance 的参考图、编辑或声音能力，不支持的输入不能静默丢弃。未提供新供应商 Key 时只能验证接口模拟，不宣称账号实测成功。
+选择非 Ark 视频后，旧 Ark 批次入口会提示正确工具，不会偷偷继续调用 Ark；已冻结的原任务不受新偏好影响。独立 TTS 可选 MiniMax，但 ASR／音乐仍走豆包原生工具。其他供应商不继承 Seedance 的参考图、编辑或续写能力，不支持的输入不能静默丢弃。未提供新供应商 Key 时只能验证接口模拟，不宣称账号实测成功。
 
 ## 费用记录
 
 `drama_get_cost_report` 按 projectId / creationId / shotId 筛选。复用现有 providerCalls ID、请求摘要和供应商任务 ID，不创建第二套提交机制。
 
-1. `drama_set_cost_price({rule})`：只有用户提供/确认价格来源才配置估算价，不内置猜测价格。
+1. `drama_set_cost_price({rule})`：可覆盖目录中附官方来源、核对日期与规格的价格预设；用户优惠注明来源。不能可靠对应具体模型／规格的价格保持未知，不猜价。
 2. 原有调用预约自动冻结价格和请求数量，未配价格也保存 requestedQuantities；它不同于供应商实际 usage。后改价格不改旧记录。已获取的供应商数值用量在下载/导入前记录，后处理失败不会丢失这些证据；响应没有用量时保持未知。
 3. `drama_record_cost_settlement({callId,receipt})`：实际账单到手后再对账；不把用量或估算冒充实际扣费。
 
-rule 字段：kind、精确 model、ISO 三字母 currency、unit、rate、source。语音 model 使用目录的资源 ID 或音乐模型 ID。
+rule 字段：kind、精确 model、ISO 三字母 currency、unit、rate、source，以及 provider、可选 profile。新增供应商 kind 为 provider-image／video／audio 且必须声明匹配的 provider；价格按供应商、模型、能力配置隔离。语音 model 使用目录的资源 ID 或音乐模型 ID。
 
 | kind | 可用 unit | 数量 |
 | --- | --- | --- |
@@ -106,6 +110,9 @@ rule 字段：kind、精确 model、ISO 三字母 currency、unit、rate、sourc
 | music | request | 单次；生成时长事前未知 |
 | fal-image / replicate-image | request / image | 单次 / 1 张 |
 | fal-video | request / second | 单次 / 帧数除以 16 |
+| 新增 provider-image | request / image | 单次 / 1 张 |
+| 新增 provider-video | request / second | 单次 / 目录固定秒数；未知时不估算秒数 |
+| minimax-audio / minimax-cn-audio | request / character | 单次 / 汉字按 2、其他字符按 1 估算 |
 
 这些是估算单位，不是供应商实际计费声明。简单按秒估算不覆盖分辨率、参考媒体、Token、声音开关等差异；本版不抓取价目表或做外币换算，精确费用以账单为准。
 
@@ -119,7 +126,7 @@ receipt 字段：receiptId、currency、amount、source。每张记录表示**�
 
 ### 工作台费用页面与账户账单
 
-「用量与工具」提供统计卡片、按币种的每日趋势（UTC）、请求日志分页、供应商/模型汇总、日期筛选、定价编辑和逐次凭据核账。不是 CC Switch 的 Codex Token 账单镜像：插件无法凭空知道宿主订阅成本。未知费用不显示为已扣费零元。
+「用量详情」提供统计卡片、按币种的每日趋势（UTC）、请求日志分页、供应商/模型汇总、日期筛选、分供应商定价编辑和逐次凭据核账。工具不在此混排，超分与账单同步在独立设置页。不是 CC Switch 的 Codex Token 账单镜像：插件无法凭空知道宿主订阅成本。未知费用不显示为已扣费零元。
 
 可选「火山引擎账户账单」使用具有 `ListBillDetail` 只读权限的独立 AK / SK，**不是 Ark 生成 API Key**。手动同步或显式开启工作台运行期间每六小时同步，账期留空跟随当月。失败保留上次成功结果；分页不完整不显示部分金额为总额。只保留必要费用字段，不保存账户姓名等响应信息。
 

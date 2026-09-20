@@ -116,7 +116,7 @@ Merge the printed `ai-drama-studio` server entry into your host's MCP settings w
 
 On macOS, `bash scripts/install.sh generic` handles dependency setup, isolated verification and config output together. The generated configuration selects the generic host profile; keep its `env` fields when merging it.
 
-**Configure your keys:** Ark for Seedance video; outside Codex, also enable Seedream on the same Ark key or select a fal / Replicate image key. Use **API Key** and **Usage & Tools** in the workbench; Doubao Speech is optional. Credentials use Windows DPAPI or macOS Keychain, never tracked repository files. Open the URL returned by `drama_get_state` (default Codex port 4317, generic port 4319).
+**Configure your keys:** open **Providers & API (供应商与 API)**, select a preset, and enter its credentials. Endpoints and supported models are prefilled. Ark/Seedance and optional Doubao Speech remain defaults; outside Codex, configure an image API too. Compatible custom media endpoints are supported. Credentials use Windows DPAPI or macOS Keychain, never tracked repository files. Open the URL returned by `drama_get_state` (default Codex port 4317, generic port 4319).
 
 ### Make your first video
 
@@ -230,17 +230,23 @@ A Skill update cannot add a missing API adapter. Changes to instructions and acc
 
 ### Generation providers
 
-The following are implemented integrations, **not support for every model offered by each provider**. Ark and Doubao remain the defaults. Optional fal / Replicate adapters have passed simulated interface tests but **have not been verified with live accounts**; credentials, entitlement, balance, model availability and output retrieval still need a bounded end-to-end test.
+Choose among 11 regional/service presets and 22 capability profiles in **Providers & API**. These are specific integrations, **not every model or mode offered by each vendor**. New adapters have simulated interface tests, **not live-account verification**; saving a key does not establish entitlement, balance or successful generation. See [supported inputs, official sources and pricing boundaries](docs/provider-settings.md).
 
 | Provider / entry point | Models and supported use | Boundary |
 | --- | --- | --- |
 | Codex built-in image-gen | Characters, scenes and reference images | Default image entry point supplied by the current Codex task; import after acceptance |
 | Volcengine Ark | Seedance 2.5 video; Seedream text-to-image | Seedream is the default API image route outside Codex; Seedance inputs and modes remain subject to the selected model/API constraints |
 | Doubao Speech | ASR, standard TTS and SeedAudio 1.0 music | Separate optional speech configuration and service entitlement; without it, use Seedance's native video sound |
+| MiniMax · China / international | image-01; Hailuo 2.3; speech-2.8-hd TTS | Separate endpoints, keys and currencies; text inputs; 6-second 768P video |
+| Alibaba Cloud · Beijing | Wanx 2.1 turbo images; Wan 2.7 video | Text inputs; 5-second 720P video |
+| Tencent Cloud | Hunyuan TextToImageLite; Hunyuan video | SecretId + SecretKey signing; text inputs; 720P video |
+| Kling · international API | Kling v3 images; Kling 3.0 video | API Key authentication; text inputs; 5-second 720P silent video |
+| Zhipu | GLM-Image; CogVideoX-3 | Text inputs; quality video with native audio |
+| Runway | Gen-4 Image; Gen-4.5 video | Text inputs; 720P; 5-second video |
 | fal | Wan 2.2 A14B text-to-video; FLUX Schnell text-to-image | Experimental; text-only inputs in these adapters, not Seedance-equivalent reference/editing support |
 | Replicate | FLUX Schnell text-to-image | Experimental; no Replicate video adapter currently included |
 
-In Codex, API image models are fallbacks used only on explicit request or verified built-in-tool failure/unavailability. In other Agents, configured image APIs are the normal route. Both paths stage candidates outside the library and preserve acceptance and frozen call limits. The new standalone Seedream candidate path has simulated interface tests; live account verification is separate.
+In Codex, API image models are fallbacks used only on explicit request or verified built-in-tool failure/unavailability. In other Agents, configured image APIs are the normal route. Both paths stage candidates outside the library and preserve acceptance and frozen call limits. Default selection changes do not retarget existing jobs. Standalone TTS selection does not change Doubao ASR/music. Custom providers must implement one of the supported media protocols, not merely a chat-compatible API.
 
 ### Local tools and optional extensions
 
@@ -282,7 +288,7 @@ This is an **optional action-reference experiment**, not a prerequisite for ordi
 - [Production guide: models, acceptance and local data](docs/production-guide.md)
 - [Stage contracts, recovery and decision records](plugins/ai-drama-studio/docs/production-contracts.md)
 - [Tool capabilities, local audio finishing and cost records](plugins/ai-drama-studio/docs/toolchain.md)
-- The **Usage & Tools** workbench includes cost trends, request logs, pricing, provider configuration and local upscale jobs. Ark / Doubao remain defaults; optional fal / Replicate adapters have explicit input limits. Account billing requires separate read-only credentials.
+- **Usage Details (用量详情)** separates provider/model filters, currency totals, cost trends and request logs. Official price presets include their source and specification; edit them for your account discounts. Unknown prices remain unknown, estimates are not bills, and changes apply only to future calls. Provider credentials and local upscale/billing settings have separate pages. Account billing requires separate read-only credentials.
 - [Plugin and MCP documentation](plugins/ai-drama-studio/README.md)
 - [Public examples and reproducible assets](production/publish-examples/README.md)
 - [Model and reference sources](docs/reference-sources.md)

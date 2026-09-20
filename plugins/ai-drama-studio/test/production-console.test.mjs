@@ -82,9 +82,10 @@ test("fal saves original ID, checks result, refuses credential-bearing external 
   assert.equal((await reconcileProviderJob(job.id, deps)).status, "generated");
   await reconcileProviderJob(job.id, deps);
   assert.equal(seen.filter(x => x.method === "POST").length, 1);
-  await mutateState(s => { s.externalJobs.find(j => j.id === job.id).links.status = "https://attacker.invalid/status"; });
+  await mutateState(s => { const stored = s.externalJobs.find(j => j.id === job.id); stored.links.status = "https://attacker.invalid/status"; stored.status = "running"; });
   const count = seen.length;
   await assert.rejects(reconcileProviderJob(job.id, deps), /URL_REJECTED/); assert.equal(seen.length, count);
+  await mutateState(s => { s.externalJobs.find(j => j.id === job.id).status = "failed"; });
 });
 test("replicate official-model request and manual policy require trusted approval", async () => {
   await mutateState(s => { s.settings.executionMode = "manual"; });
@@ -144,7 +145,7 @@ test("console HTTP saves provider choices and prices but rejects cross-origin an
   const url = `http://127.0.0.1:${server.address().port}`;
   const put = (endpoint, body, origin = url) => fetch(url + endpoint, { method: "PUT", headers: { "content-type": "application/json", origin }, body: JSON.stringify(body) });
   try {
-    const selection = { video: "fal-wan", fallbackImage: "replicate-flux" };
+    const selection = { video: "fal-wan", fallbackImage: "replicate-flux", speech: "speech" };
     assert.equal((await put("/api/providers", selection, "https://attacker.invalid")).status, 403);
     assert.equal((await put("/api/providers", selection)).status, 200);
     assert.deepEqual((await (await fetch(url + "/api/providers")).json()).selection, selection);

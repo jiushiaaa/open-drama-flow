@@ -14,7 +14,8 @@ import { clearArkKey, hasArkKey, saveArkKey, clearSpeechKey, hasSpeechKey, saveS
 import { speechCapabilities } from "./speech.mjs";
 import { usageDashboard } from "./usage-dashboard.mjs";
 import { setPriceRule, recordSettlement } from "./cost-ledger.mjs";
-import { providerCatalog, providerSettingsSchema } from "./providers.mjs";
+import { providerCatalog, validateProviderSelection } from "./providers.mjs";
+import { saveCustomProvider, changeVendorSecret } from "./provider-config.mjs";
 import { saveProviderKey, clearProviderKey } from "./secrets.mjs";
 import { configureUpscale, getUpscale, startUpscale, pauseUpscale } from "./upscale.mjs";
 import { billingStatus, billingSettingsSchema, syncBilling, startBillingTimer } from "./billing-sync.mjs";
@@ -233,7 +234,12 @@ async function handleApi(req, res, url) {
   if (req.method === "PUT" && url.pathname === "/api/usage/prices") { const input = await readJson(req); json(res, 200, await mutateState(s => setPriceRule(s, input))); return; }
   if (req.method === "POST" && url.pathname === "/api/usage/settlements") { const input = await readJson(req); json(res, 200, await mutateState(s => recordSettlement(s, input.callId, input.receipt))); return; }
   if (req.method === "GET" && url.pathname === "/api/providers") { json(res, 200, await providerCatalog()); return; }
-  if (req.method === "PUT" && url.pathname === "/api/providers") { const selection = providerSettingsSchema.parse(await readJson(req)); await mutateState(s => { s.settings.providerSelection = selection; }); json(res, 200, { selection }); return; }
+  if (req.method === "PUT" && url.pathname === "/api/providers") { const input = await readJson(req); const selection = await mutateState(s => (s.settings.providerSelection = validateProviderSelection(s, input))); json(res, 200, { selection }); return; }
+  if (req.method === "POST" && url.pathname === "/api/providers/custom") { json(res, 200, await saveCustomProvider(await readJson(req, 4096))); return; }
+  if (segments.length === 5 && segments[1] === "providers" && segments[3] === "credentials" && ["PUT", "DELETE"].includes(req.method)) {
+    await changeVendorSecret(segments[2], segments[4], req.method === "PUT" ? (await readJson(req, 4096)).apiKey : undefined, req.method === "DELETE");
+    json(res, 200, { configured: req.method === "PUT" }); return;
+  }
   if (["fal", "replicate", "volc-billing-ak", "volc-billing-sk"].includes(segments[2]) && segments[1] === "secrets") {
     if (req.method === "PUT") { await saveProviderKey(segments[2], (await readJson(req, 4096)).apiKey); json(res, 200, { configured: true }); return; }
     if (req.method === "DELETE") { await clearProviderKey(segments[2]); json(res, 200, { configured: false }); return; }

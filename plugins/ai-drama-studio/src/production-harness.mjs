@@ -560,7 +560,7 @@ export function buildProductionStatus(state, projectId, creationId = null, optio
     harnessProfile,
     deliveryBoundary: { exceeded: deliveryBoundaryExceeded, requestedFiles: brief.deliverables.length, maximumFiles: harnessProfile.delivery.maximumFilesPerCreation, excessDeliverables },
     capabilityCheck: seedance,
-    providerRouting: { video: selectedVideoProvider, imagePrimary: agentHost.codexImageGen ? "codex-imagegen" : state.settings.providerSelection?.fallbackImage || "ark-seedream", imageApiTool: "drama_prepare_provider_job", supportTools: ["drama_select_production_workflow", "drama_get_production_progress", "drama_record_stage_checkpoint", "drama_record_production_decision", "drama_read_production_knowledge", "drama_search_shot_assets", "drama_list_providers", "drama_list_tool_capabilities"] },
+    providerRouting: { video: selectedVideoProvider, tts: state.settings.providerSelection?.speech || "speech", ttsTool: (state.settings.providerSelection?.speech || "speech") === "speech" ? "drama_request_speech_job" : "drama_prepare_provider_job", asrAndMusic: "speech", imagePrimary: agentHost.codexImageGen ? "codex-imagegen" : state.settings.providerSelection?.fallbackImage || "ark-seedream", imageApiTool: "drama_prepare_provider_job", supportTools: ["drama_select_production_workflow", "drama_get_production_progress", "drama_record_stage_checkpoint", "drama_record_production_decision", "drama_read_production_knowledge", "drama_search_shot_assets", "drama_list_providers", "drama_list_tool_capabilities"] },
     activeApproval: approval,
     activeJob: job,
     latestOutput: output,

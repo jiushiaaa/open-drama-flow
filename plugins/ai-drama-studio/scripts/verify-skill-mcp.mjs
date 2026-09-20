@@ -11,6 +11,7 @@ import {Client} from "@modelcontextprotocol/sdk/client/index.js";
 import {StdioClientTransport} from "@modelcontextprotocol/sdk/client/stdio.js";
 import {specializedSkills} from "../src/skill-catalog.mjs";
 import {legacySkillIdentifiers} from "../src/skill-identifiers.mjs";
+import {PROFILES, VENDORS} from "../src/provider-presets.mjs";
 
 const pluginRoot = path.resolve(process.argv[2] || fileURLToPath(new URL("../", import.meta.url)));
 const dataRoot = await fs.mkdtemp(path.join(os.tmpdir(), "odf-skill-mcp-"));
@@ -47,7 +48,11 @@ try {
   assert.equal((await call("drama_get_cost_report")).calls, 0);
   for (const name of ["drama_configure_upscale", "drama_create_upscale_job", "drama_start_upscale_job", "drama_get_upscale_job", "drama_pause_upscale_job", "drama_list_providers", "drama_prepare_provider_job", "drama_start_provider_job", "drama_get_provider_job", "drama_download_provider_output", "drama_search_shot_assets", "drama_select_production_workflow", "drama_sync_account_bill"]) assert.ok(exposed.has(name), name);
   assert.equal((await call("drama_get_upscale_job")).jobs.length, 0);
-  assert.equal((await call("drama_list_providers")).selection.video, "ark");
+  const providers = await call("drama_list_providers");
+  assert.equal(providers.selection.video, "ark");
+  assert.deepEqual(providers.providers.map(p => p.id).sort(), PROFILES.map(p => p.id).sort());
+  assert.deepEqual(providers.vendors.map(v => v.id).sort(), VENDORS.map(v => v.id).sort());
+  for (const vendor of providers.vendors) assert.ok(Object.values(vendor.credentialStatus).every(value => typeof value === "boolean"));
   assert.equal((await call("drama_select_production_workflow", { type: "drama" })).id, "drama");
   for (const name of ["drama_get_production_progress", "drama_record_stage_checkpoint", "drama_record_production_decision", "drama_read_production_knowledge"]) assert.ok(exposed.has(name), name);
   const knowledge = await call("drama_read_production_knowledge");

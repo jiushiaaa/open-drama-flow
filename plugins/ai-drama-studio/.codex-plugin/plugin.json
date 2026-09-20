@@ -1,6 +1,6 @@
 {
   "name": "ai-drama-studio",
-  "version": "0.1.0+codex.20260920101718",
+  "version": "0.1.0+codex.20260920112210",
   "description": "Windows/macOS local video harness with native Codex integration, standard Agent MCP tools, creative skills, versioned assets, Seedance and FFmpeg.",
   "author": {
     "name": "OpenDramaFlow Contributors"

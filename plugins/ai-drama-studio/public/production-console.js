@@ -1,8 +1,8 @@
 // No credentials are returned by the API or retained in localStorage.
-export function createProductionConsole({ el, api, toast }) {
-  const root = el("section", { id: "production-console-view", class: "route-view production-console", hidden: true });
+export function createProductionConsole({ el, api, toast, mode = "usage" }) {
+  const root = el("section", { id: mode === "settings" ? "local-settings-view" : "production-console-view", class: "route-view production-console", hidden: true });
   document.querySelector(".main-surface").append(root);
-  let entered = false, filters = {}, tab = "requests", report, generation = 0;
+  let entered = false, filters = {}, tab = "requests", report, catalog, generation = 0;
   const button = (label, action, className = "button outline") => el("button", { type: "button", class: className, onclick: async () => { try { await action(); } catch (error) { toast(error.message, "error"); } } }, label);
   const money = values => Object.entries(values || {}).map(([currency, amounts]) => `${currency} ${typeof amounts === "number" ? amounts.toFixed(4) : amounts}`).join(" · ") || "暂无记录";
   const currencies = (summary, key) => money(Object.fromEntries(Object.entries(summary.currencies || {}).filter(([, a]) => a[`${key}Records`] > 0).map(([c, a]) => [c, a[key]])));
@@ -12,21 +12,37 @@ export function createProductionConsole({ el, api, toast }) {
   const section = (title, ...children) => el("section", { class: "console-panel" }, el("h2", {}, title), ...children);
   const table = (headers, rows) => el("div", { class: "console-table-wrap" }, el("table", {}, el("thead", {}, el("tr", {}, headers.map(h => el("th", {}, h)))), el("tbody", {}, rows.length ? rows.map(row => el("tr", {}, row.map(cell => el("td", {}, cell ?? "—")))) : el("tr", {}, el("td", { colspan: headers.length, class: "console-empty" }, "暂无记录；未测试或未定价不等于免费。")))));
   const detail = (title, ...nodes) => el("details", { class: "console-panel" }, el("summary", {}, title), ...nodes);
+  const providerOf = rule => rule.provider === "doubao-speech" ? "speech" : rule.provider || (["asr", "tts", "music"].includes(rule.kind) ? "speech" : rule.kind.startsWith("fal-") ? "fal" : rule.kind.startsWith("replicate-") ? "replicate" : "ark");
   function submitForm(form, action) {
     form.addEventListener("submit", async event => { event.preventDefault(); const submit = form.querySelector('[type="submit"]'); if (submit) submit.disabled = true;
       try { await action(Object.fromEntries(new FormData(form))); toast("已保存", "success"); } catch (error) { toast(error.message, "error"); } finally { if (submit) submit.disabled = false; }
     }); return form;
   }
   function priceForm(rule = {}) {
+    if (!rule.model) {
+      const vendor = select("vendor", catalog.vendors.map(v => [v.id, v.name]), catalog.vendors[0].id), models = select("profile", [], ""), body = el("div");
+      const update = () => {
+        const speechModel = catalog.speechPriceModels?.find(p => p.model === models.value);
+        if (vendor.value === "speech" && speechModel) { body.replaceChildren(priceForm(report.prices.find(r => providerOf(r) === "speech" && r.model === speechModel.model) || speechModel)); return; }
+        const p = catalog.providers.find(p => p.id === models.value); if (!p) return;
+        const known = report.prices.find(r => r.provider === p.provider && r.model === p.model && (!r.profile || r.profile === p.id));
+        body.replaceChildren(priceForm(known || { provider: p.provider, profile: p.id, model: p.model, kind: p.id === "ark" ? "seedance-video" : p.id === "ark-seedream" ? "ark-image" : `${p.provider}-${p.kind}`, unit: p.kind === "image" ? "image" : p.kind === "video" ? "second" : "character" }));
+      };
+      const changeVendor = () => { const items = vendor.value === "speech" ? (catalog.speechPriceModels || []).map(p => ({ id: p.model, model: `${p.kind.toUpperCase()} · ${p.model}` })) : catalog.providers.filter(p => p.provider === vendor.value); models.replaceChildren(...items.map(p => el("option", { value: p.id }, p.model))); update(); };
+      vendor.addEventListener("change", changeVendor); models.addEventListener("change", update); changeVendor();
+      return el("div", {}, el("div", { class: "console-form" }, field("供应商", vendor), field("模型", models)), body);
+    }
     const form = el("form", { class: "console-form" },
-      field("调用类别", select("kind", ["seedance-video", "seedream-image", "asr", "tts", "music", "fal-video", "fal-image", "replicate-image"].map(x => [x, x]), rule.kind || "seedance-video")),
-      field("完整模型 ID", input("model", "text", rule.model || "", { required: true, maxlength: 160 })),
+      field("供应商", input("provider", "text", providerOf(rule), { readonly: true })),
+      field("调用类别", input("kind", "text", rule.kind, { readonly: true })),
+      field("完整模型 ID", input("model", "text", rule.model || "", { required: true, readonly: true })),
+      input("profile", "hidden", rule.profile || ""),
       field("币种", input("currency", "text", rule.currency || "CNY", { pattern: "[A-Z]{3}", required: true })),
       field("计费单位", select("unit", [["request", "每次请求"], ["second", "每秒"], ["image", "每张图"], ["character", "每字符"]], rule.unit || "request")),
       field("单位估价", input("rate", "number", rule.rate ?? "", { min: 0, max: 1000000, step: "any", required: true })),
       field("价格来源 / 日期", input("source", "text", rule.source || "", { required: true, maxlength: 500 })),
       el("button", { type: "submit", class: "button primary" }, "保存定价"));
-    return submitForm(form, async values => { await api("/api/usage/prices", { method: "PUT", body: JSON.stringify({ ...values, rate: Number(values.rate) }) }); await load(); });
+    return submitForm(form, async values => { if (!values.profile) delete values.profile; await api("/api/usage/prices", { method: "PUT", body: JSON.stringify({ ...values, rate: Number(values.rate) }) }); await load(); });
   }
   function trend(data) {
     const panels = [];
@@ -62,17 +78,6 @@ export function createProductionConsole({ el, api, toast }) {
     const form = el("form", { class: "console-key-form" }, field(provider, key), el("button", { type: "submit", class: "button outline" }, "安全保存"), button("清除", async () => { await api(`/api/secrets/${provider}`, { method: "DELETE" }); key.value = ""; key.placeholder = "尚未配置"; toast("已清除该凭据"); }));
     return submitForm(form, async values => { await api(`/api/secrets/${provider}`, { method: "PUT", body: JSON.stringify(values) }); key.value = ""; key.placeholder = "已加密保存"; });
   }
-  function providerPanel(data) {
-    const form = el("form", { class: "console-form" },
-      field("视频首选", select("video", [["ark", "火山方舟 · Seedance 2.5（完整已接入输入）"], ["fal-wan", "fal · Wan 2.2（仅文生视频）"]], data.selection.video)),
-      field(data.host === "generic" ? "图片 API 供应商" : "图片备用供应商", select("fallbackImage", [["ark-seedream", "方舟 · Seedream"], ["fal-flux", "fal · FLUX Schnell"], ["replicate-flux", "Replicate · FLUX Schnell"]], data.selection.fallbackImage)),
-      el("button", { type: "submit", class: "button primary" }, "保存路由偏好"));
-    submitForm(form, values => api("/api/providers", { method: "PUT", body: JSON.stringify(values) }));
-    return detail("供应商与 API Key", el("p", {}, data.host === "generic" ? "当前为通用 Agent：请配置图片 API Key，默认方舟 Seedream，也可选择 fal / Replicate。图片先暂存，验收后入库。视频默认 Seedance，语音默认豆包。" : "当前为 Codex：图片优先使用会话内置工具；备用模型仅在明确要求或内置工具不可用时使用。默认视频：方舟 Seedance；默认语音：豆包语音。切换不会修改或重启已有任务。"), form,
-      table(["适配器", "支持输入", "密钥", "验证状态"], data.providers.map(p => [p.name, p.inputs.join(" / "), p.credentialConfigured ? "已配置" : "未配置", "保存不代表账号实测"])),
-      keyForm("fal", data.providers.find(p => p.provider === "fal")?.credentialConfigured), keyForm("replicate", data.providers.find(p => p.provider === "replicate")?.credentialConfigured),
-      el("p", {}, "方舟和豆包语音的 Key 仍在左侧 API Key 页面配置。其他供应商此版不接受图片、视频或音频参考，需高级参考时使用 Seedance。"));
-  }
   function upscalePanel(data) {
     const runtime = data.runtime || {}, form = el("form", { class: "console-form" },
       field("Real-ESRGAN 可执行文件绝对路径", input("executable", "text", runtime.executable || "", { required: true })),
@@ -99,21 +104,27 @@ export function createProductionConsole({ el, api, toast }) {
     const token = ++generation;
     if (!root.childElementCount) root.append(el("p", { role: "status" }, "正在读取本机用量…"));
     try {
-      const [data, providers, upscales, billing] = await Promise.all([api(`/api/usage?${new URLSearchParams(filters)}`), api("/api/providers"), api("/api/upscale"), api("/api/billing")]);
-      if (token !== generation) return; report = data;
+      if (mode === "settings") {
+        const [upscales, billing] = await Promise.all([api("/api/upscale"), api("/api/billing")]);
+        if (token !== generation) return;
+        root.replaceChildren(el("header", {}, el("h1", {}, "本地与账单设置"), el("a", { href: "#providers" }, "← 返回供应商配置")), upscalePanel(upscales), billingPanel(billing)); return;
+      }
+      const [data, providers] = await Promise.all([api(`/api/usage?${new URLSearchParams(filters)}`), api("/api/providers")]);
+      if (token !== generation) return; report = data; catalog = providers;
       const controls = el("form", { class: "console-filters" },
         field("供应商", select("provider", [["", "全部供应商"], ...data.options.providers.map(v => [v, v])], filters.provider || "")),
         field("模型", select("model", [["", "全部模型"], ...data.options.models.map(v => [v, v])], filters.model || "")),
         field("开始日期 UTC", input("from", "date", filters.from || "")), field("结束日期 UTC", input("to", "date", filters.to || "")), el("button", { type: "submit", class: "button primary" }, "筛选"), button("刷新", load));
       controls.addEventListener("submit", e => { e.preventDefault(); filters = Object.fromEntries([...new FormData(controls)].filter(([, v]) => v)); void load(); });
+      controls.elements.provider.addEventListener("change", () => { filters.provider = controls.elements.provider.value; delete filters.model; delete filters.page; void load(); });
       const log = section("调用记录", el("div", { class: "console-tabs" }, [["requests", "请求日志"], ["providers", "供应商统计"], ["models", "模型统计"]].map(([id, title]) => button(title, () => { tab = id; void load(); }, `button ${tab === id ? "primary" : "outline"}`))), requestTable(),
         el("div", { class: "console-pagination" }, button("上一页", () => { filters.page = String(Math.max(1, data.page - 1)); void load(); }), el("span", {}, `${data.page} / ${data.pages}`), button("下一页", () => { filters.page = String(Math.min(data.pages, data.page + 1)); void load(); })));
-      root.replaceChildren(el("header", {}, el("p", { class: "eyebrow" }, "PRODUCTION CONTROL"), el("h1", {}, "用量与工具"), el("p", {}, "本机制作调用 · 定价 · 供应商 · 可恢复后期")), controls,
+      root.replaceChildren(el("header", {}, el("p", { class: "eyebrow" }, "USAGE & COSTS"), el("h1", {}, "用量详情"), el("p", {}, "按供应商、模型与币种查看制作费用。"), el("a", { href: "#providers" }, "管理供应商与 API →")), controls,
         el("div", { class: "console-metrics" }, [["请求数", data.summary.calls], ["预估成本", currencies(data.summary, "estimated")], ["已核对账单", currencies(data.summary, "actual")], ["待核对 / 未定价", `${data.summary.unreconciled} / ${data.summary.unpriced}`]].map(([label, value]) => el("article", {}, el("small", {}, label), el("strong", {}, value)))),
         el("p", { class: "console-note" }, "估算与实账分开，各币种不混算。未定价、失败和结果未知的请求不视为免费；不统计 Codex 订阅或本机电费。"), trend(data), log,
-        detail("成本定价 · 仅影响后续调用", priceForm(), ...data.prices.map(rule => detail(`${rule.kind} / ${rule.model} · ${rule.currency} ${rule.rate}/${rule.unit}`, priceForm(rule)))),
-        providerPanel(providers), upscalePanel(upscales), billingPanel(billing));
+        detail("模型定价 · 官方预设与自定义优惠", el("p", {}, "预设按目录中的固定规格计价，保留官方来源与核验日期。优惠可覆盖，仅影响后续调用；未核实报价不视为免费。"), priceForm(),
+          ...catalog.vendors.map(v => { const rules = data.prices.filter(r => providerOf(r) === v.id); return detail(v.name, ...(rules.length ? rules.map(rule => detail(`${rule.model} · ${rule.currency} ${rule.rate}/${rule.unit} · ${rule.preset ? "官方预设" : "自定义"}`, el("p", {}, `${rule.specification || "自定义规格"} · ${rule.recordedAt || ""}`), /^https:\/\//.test(rule.source) ? el("a", { href: rule.source, target: "_blank", rel: "noopener noreferrer" }, "查看官方价格来源 ↗") : null, priceForm(rule))) : [el("p", {}, "此供应商尚无可可靠匹配的单价，请按账号规格填写；不是免费。") ])); })));
     } catch (error) { toast(error.message, "error"); if (!report) root.replaceChildren(el("p", { role: "alert" }, "用量页面加载失败。请确认新版工作台服务已启动。"), button("重试", load)); }
   }
-  return { enter() { if (!entered) { entered = true; void load(); } }, leave() { entered = false; root.querySelectorAll('input[type="password"]').forEach(node => { node.value = ""; }); } };
+  return { enter() { if (!entered) { entered = true; void load(); } }, leave() { if (!entered) return; entered = false; generation++; root.querySelectorAll('input[type="password"]').forEach(node => { node.value = ""; }); } };
 }

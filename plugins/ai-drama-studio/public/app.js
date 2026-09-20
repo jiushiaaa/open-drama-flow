@@ -2,6 +2,7 @@ import { sortSidebarCreations } from "./sidebar-order.js";
 import { buildSkillFileTree, countSkillTreeFiles, skillFileBadge } from "./skill-file-tree.js";
 import { createCanvasPersistence } from "./canvas-persistence.js";
 import { createProductionConsole } from "./production-console.js";
+import { createProviderSettings } from "./provider-settings.js";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -71,7 +72,9 @@ function activeProject() { return studioState?.projects.find(project => project.
 function activeCreation() { return activeProject()?.creations?.find(item => item.id === activeCreationId) || null; }
 function activeWorld() { return activeProject()?.worlds?.find(item => item.id === activeCreation()?.worldId) || null; }
 const productionConsole = createProductionConsole({ el, api, toast });
-function currentRoute() { return ["start", "project-library", "project", "workspace", "skills", "project-guide", "production-console"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "start"; }
+const providerSettings = createProviderSettings({ el, api, toast });
+const localSettings = createProductionConsole({ el, api, toast, mode: "settings" });
+function currentRoute() { return ["start", "project-library", "project", "workspace", "skills", "project-guide", "production-console", "providers", "local-settings"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "start"; }
 function go(route) { location.hash = route; }
 
 function sortedProjects() {
@@ -111,7 +114,6 @@ function render() {
   renderSidebar();
   renderLibrary();
   renderProjectOverview();
-  renderSettings();
   renderSkills();
   applyRoute();
   if (currentRoute() === "workspace") renderWorkspace();
@@ -119,15 +121,20 @@ function render() {
 
 function applyRoute() {
   let route = currentRoute();
+  document.documentElement.classList.toggle("responsive-console-route", ["providers", "production-console", "local-settings"].includes(route));
   if (!activeProject() && ["project", "workspace"].includes(route)) route = "project-library";
   if (route !== "workspace" && canvasView) { canvasView.unmount(); canvasView = null; canvasSignature = null; }
   const routeViewIds = { start: "start-view", "project-library": "project-library-view", project: "project-overview-view", workspace: "workspace-view", skills: "skills-view", "project-guide": "project-guide-view" };
   routeViewIds["production-console"] = "production-console-view";
+  routeViewIds.providers = "provider-settings-view";
+  routeViewIds["local-settings"] = "local-settings-view";
+  if (route === "providers") providerSettings.enter(); else providerSettings.leave();
+  if (route === "local-settings") localSettings.enter(); else localSettings.leave();
   if (route === "production-console") productionConsole.enter(); else productionConsole.leave();
   $$(".route-view").forEach(view => { view.hidden = view.id !== routeViewIds[route]; });
   $$(".primary-nav a").forEach(link => link.classList.toggle("active", link.getAttribute("href") === `#${route}` || (route === "project" && link.getAttribute("href") === "#project-library") || (route === "workspace" && link.getAttribute("href") === "#project-library")));
   const routeTitle = route === "start" ? "开始创作" : route === "project-library" ? "项目库" : route === "skills" ? "Skill" : route === "project-guide" ? "项目新手指引" : activeProject()?.title || "OpenDramaFlow";
-  document.title = `${route === "production-console" ? "用量与工具" : routeTitle} — OpenDramaFlow`;
+  document.title = `${route === "production-console" ? "用量详情" : route === "providers" ? "供应商与 API" : route === "local-settings" ? "本地与账单设置" : routeTitle} — OpenDramaFlow`;
 }
 
 function renderSidebar() {
@@ -601,27 +608,6 @@ function renderOutput(project) {
   if (output) holder.append(el("header", {}, el("strong", { text: "最终视频" }), el("a", { class: "button small subtle", href: output.mediaUrl, download: true, text: "下载 MP4" })), el("video", { src: output.mediaUrl, controls: true, preload: "metadata" }));
 }
 
-function renderSettings() {
-  if (!studioState) return;
-  const configured = studioState.credentialStatus?.arkConfigured;
-  $("#credential-chip").textContent = configured ? "已安全保存" : "未配置";
-  $("#credential-chip").className = `status-chip ${configured ? "success" : ""}`;
-  $("#ark-api-key").placeholder = configured ? "••••••••••••••••" : "粘贴火山方舟 API Key";
-  $("#save-key-button").textContent = configured ? "更换并保存" : "安全保存";
-  $("#clear-key-button").disabled = !configured;
-  const speechConfigured = studioState.credentialStatus?.speechConfigured === true;
-  $("#speech-credential-chip").textContent = speechConfigured ? "已安全保存" : "未配置 · 可跳过";
-  $("#speech-credential-chip").className = `status-chip ${speechConfigured ? "success" : ""}`;
-  $("#speech-api-key").placeholder = speechConfigured ? "已保存，输入新密钥可更换" : "粘贴豆包语音 API Key（可选）";
-  $("#save-speech-key-button").textContent = speechConfigured ? "更换并保存" : "安全保存";
-  $("#clear-speech-key-button").disabled = !speechConfigured;
-  $("#sound-strategy-title").textContent = speechConfigured ? "Seedance + 可选语音辅助" : "Seedance 原生声音";
-  $("#sound-strategy-description").textContent = speechConfigured
-    ? "视频和主要声音由 Seedance 生成；需要对白核对时用 ASR，需要独立旁白或补录时用 TTS。声音克隆与独立音乐生成暂未接入。"
-    : "不调用独立语音服务。视频、对白和环境音由 Seedance 按创作方案生成，仍需实际听音与验片；不包含自动语音识别。";
-  const bridge = studioState.assetBridge;
-  $("#bridge-status").textContent = bridge?.ready ? "受控 HTTPS 桥已连接" : bridge?.configured ? "已配置，按需连接" : "按需自动连接";
-}
 
 function renderSkills() {
   const grid = $("#skill-grid");
@@ -914,8 +900,8 @@ $("#project-search").addEventListener("input", event => { projectSearch = event.
 $("#library-sort-button").addEventListener("click", () => { $("#library-sort-menu").hidden = !$("#library-sort-menu").hidden; });
 $("#sidebar-sort-button").addEventListener("click", () => { $("#sidebar-sort-menu").hidden = !$("#sidebar-sort-menu").hidden; });
 $$('[data-sort]').forEach(button => button.addEventListener("click", () => { projectSort = button.dataset.sort; $("#library-sort-label").textContent = sortLabels[projectSort]; $("#library-sort-menu").hidden = true; $("#sidebar-sort-menu").hidden = true; renderLibrary(); renderSidebar(); }));
-$("#settings-button").addEventListener("click", () => $("#settings-dialog").showModal());
-$("#start-settings-button").addEventListener("click", () => $("#settings-dialog").showModal());
+$("#settings-button").addEventListener("click", () => go("providers"));
+$("#start-settings-button").addEventListener("click", () => go("providers"));
 $("#import-skill-button").addEventListener("click", () => $("#skill-import-dialog").showModal());
 $("#skill-import-form").addEventListener("submit", importSkill);
 $("#skill-file").addEventListener("change", event => { const file = event.target.files[0]; $("#skill-file-name").textContent = file?.name || "尚未选择文件"; $("#skill-import-submit").disabled = !file; $("#skill-import-error").textContent = ""; });
@@ -925,30 +911,6 @@ $("#skill-dropzone").addEventListener("drop", event => { event.preventDefault();
 $("#skill-search").addEventListener("input", event => { skillSearch = event.target.value; renderSkills(); });
 $$("[data-skill-filter]").forEach(button => button.addEventListener("click", () => { skillFilter = button.dataset.skillFilter; $$("[data-skill-filter]").forEach(item => item.classList.toggle("active", item === button)); renderSkills(); }));
 $("#skill-detail-toggle").addEventListener("change", event => { if (activeSkillDetail?.skill) setSkillEnabled(activeSkillDetail.skill, event.currentTarget.checked); });
-for (const config of [
-  { name: "方舟", key: "ark", input: "ark-api-key", form: "credential-form", toggle: "secret-toggle", error: "ark-key-error", save: "save-key-button", clear: "clear-key-button" },
-  { name: "豆包语音", key: "speech", input: "speech-api-key", form: "speech-credential-form", toggle: "speech-secret-toggle", error: "speech-key-error", save: "save-speech-key-button", clear: "clear-speech-key-button" }
-]) {
-  const resetField = () => { $(`#${config.input}`).value = ""; $(`#${config.input}`).type = "password"; $(`#${config.toggle}`).textContent = "显示"; $(`#${config.toggle}`).setAttribute("aria-pressed", "false"); $(`#${config.toggle}`).setAttribute("aria-label", `显示${config.name}密钥`); $(`#${config.error}`).textContent = ""; };
-  $(`#${config.toggle}`).addEventListener("click", event => {
-    const input = $(`#${config.input}`); input.type = input.type === "password" ? "text" : "password";
-    const visible = input.type === "text"; event.currentTarget.textContent = visible ? "隐藏" : "显示";
-    event.currentTarget.setAttribute("aria-pressed", String(visible)); event.currentTarget.setAttribute("aria-label", `${visible ? "隐藏" : "显示"}${config.name}密钥`);
-  });
-  $(`#${config.form}`).addEventListener("submit", async event => {
-    event.preventDefault(); const input = $(`#${config.input}`); const apiKey = input.value.trim();
-    if (apiKey.length < 12 || apiKey.length > 512 || /\s/.test(apiKey)) { $(`#${config.error}`).textContent = "密钥格式不正确，请检查空格和完整性。"; return; }
-    const button = $(`#${config.save}`); button.disabled = true;
-    try { await api(`/api/secrets/${config.key}`, { method: "PUT", body: JSON.stringify({ apiKey }) }); resetField(); await refreshState(); toast(`${config.name}密钥已安全保存，服务权限需通过实际调用确认。`, "success"); }
-    catch { $(`#${config.error}`).textContent = "保存失败，请确认工作台服务正常后重试。"; }
-    finally { button.disabled = false; }
-  });
-  $(`#${config.clear}`).addEventListener("click", async () => {
-    try { await api(`/api/secrets/${config.key}`, { method: "DELETE" }); resetField(); await refreshState(); toast(`已清除${config.name}密钥。`, "success"); }
-    catch { $(`#${config.error}`).textContent = "清除失败，请检查工作台服务。"; }
-  });
-  $("#settings-dialog").addEventListener("close", resetField);
-}
 window.addEventListener("hashchange", () => { applyRoute(); if (currentRoute() === "workspace") renderWorkspace(); });
 document.addEventListener("click", event => { if (!event.target.closest(".sidebar-creation-row")) $$('[data-creation-menu]').forEach(menu => { menu.hidden = true; }); if (!event.target.closest(".sidebar-world-title")) $$('[data-world-sort-menu]').forEach(menu => { menu.hidden = true; }); if (!event.target.closest(".sort-control")) $("#library-sort-menu").hidden = true; if (!event.target.closest(".sidebar-project-section")) $("#sidebar-sort-menu").hidden = true; if (!event.target.closest("#asset-context-menu") && !event.target.closest(".asset-more-button")) closeAssetContextMenu(); });
 window.addEventListener("blur", closeAssetContextMenu);

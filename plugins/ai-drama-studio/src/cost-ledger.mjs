@@ -1,14 +1,18 @@
 import { z } from "zod";
+import { PRICE_PRESETS } from "./provider-presets.mjs";
 
 const kinds = ["seedream-image", "seedance-video", "asr", "tts", "music", "fal-image", "fal-video", "replicate-image"];
 export const priceRuleSchema = z.object({
-  kind: z.enum(kinds), model: z.string().trim().min(1).max(160),
+  kind: z.string().refine(v => kinds.includes(v) || /^[a-z0-9-]+-(image|video|audio)$/.test(v)), model: z.string().trim().min(1).max(160),
+  provider: z.string().regex(/^[a-z0-9-]{1,100}$/).optional(), profile: z.string().regex(/^[a-z0-9-]{1,100}$/).optional(),
   currency: z.string().regex(/^[A-Z]{3}$/), unit: z.enum(["request", "image", "second", "character"]),
   rate: z.number().finite().nonnegative().max(1000000),
   source: z.string().trim().min(1).max(500)
 }).strict().superRefine((rule, ctx) => {
+  if (!kinds.includes(rule.kind) && (!rule.provider || rule.kind !== `${rule.provider}-${rule.kind.split("-").at(-1)}`)) ctx.addIssue({ code: "custom", message: "COST_PROVIDER_REQUIRED_AND_MUST_MATCH_KIND" });
   const allowed = { "seedream-image": ["request", "image"], "seedance-video": ["request", "second"], asr: ["request", "second"], tts: ["request", "character"], music: ["request"], "fal-image": ["request", "image"], "fal-video": ["request", "second"], "replicate-image": ["request", "image"] };
-  if (!allowed[rule.kind].includes(rule.unit)) ctx.addIssue({ code: "custom", message: "COST_UNIT_UNSUPPORTED_FOR_KIND" });
+  const units = allowed[rule.kind] || (rule.kind.endsWith("image") ? ["request", "image"] : rule.kind.endsWith("video") ? ["request", "second"] : ["request", "character", "second"]);
+  if (!units.includes(rule.unit)) ctx.addIssue({ code: "custom", message: "COST_UNIT_UNSUPPORTED_FOR_KIND" });
 });
 export const settlementSchema = z.object({
   receiptId: z.string().trim().min(1).max(160), currency: z.string().regex(/^[A-Z]{3}$/),
@@ -35,9 +39,16 @@ export function numericUsage(value, depth = 0) {
   return Object.keys(result).length ? result : null;
 }
 
+export function priceProvider(rule) { return rule.provider === "doubao-speech" ? "speech" : rule.provider || (["asr", "tts", "music"].includes(rule.kind) ? "speech" : rule.kind?.startsWith("fal-") ? "fal" : rule.kind?.startsWith("replicate-") ? "replicate" : "ark"); }
+const priceIdentity = r => `${priceProvider(r)}|${r.kind}|${r.model}|${r.profile || ""}`;
+export function effectivePrices(state) {
+  const overrides = state.settings.costPrices || [];
+  return [...PRICE_PRESETS.filter(p => !overrides.some(r => priceIdentity(r) === priceIdentity(p))), ...overrides];
+}
 export function setPriceRule(state, input) {
   const rule = { ...priceRuleSchema.parse(input), recordedAt: new Date().toISOString() };
-  state.settings.costPrices = (state.settings.costPrices || []).filter(item => item.kind !== rule.kind || item.model !== rule.model);
+  rule.provider = priceProvider(rule);
+  state.settings.costPrices = (state.settings.costPrices || []).filter(item => priceIdentity(item) !== priceIdentity(rule));
   state.settings.costPrices.push(rule);
   return rule;
 }
@@ -46,7 +57,8 @@ export function freezeCallCost(state, call, quantities = {}) {
   // Freeze once, inside the existing atomic call reservation. Never charge or retry here.
   if (call.cost) return call.cost;
   const model = callModel(call);
-  const rule = (state.settings.costPrices || []).find(item => item.kind === call.kind && item.model === model);
+  const matches = item => item.kind === call.kind && item.model === model && priceProvider(item) === priceProvider(call) && (!item.profile || item.profile === call.profile);
+  const rule = (state.settings.costPrices || []).find(matches) || PRICE_PRESETS.find(matches);
   const quantity = rule?.unit === "request" ? 1 : quantities[rule?.unit];
   const valid = rule && Number.isFinite(quantity) && quantity >= 0;
   call.cost = { version: 1, model, requestedQuantities: numericUsage(quantities), estimate: valid ? {
@@ -77,7 +89,7 @@ export function costReport(state, { projectId, creationId, shotId } = {}) {
   const records = (state.providerCalls || []).filter(call => (!projectId || call.projectId === projectId) && (!creationId || call.creationId === creationId) && (!shotId || call.shotId === shotId)).map(call => ({
     callId: call.id, projectId: call.projectId, creationId: call.creationId || null, shotId: call.shotId || null,
     kind: call.kind, model: callModel(call), status: call.status,
-    provider: call.provider || (["asr", "tts", "music"].includes(call.kind) ? "speech" : "ark"),
+    provider: priceProvider(call),
     providerTaskId: call.providerTaskId || null, requestDigest: call.requestDigest || null,
     at: call.createdAt || call.at || null, usage: numericUsage(call.usage), requestedQuantities: call.cost?.requestedQuantities || null,
     estimate: call.cost?.estimate || null, estimateStatus: call.cost?.estimateStatus || "historical-unknown",
