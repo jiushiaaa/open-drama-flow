@@ -37,7 +37,7 @@
         },
         {
           "path": "references/project-profiles/guhuoniao.md",
-          "sha256": "d099829523ec01a841d7e001abf52f130e9c2dff15d215076d0dbb1fca44d817"
+          "sha256": "cf764bbb9a5d9d57465b539b4c86745e2fc03f41926dde4207b591d64cd30a02"
         },
         {
           "path": "references/project-profiles/reference-cases/20260906-cyberhero-motion.md",
@@ -138,7 +138,7 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "0cc5e43ab8524601200650d6fa91b98a30d99287ac95ace157ab5d8a86767b46"
+          "sha256": "f72869b5b91593ac98b335654babf7c20a5a105031c39f9cabe7899100642bd7"
         },
         {
           "path": "WORKFLOW.md",
@@ -521,8 +521,12 @@
           "sha256": "d397640afbd4e15d2bce8cb79b7e9ee895b0c434a128ea7195fcd243a44d59b9"
         },
         {
+          "path": "references/focus-depth-framing.md",
+          "sha256": "78e52faa2a2d7762b1a7302d83dd7a2e5791a0fb0ce451cebf429097894c8be2"
+        },
+        {
           "path": "references/shot-language.md",
-          "sha256": "f18a4c2f5382d6e512631f5b8768e170066cab06d3f1eb682f26b95931cdc871"
+          "sha256": "3a1c2f6ad310b695995eca36b6e745f2c9795445a8c1f241c45922f8c5007ad4"
         },
         {
           "path": "references/visual-styles.md",
@@ -530,11 +534,11 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "31b46c0a7305c0c7d1e5e5c30252897329d6eb9b0bf219ca983eead9d9875efd"
+          "sha256": "597342c02fe8fe8e6d3b8b3940436f0d3f2233983135dbbf4c7b7b73b2687f79"
         },
         {
           "path": "WORKFLOW.md",
-          "sha256": "c4c5d70f88ff00525259ced4874678c567416191c22343adccb583c978784b6b"
+          "sha256": "c50923db41f648d4e283910638709866644e13196da7abb13a7f49ddae017e20"
         }
       ]
     },

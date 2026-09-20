@@ -1,6 +1,6 @@
 {
   "name": "ai-drama-studio",
-  "version": "0.1.0+codex.20260920041817",
+  "version": "0.1.0+codex.20260920045119",
   "description": "Codex-native local harness for AI video planning, canonical creative skills, versioned assets, Seedance generation and FFmpeg editing.",
   "author": {
     "name": "OpenDramaFlow Contributors"

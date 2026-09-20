@@ -5,6 +5,8 @@
 
 生成分镜或剧照风格图时，按六维度组装 prompt，每张图选 3-5 个维度起作用即可。
 
+涉及对焦、景深、取景距离、俯仰角度或构图选择时，先读[注意力与取景控制](focus-depth-framing.md)。景别名称若有歧义，以身体/场景的实际裁切边界为准。
+
 ## 六维度槽位
 
 ### 1. 景别（Shot Size）
@@ -12,7 +14,9 @@
 | 中文 | 英文关键词 | 用途 |
 |---|---|---|
 | 大远景 | extreme wide shot, establishing shot | 交代环境 |
-| 远景 | wide shot, full shot | 人物 + 环境 |
+| 远景 | wide establishing shot | 环境主导、人物较小 |
+| 全景 | full-body shot, full shot | 完整头脚及地面，走位可读 |
+| 中远景/膝上景 | medium-long shot, knee-up | 膝上动作与环境，不含完整脚步 |
 | 中景 | medium shot, waist-up | 对话、动作 |
 | 近景 | medium close-up, chest-up | 情绪 |
 | 特写 | close-up, face fills frame | 细微表情 |
@@ -69,7 +73,7 @@
 ## Prompt 组装模板
 
 ```
-<景别>, <机位>, <主体描述>, <场景描述>, <光影>, <情绪>, <时间>, cinematic still, anamorphic lens, 35mm film grain, 2.39:1 aspect ratio
+<已批准媒介与画幅>, <景别及裁切边界>, <机位与透视>, <主体/当前状态>, <场景>, <对焦对象及景深>, <构图理由>, <光影/情绪/时间>
 ```
 
 示例（紧张/夜戏）：
@@ -92,7 +96,7 @@ extreme wide shot, low angle, lone warrior on a vast salt flat at twilight, dram
 
 ## 通用规范
 
-- 影视感图优先 2.39:1（宽银幕）或 16:9
+- 画幅服从项目已批准要求；下列历史示例的2.39:1、胶片颗粒和变形镜头不是默认必加项。手绘三渲二项目不因镜头术语变为写实。
 - 加 `cinematic still / film still / movie scene` 关键词稳定风格
 - 想要胶片质感加 `35mm film grain, color graded`
 - 不写"真实电影名 + 同款风格"（容易被模型拒绝），改用风格描述词

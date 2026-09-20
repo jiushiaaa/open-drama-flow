@@ -39,8 +39,8 @@ Step 0: 必填项确认（缺失时提供简洁结构化选项）
 Step 1: 选视觉风格 + 媒介锁 → read references/visual-styles.md
   8 种风格选 1，媒介锁定 1，把"关键词组合"塞进每张 prompt
 
-Step 2: 组装镜头 prompt → read references/shot-language.md
-  六维度（景别 / 机位 / 运镜 / 光影 / 情绪 / 时间）选 3-5 个起作用，每张图组装
+Step 2: 组装镜头 prompt → read references/shot-language.md；涉及焦点/景深/取景边界另读 references/focus-depth-framing.md
+  先记录观众注意点、实际裁切边界、对焦对象/清晰层，再择相关景别、机位、构图和运镜；术语数量不是质量指标
 
 Step 3: 角色卡 / 多视图任务 → 使用 references/character-sheet-formats.md
   三视图 / 八视图 / 角色卡左右分屏 / 表情图 / 姿势库的布局规范 + 通用生成要求

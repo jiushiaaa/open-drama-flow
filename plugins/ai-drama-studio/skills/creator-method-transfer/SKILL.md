@@ -16,6 +16,7 @@ description: 将外部创作资料转化为可检验的动作、表演和运镜�
 - 元素机制、材质与环境层次：[风格与特效](references/style-and-effects.md)。
 - 来源、反例、阅读与实际验收的区别：[证据与来源](references/evidence-and-provenance.md)。
 - 分镜展开、资产与跨镜交接：[分镜与资产转化](references/storyboard-transfer.md)。
+- 用户对焦/景深/景别/机位/构图笔记：[注意力与取景控制](../film-shot/references/focus-depth-framing.md)。
 - 相机路线、遮挡接镜与音画剪辑：[运镜与转场](references/camera-and-transitions.md)。
 - 用户要求完整学习和验证：[完整学习与实践](references/full-study-to-practice.md)。
 - 借鉴即梦方法、Shot/Clip、风格卡：[即梦方法转化](references/jimeng-method-transfer.md)。
