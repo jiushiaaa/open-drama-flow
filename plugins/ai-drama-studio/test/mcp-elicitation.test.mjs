@@ -205,7 +205,10 @@ test("MCP protocol exposes stable media bindings and persists contextual Skill r
 
     const capabilities = await callTool(session.client, "drama_get_capabilities");
     assert.equal(capabilities.image.primary, "codex-imagegen");
-    assert.equal(capabilities.image.seedream, false);
+    assert.equal(capabilities.image.codexImageGen, true);
+    assert.equal(capabilities.image.requiresImageApiKey, false);
+    assert.equal(capabilities.image.apiTool, "drama_prepare_provider_job");
+    assert.equal(typeof capabilities.image.seedream, "boolean"); // Account readiness, not a disabled adapter.
 
     const { project } = await callTool(session.client, "drama_create_project", { title: "MCP 路由上下文验证" });
     const { creation } = await callTool(session.client, "drama_create_creation", {

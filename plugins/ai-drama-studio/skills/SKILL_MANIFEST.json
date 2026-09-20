@@ -17,7 +17,7 @@
         },
         {
           "path": "references/image-asset-contract.md",
-          "sha256": "8b984bc647046ee3bc58f15a0730ce552299d9833ac6ef069b3f45c72d850100"
+          "sha256": "f8c68a355d1110e41d45189b0168a2d317f7206604a1e023381fd350d2944b0d"
         },
         {
           "path": "references/narrative-continuity.md",
@@ -65,7 +65,7 @@
         },
         {
           "path": "references/provider-contract.md",
-          "sha256": "95193ab3506e01609dd74c7ddeb12ef168d6783b2fdcdc897f2da8f90b016d4f"
+          "sha256": "027ce2b992c128ceece11a8d69d5556e9f57937ec0d5c30bda68476df61396b3"
         },
         {
           "path": "references/routing-contract.md",
@@ -76,12 +76,16 @@
           "sha256": "10e71880835a7ce2a960df761adb2d06f0d4b8e24376bcd0b5c6cf57544878af"
         },
         {
+          "path": "references/stage-contract.md",
+          "sha256": "278de3f9c8701fbef6bfa6c4fa68ecc03f12d3c30cc668ccb9771dc5ac5fb013"
+        },
+        {
           "path": "references/workflow-contract.md",
-          "sha256": "b6fe01a69c700a821838123dac30eaebe9c7553a00d892f126ab86a69559c979"
+          "sha256": "c37c58f11a15df52fc1f6c560080143795d7841fa78bb3d5a1e4d6c7c86225df"
         },
         {
           "path": "SKILL.md",
-          "sha256": "6fbabe6445a76426a841b69b73d3afdd5f7f144ed643221e291eb1f6881f1b24"
+          "sha256": "7e3025bfa7ec3bc2e835d3bca4cb80dc4ea56a1556e40f2fb00ce7996ee99a67"
         }
       ]
     },

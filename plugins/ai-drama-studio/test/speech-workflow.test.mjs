@@ -11,6 +11,7 @@ const { requestSpeechJob, authorizeSpeechJob, getSpeechJob } = await import("../
 const { readState, mutateState } = await import("../src/store.mjs");
 const { mediaCommand } = await import("../src/media-inspection.mjs");
 const { drainBackgroundJobs } = await import("../src/background-jobs.mjs");
+const { setPriceRule, costReport } = await import("../src/cost-ledger.mjs");
 const deps = { hasKey: async () => true, readKey: async () => "fake-test-key" };
 const accept = async () => ({ action: "accept", content: { confirm: true } });
 beforeEach(async () => mutateState(state => { state.settings.executionMode = "manual"; }));
@@ -53,6 +54,7 @@ test("accepted TTS writes versioned real MP3 asset; concurrency cannot duplicate
   await mediaCommand("ffmpeg", ["-v", "error", "-f", "lavfi", "-i", "sine=frequency=440:duration=1", fixture]);
   const bytes = await fs.readFile(fixture);
   const job = await ttsJob();
+  await mutateState(state => setPriceRule(state, { kind: "tts", model: job.snapshot.profile.resourceId, currency: "CNY", unit: "character", rate: 0.001, source: "synthetic price, not live account pricing" }));
   let calls = 0;
   const options = { ...deps, run: async () => { calls++; return { audio: bytes, logId: "fixture-log", providerCode: "20000000" }; } };
   const outcomes = await Promise.allSettled([authorizeSpeechJob(job.id, accept, options), authorizeSpeechJob(job.id, accept, options)]);
@@ -65,7 +67,26 @@ test("accepted TTS writes versioned real MP3 asset; concurrency cannot duplicate
   const asset = (await readState()).projects.find(item => item.id === job.projectId).assets.find(item => item.id === saved.result.assetId);
   assert.equal(asset.provider, "doubao-speech");
   assert.equal(asset.requestDigest, job.requestDigest);
+  const cost = costReport(await readState(), { projectId: job.projectId });
+  assert.equal(cost.calls, 1);
+  assert.equal(cost.records[0].estimate.amount, job.snapshot.text.length * 0.001);
+  assert.equal(cost.records[0].actual, null);
+  assert.equal(cost.records[0].creationId, job.snapshot.creationId);
   await assert.rejects(authorizeSpeechJob(job.id, accept, options), /NOT_PENDING/);
+});
+
+test("provider success and usage persist when local speech postprocessing fails", async () => {
+  const job = await ttsJob();
+  const result = await authorizeSpeechJob(job.id, accept, { ...deps,
+    run: async () => ({ audio: Buffer.from("synthetic invalid audio"), usage: { characters: 4 }, logId: "fixture" }),
+    inspect: async () => { throw new Error("local failure"); }
+  });
+  assert.equal(result.status, "output-recovery-required");
+  const records = costReport(await readState(), { projectId: job.projectId }).records;
+  assert.equal(records.length, 1);
+  assert.equal(records[0].usage.characters, 4);
+  assert.equal(records[0].actual, null);
+  await assert.rejects(authorizeSpeechJob(job.id, accept, deps), /NOT_PENDING/);
 });
 
 test("timeouts are uncertain, service rejection is failed, neither auto-retries nor leaks key", async () => {

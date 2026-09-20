@@ -1,15 +1,18 @@
 import fs from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { pluginRoot } from "./config.mjs";
+import { platformPaths } from "./platform.mjs";
+import { keychain } from "./keychain.mjs";
 
-const secretDir = path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "AIDramaStudio");
+const secretDir = platformPaths().secretDir;
 const secretPath = path.join(secretDir, "ark.key");
 const speechSecretPath = path.join(secretDir, "doubao-speech.key");
 const scriptPath = path.join(pluginRoot, "scripts", "secrets.ps1");
 
 function runPowerShell(action, stdin = "", targetPath = secretPath) {
+  if (process.platform === "darwin") return keychain(action, path.basename(targetPath), stdin);
+  if (process.platform !== "win32") throw new Error("SECRET_STORE_PLATFORM_UNSUPPORTED");
   return new Promise((resolve, reject) => {
     const child = spawn("powershell.exe", ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", scriptPath, action, targetPath], {
       windowsHide: true,
@@ -20,6 +23,7 @@ function runPowerShell(action, stdin = "", targetPath = secretPath) {
     child.stdout.setEncoding("utf8");
     child.stdout.on("data", chunk => { stdout += chunk; });
     child.stderr.resume();
+    child.stdin.on("error", () => {});
     child.on("error", reject);
     child.on("close", code => {
       if (code === 0) resolve(stdout);
@@ -48,6 +52,7 @@ export async function clearArkKey() {
 }
 
 export async function hasArkKey() {
+  if (process.platform === "darwin") return keychain("exists", path.basename(secretPath));
   try {
     const stat = await fs.stat(secretPath);
     return stat.isFile() && stat.size > 0;
@@ -68,6 +73,7 @@ export async function saveSpeechKey(apiKey) {
 }
 
 export async function hasSpeechKey() {
+  if (process.platform === "darwin") return keychain("exists", path.basename(speechSecretPath));
   try { const stat = await fs.stat(speechSecretPath); return stat.isFile() && stat.size > 0; }
   catch { return false; }
 }
@@ -78,3 +84,24 @@ export async function readSpeechKey() {
 }
 
 export async function clearSpeechKey() { await runPowerShell("clear", "", speechSecretPath); }
+
+const extraProviders = new Set(["fal", "replicate", "volc-billing-ak", "volc-billing-sk"]);
+function providerSecretPath(provider) {
+  if (!extraProviders.has(provider)) throw new Error("SECRET_PROVIDER_INVALID");
+  return path.join(secretDir, `${provider}.key`);
+}
+export async function hasProviderKey(provider) {
+  const file = providerSecretPath(provider);
+  if (process.platform === "darwin") return keychain("exists", path.basename(file));
+  try { const stat = await fs.stat(file); return stat.isFile() && stat.size > 0; } catch { return false; }
+}
+export async function saveProviderKey(provider, value) {
+  const file = providerSecretPath(provider), key = String(value || "").trim();
+  if (key.length < 12 || key.length > 512 || /\s/.test(key)) throw new Error("PROVIDER_KEY_FORMAT_INVALID");
+  await fs.mkdir(secretDir, { recursive: true }); await runPowerShell("protect", key, file);
+}
+export async function readProviderKey(provider) {
+  if (!await hasProviderKey(provider)) throw new Error("PROVIDER_KEY_NOT_CONFIGURED");
+  return runPowerShell("unprotect", "", providerSecretPath(provider));
+}
+export async function clearProviderKey(provider) { await runPowerShell("clear", "", providerSecretPath(provider)); }

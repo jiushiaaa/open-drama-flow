@@ -4,6 +4,12 @@
 
 ## 默认路线
 
+先读 `drama_get_capabilities` 判定宿主。以下 Codex 内置路线仅适用于 `host: codex`；`host: generic`（其他 Agent）使用用户配置的生图 API Key，默认方舟 Seedream，也可选 fal / Replicate。这不是要求其他宿主安装或等待 Codex 的 imagegen。
+
+通用宿主先提醒用户在工作台保存对应 Key（方舟 Key 可同时支持图片和视频，但需账号开通对应服务）。调用 `drama_prepare_provider_job`，使用当前选择的图片 profile、固定 `requestKey`、`maxCalls: 1`，以 `imageFallbackReason: verified-host-unavailable` 和真实宿主说明记录 Codex 工具缺失；再按自动／手动策略调用 `drama_start_provider_job`，读取原任务并用 `drama_download_provider_output` 下载库外候选。所有现有图片 API 适配器只接受文本；需要参考图或图片编辑时不得悄悄丢掉参考，先说明缺失能力。
+
+候选生成后仍按下文展示、验收、导入。不要走旧 Seedream 视频批次自动入库分支，不要虚构视频 brief 来生成独立图片，不要创建 Codex 图片任务。Seedream 同步接口的未知提交不可自动重试；已经保存输出 URL 时只重试下载。视频批次使用验收入库后的图片与 `maxImageCalls: 0`，不重复生图。
+
 先核对适用项目是否存在用户明确的图片检查委托及其来源。若用户已针对该项目授权“Agent检查素材、用户审视频”，则在该范围内执行委托：记录确切候选、哈希、Agent检查与委托依据，可导入当前镜头需要的素材；不得记录为用户逐图看过。此特例不来自 automatic 或全访问权限，不推广到其他项目，也不覆盖锁定母版或批准生产记忆的规则。项目特例见匹配项目的配置说明；无委托时执行以下默认路线。
 
 `已授权的图片需求 → Codex 会话内置图片工具 → 候选暂存 → 在会话展示 → 用户验收 → 写回项目素材库 → 绑定下游引用`

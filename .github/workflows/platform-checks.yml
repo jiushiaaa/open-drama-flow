@@ -1,0 +1,39 @@
+name: Windows and macOS checks
+on:
+  workflow_dispatch:
+  push:
+    paths: ['plugins/ai-drama-studio/**', 'scripts/**', '.github/workflows/platform-checks.yml']
+  pull_request:
+    paths: ['plugins/ai-drama-studio/**', 'scripts/**', '.github/workflows/platform-checks.yml']
+permissions:
+  contents: read
+jobs:
+  local-runtime:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: plugins/ai-drama-studio/package-lock.json
+      - if: runner.os == 'macOS'
+        run: brew install ffmpeg
+      - if: runner.os == 'Windows'
+        run: choco install ffmpeg --no-progress -y
+      - run: npm --prefix plugins/ai-drama-studio ci
+      - run: node --test scripts/agent-setup.test.mjs
+      - run: node scripts/agent-setup.mjs --check
+      - run: npm --prefix plugins/ai-drama-studio run check
+      - run: npm --prefix plugins/ai-drama-studio test
+      - run: node plugins/ai-drama-studio/scripts/sync-skill-manifest.mjs --check
+      - run: node plugins/ai-drama-studio/scripts/verify-skill-mcp.mjs
+      - name: Generic Agent MCP verification
+        run: node plugins/ai-drama-studio/scripts/verify-skill-mcp.mjs
+        env:
+          AI_DRAMA_AGENT_HOST: generic

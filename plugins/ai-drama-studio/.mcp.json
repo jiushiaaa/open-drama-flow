@@ -3,7 +3,8 @@
     "ai-drama-studio": {
       "cwd": ".",
       "command": "node",
-      "args": ["./src/mcp-server.mjs"]
+      "args": ["./src/mcp-server.mjs"],
+      "env": { "AI_DRAMA_AGENT_HOST": "codex" }
     }
   }
 }

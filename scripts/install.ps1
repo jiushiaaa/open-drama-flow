@@ -8,7 +8,7 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
 if ($env:OS -ne "Windows_NT") {
-  throw "OpenDramaFlow currently supports Codex Desktop on Windows only."
+  throw "This installer targets Windows. On macOS use: bash scripts/install.sh codex"
 }
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
@@ -121,7 +121,7 @@ if (-not $SkipLaunch) {
 [ordered]@{
   installed = $true
   plugin = "ai-drama-studio@ai-drama-local"
-  skills = 45
+  skills = @(Get-ChildItem -LiteralPath (Join-Path $pluginRoot 'skills') -Directory | Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName 'SKILL.md') }).Count
   cloudflared = $cloudflaredPath
   workbench = if ($SkipLaunch) { "not-started" } else { "http://127.0.0.1:4317" }
   nextStep = "Restart Codex Desktop, then say: 打开 OpenDramaFlow"

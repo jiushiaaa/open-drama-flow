@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { freezeCallCost, numericUsage } from "./cost-ledger.mjs";
 import path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import { assertInside, mediaRoot, safeId } from "./config.mjs";
@@ -147,7 +148,9 @@ export async function authorizeSpeechJob(jobId, elicit, deps = {}) {
     target.requestId = requestId;
     target.startedAt = now();
     target.approval = { method: automatic ? "automatic-policy" : "mcp-elicitation", action: automatic ? "start" : "accept", at: now(), requestDigest: target.requestDigest };
-    state.providerCalls.push({ id: requestId, jobId, projectId: job.projectId, provider: "doubao-speech", kind: snapshot.mode, status: "submitted", requestDigest: job.requestDigest, at: now() });
+    const call = { id: requestId, jobId, projectId: job.projectId, creationId: snapshot.creationId || null, provider: "doubao-speech", model: snapshot.profile.resourceId || snapshot.profile.model, kind: snapshot.mode, status: "submitted", requestDigest: job.requestDigest, at: now() };
+    freezeCallCost(state, call, { second: snapshot.audio?.durationSeconds, character: snapshot.text?.length });
+    state.providerCalls.push(call);
     return bytes;
   });
   const execute = async () => {
@@ -155,6 +158,12 @@ export async function authorizeSpeechJob(jobId, elicit, deps = {}) {
   try {
     const output = await (deps.run || runSpeechRequest)(snapshot, { key, requestId, audio });
     providerSucceeded = true;
+    // Persist provider evidence BEFORE file writing/probing/import can fail.
+    await mutateState(state => {
+      const call = state.providerCalls.find(item => item.id === requestId);
+      if (call) Object.assign(call, { providerStatus: "succeeded", logId: output.logId,
+        usage: numericUsage({ ...(output.usage || {}), billing_duration_seconds: output.billingDurationSeconds }) });
+    });
     const directory = jobDirectory(jobId);
     await fs.mkdir(directory, { recursive: true });
     const outputPath = path.join(directory, snapshot.mode === "music" ? "music.wav" : snapshot.mode === "tts" ? "speech.mp3" : "transcript.json");

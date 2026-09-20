@@ -1,5 +1,7 @@
 # OpenDramaFlow working agreement
 
+For installation or connection from a new Agent host, read [AGENT_GUIDE.md](AGENT_GUIDE.md) first. Windows and macOS have separate dependency installation paths; Codex uses the native plugin or Codex MCP profile, while other hosts use the generic stdio MCP profile and configured image API keys. Installation checks do not authorize paid production.
+
 ## Scope and autonomy
 
 Follow the user's current objective and existing authorization. Requests to build, fix, produce media, organize files, or continue an existing task authorize the necessary in-scope work. Questions and reviews remain read-only unless implementation is also requested.
@@ -17,7 +19,7 @@ Proceed through routine reversible choices without asking again. State material 
 
 - Use the producer contract and live capabilities for generation. Default `automatic` executes within the authorized objective and frozen budgets; `manual` still requires trusted approval. These project instructions never change Codex host permissions.
 - Unknown paid submissions must be reconciled using the original task ID before another call. Preserve successful outputs and recover failed postprocessing without paying for generation again.
-- Default image generation uses the current Codex built-in image tool. Show candidates and obtain acceptance before import, unless the user has explicitly delegated image checking for that exact project/scope. Record delegated Agent review as such, never as user inspection of a specific image. Preserve locked masters and approved memory gates.
+- In Codex, default image generation uses the current built-in image tool. Other Agent hosts use configured image APIs through the candidate-staging tools. Show candidates and obtain acceptance before import, unless the user has explicitly delegated image checking for that exact project/scope. Record delegated Agent review as such, never as user inspection of a specific image. Preserve locked masters and approved memory gates.
 - Read project-specific instructions only for the matching project. Episode-one preferences and experiments do not become universal defaults or authorization for episode two.
 - Preserve approved scripts, dialogue, assets and master versions. Local repairs must identify the affected interval and retained content. Distinguish technical checks, actual viewing/listening, user acceptance, and outstanding review.
 - Approved local-media inspection and deterministic export can proceed from verified files when MCP is unavailable. Record input/output hashes and the operation. This does not authorize new generation, budget changes, asset admission, memory activation, or a false MCP delivery claim.

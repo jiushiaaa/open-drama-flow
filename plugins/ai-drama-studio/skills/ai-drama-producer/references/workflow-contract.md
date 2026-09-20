@@ -31,6 +31,8 @@ The required control loop is:
 
 Call `drama_get_next_actions` again after any plan edit, completed task, resumed job, render or review failure. It is the authoritative stage transition, not a decorative checklist.
 
+For full video projects, use [stage-contract.md](stage-contract.md) alongside this loop: `drama_select_production_workflow` supplies production-type inputs, artifacts, tool suggestions and criteria; `drama_get_production_progress` validates recorded artifact hashes and identifies where to resume. Append checkpoints and significant decisions with the corresponding journal tools. A checkpoint records Agent-reported evidence only; it cannot bypass this graph or grant acceptance, budget, memory or execution authority. Existing projects without checkpoints remain readable and retain their original production state.
+
 ## Stage gates
 
 | Stage | Required evidence before advancing |

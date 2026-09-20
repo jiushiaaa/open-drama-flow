@@ -7,10 +7,17 @@ import { createHash } from "node:crypto";
 import { Readable } from "node:stream";
 import { fileURLToPath } from "node:url";
 import AdmZip from "adm-zip";
+import { agentHost } from "./platform.mjs";
 import { allowedAudioExtensions, allowedDocumentExtensions, allowedImageExtensions, allowedSpreadsheetExtensions, allowedVideoExtensions, assertInside, dataRoot, mediaRoot, defaultSettings, host, lockedGenerationSettings, port, publicRoot, safeId, workspaceRoot } from "./config.mjs";
 import { appendEvent, mutateState, readState } from "./store.mjs";
 import { clearArkKey, hasArkKey, saveArkKey, clearSpeechKey, hasSpeechKey, saveSpeechKey } from "./secrets.mjs";
 import { speechCapabilities } from "./speech.mjs";
+import { usageDashboard } from "./usage-dashboard.mjs";
+import { setPriceRule, recordSettlement } from "./cost-ledger.mjs";
+import { providerCatalog, providerSettingsSchema } from "./providers.mjs";
+import { saveProviderKey, clearProviderKey } from "./secrets.mjs";
+import { configureUpscale, getUpscale, startUpscale, pauseUpscale } from "./upscale.mjs";
+import { billingStatus, billingSettingsSchema, syncBilling, startBillingTimer } from "./billing-sync.mjs";
 import { getAssetBridgeStatus } from "./asset-bridge.mjs";
 import { getManagedSkill, importSkillFile, listManagedSkills, setManagedSkillEnabled } from "./skill-registry.mjs";
 import { appendCreationMessage, attachTaskRemoteUrl, claimTask, completeTask, createApproval, createAssetFolder, createCreation, createProject, createWorld, deleteAsset, deleteAssetFolder, deleteCreation, deleteProject, deleteWorld, promoteAsset, renameProject, resumeRealPipeline, setProjectPinned, startLocalRender, updateAsset, updateAssetFolder, updateCreation, updateWorld } from "./workflow.mjs";
@@ -21,6 +28,7 @@ const mimeTypes = {
   ".mp4": "video/mp4", ".mov": "video/quicktime", ".mp3": "audio/mpeg", ".wav": "audio/wav", ".m4a": "audio/mp4", ".aac": "audio/aac", ".flac": "audio/flac", ".ogg": "audio/ogg",
   ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", ".doc": "application/msword", ".md": "text/markdown; charset=utf-8", ".txt": "text/plain; charset=utf-8", ".pdf": "application/pdf", ".csv": "text/csv; charset=utf-8", ".json": "application/json; charset=utf-8", ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ".xls": "application/vnd.ms-excel", ".svg": "image/svg+xml"
 };
+const runtimeIdentity = createHash("sha256").update(`${dataRoot}\n${agentHost.host}`).digest("hex");
 
 function json(res, status, body) {
   const payload = Buffer.from(JSON.stringify(body));
@@ -29,6 +37,7 @@ function json(res, status, body) {
 }
 
 function safeError(error) {
+  if (error?.name === "ZodError") return { code: "INPUT_INVALID", message: "INPUT_INVALID: 配置字段或数值不符合接口约束，请检查后重试。" };
   const message = String(error?.message || error || "UNKNOWN_ERROR");
   const known = message.match(/^[A-Z0-9_]+/)?.[0];
   return { code: known || "REQUEST_FAILED", message: known ? message : "请求未完成，请查看本地服务日志。" };
@@ -220,8 +229,26 @@ function validateSettings(input, previous) {
 
 async function handleApi(req, res, url) {
   const segments = url.pathname.split("/").filter(Boolean);
+  if (req.method === "GET" && url.pathname === "/api/usage") { json(res, 200, usageDashboard(await readState(), Object.fromEntries(url.searchParams))); return; }
+  if (req.method === "PUT" && url.pathname === "/api/usage/prices") { const input = await readJson(req); json(res, 200, await mutateState(s => setPriceRule(s, input))); return; }
+  if (req.method === "POST" && url.pathname === "/api/usage/settlements") { const input = await readJson(req); json(res, 200, await mutateState(s => recordSettlement(s, input.callId, input.receipt))); return; }
+  if (req.method === "GET" && url.pathname === "/api/providers") { json(res, 200, await providerCatalog()); return; }
+  if (req.method === "PUT" && url.pathname === "/api/providers") { const selection = providerSettingsSchema.parse(await readJson(req)); await mutateState(s => { s.settings.providerSelection = selection; }); json(res, 200, { selection }); return; }
+  if (["fal", "replicate", "volc-billing-ak", "volc-billing-sk"].includes(segments[2]) && segments[1] === "secrets") {
+    if (req.method === "PUT") { await saveProviderKey(segments[2], (await readJson(req, 4096)).apiKey); json(res, 200, { configured: true }); return; }
+    if (req.method === "DELETE") { await clearProviderKey(segments[2]); json(res, 200, { configured: false }); return; }
+  }
+  if (req.method === "GET" && url.pathname === "/api/upscale") { json(res, 200, { ...await getUpscale(), runtime: (await readState()).settings.upscaleRuntime || null }); return; }
+  if (req.method === "PUT" && url.pathname === "/api/upscale/runtime") { json(res, 200, await configureUpscale(await readJson(req))); return; }
+  if (req.method === "POST" && segments[1] === "upscale" && segments[2]) {
+    if (segments[3] === "resume") { json(res, 200, await startUpscale(segments[2])); return; }
+    if (segments[3] === "pause") { json(res, 200, await pauseUpscale(segments[2])); return; }
+  }
+  if (req.method === "GET" && url.pathname === "/api/billing") { json(res, 200, await billingStatus()); return; }
+  if (req.method === "PUT" && url.pathname === "/api/billing") { const config = billingSettingsSchema.parse(await readJson(req)); await mutateState(s => { s.settings.billingSync = config; }); json(res, 200, { settings: config }); return; }
+  if (req.method === "POST" && url.pathname === "/api/billing/sync") { json(res, 200, await syncBilling((await readJson(req)).period)); return; }
   if (req.method === "GET" && url.pathname === "/api/health") {
-    json(res, 200, { ok: true, service: "ai-drama-studio", now: new Date().toISOString(), ffmpeg: true, assetBridge: await getAssetBridgeStatus() }); return;
+    json(res, 200, { ok: true, service: "ai-drama-studio", agentHost: agentHost.host, runtimeIdentity, now: new Date().toISOString(), ffmpeg: true, assetBridge: await getAssetBridgeStatus() }); return;
   }
   if (req.method === "GET" && url.pathname === "/api/state") {
     json(res, 200, publicState(await readState(), await hasArkKey(), await getAssetBridgeStatus(), await hasSpeechKey())); return;
@@ -393,10 +420,10 @@ async function handleApi(req, res, url) {
 async function handler(req, res) {
   try {
     const url = new URL(req.url, `http://${host}:${port}`);
-    if (url.pathname.startsWith("/api/secrets/")) {
+    if (/^\/api\/(secrets|providers|usage|upscale|billing)(\/|$)/.test(url.pathname)) {
       const expected = `127.0.0.1:${req.socket.localPort}`;
       const alternative = `localhost:${req.socket.localPort}`;
-      if (![expected, alternative].includes(req.headers.host) || (req.headers.origin && ![`http://${expected}`, `http://${alternative}`].includes(req.headers.origin)) || (req.method === "PUT" && !req.headers["content-type"]?.startsWith("application/json"))) {
+      if (![expected, alternative].includes(req.headers.host) || (req.headers.origin && ![`http://${expected}`, `http://${alternative}`].includes(req.headers.origin)) || (["PUT", "POST"].includes(req.method) && !req.headers["content-type"]?.startsWith("application/json"))) {
         json(res, 403, { error: { code: "CREDENTIAL_ORIGIN_REJECTED", message: "请在本机工作台配置密钥。" } }); return;
       }
     }
@@ -420,7 +447,7 @@ async function existingWorkbenchIsHealthy() {
   try {
     const response = await fetch(`http://${host}:${port}/api/health`, { signal: AbortSignal.timeout(900) });
     const body = await response.json();
-    return response.ok && body?.service === "ai-drama-studio";
+    return response.ok && body?.service === "ai-drama-studio" && body.runtimeIdentity === runtimeIdentity;
   } catch {
     return false;
   }
@@ -445,6 +472,7 @@ export async function startHttpServer({ log = false } = {}) {
     });
     server.listen(port, host, () => {
       runningServer = server;
+      const stopBilling = startBillingTimer(); server.once("close", stopBilling);
       if (log) console.log(`OpenDramaFlow: ${url}`);
       resolve({ server, url, reused: false });
     });

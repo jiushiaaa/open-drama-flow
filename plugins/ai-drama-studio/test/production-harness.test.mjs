@@ -87,6 +87,19 @@ test("normalizes a general commercial-video brief without drama-only fields", ()
   assert.equal("characters" in brief, false);
 });
 
+test("selected video provider guides preparation and reconciles unresolved calls before another submission", () => {
+  const state = fixture();
+  state.settings.providerSelection = { video: "fal-wan", fallbackImage: "ark-seedream" };
+  let status = buildProductionStatus(state, "project-1", "creation-1", { credentialStatus: { arkConfigured: false } });
+  assert.equal(status.nextActions[0].tool, "drama_prepare_provider_job");
+  assert.equal(status.nextActions[0].input.profile, "fal-wan");
+  state.externalJobs = [{ id: "external-1", projectId: "project-1", creationId: "creation-1", shotId: "shot-1", kind: "video", status: "submission-unknown" }];
+  status = buildProductionStatus(state, "project-1", "creation-1");
+  assert.equal(status.nextActions[0].tool, "wait");
+  state.externalJobs[0].providerTaskId = "original-task";
+  assert.equal(buildProductionStatus(state, "project-1", "creation-1").nextActions[0].tool, "drama_get_provider_job");
+});
+
 test("publishes the exact implemented Seedance adapter boundary", () => {
   const profile = getSeedanceCapabilityProfile(fixture().settings);
   assert.equal(profile.maxReferenceImages, 30);

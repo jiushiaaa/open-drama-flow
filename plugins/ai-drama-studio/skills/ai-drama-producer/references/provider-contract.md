@@ -16,13 +16,15 @@ Start at most one job for one scope. Enforce both call caps; a failed or claimed
 
 ## Codex Image Gen
 
+First read `drama_get_capabilities().host`. This section applies to `codex`; on `generic` hosts, use a configured image API through the standalone provider-job path described below. Do not require a tool that the current Agent does not have.
+
 Codex Image Gen is the default agent tool route, not a localhost provider endpoint. Follow [the image asset contract](image-asset-contract.md): generate with the current Codex session's built-in image tool, inspect and display candidates outside the project library, then wait for user acceptance of the exact bytes before import or task completion. Automatic call execution is not image acceptance. For an existing queued task, retain its frozen prompt and budget; standalone image tasks need no fabricated video brief or duration. Record failure honestly instead of attaching a placeholder.
 
 The resulting asset must keep a stable `assetId`, version and approval/revision binding. Downstream work must use the exact approved version, not whichever file is newest.
 
 ## Seedream
 
-This is an exceptional fallback, not an equal default. Use it only when the user explicitly requests the project image model or the Codex built-in tool is verifiably unavailable/failing, following the evidence, retry and acceptance rules in [the image asset contract](image-asset-contract.md). A configured Ark key or old provider setting alone does not authorize switching. Do not use a pipeline that auto-imports its generated output for unaccepted candidates; retain standalone output outside the library until the user approves it.
+In Codex this is an exceptional fallback, not an equal default: require an explicit request or verified built-in unavailability/failure. On generic hosts, a configured image API is the normal route; Seedream is the default, with fal/Replicate selectable. Record actual host evidence with `imageFallbackReason: verified-host-unavailable`, freeze a standalone request using `drama_prepare_provider_job`, then start/query/download it. These adapters accept text only, not reference-image editing. Follow [the image asset contract](image-asset-contract.md) on every host. A configured key alone does not authorize switching Codex away from its built-in tool. Never auto-import unaccepted candidates; generic hosts must accept/import images before a video batch with `maxImageCalls: 0`.
 
 - Endpoint: `POST {arkBaseUrl}/images/generations`.
 - The model ID is system-managed by the installed adapter.
@@ -49,7 +51,7 @@ Managed voice cloning, mask-based pixel editing, controllable 3D scene editing, 
 
 ## Optional Doubao speech
 
-- Configure a separate speech API key in the local vault. It is protected by DPAPI independently of the Ark key, is never returned through state/MCP, and is not shipped to forks. No speech key means Seedance native sound plus actual listening; do not pretend ASR/TTS ran.
+- Configure a separate speech API key in the local vault. It is protected by Windows DPAPI or macOS Keychain independently of the Ark key, is never returned through state/MCP, and is not shipped to forks. No speech key means Seedance native sound plus actual listening; do not pretend ASR/TTS ran.
 - ASR: official `https://openspeech.bytedance.com/api/v3/auc/bigmodel/recognize/flash`, resource `volc.bigasr.auc_turbo`, `X-Api-Key`. Only an approved registered audio/video segment is sent, as embedded WAV data (16 kHz mono). The adapter's bounded limit is 120 seconds per approval, default 5 seconds; longer sources require explicitly selected segments. This is an adapter limit, not the provider's advertised maximum.
 - TTS: official `https://openspeech.bytedance.com/api/v3/tts/unidirectional/sse`, resource `seed-tts-2.0`, default stock voice `zh_female_vv_uranus_bigtts` (optional `speaker` freezes a verified stock-voice ID per request), MP3 / 24 kHz, at most 500 characters per approval. This is not voice cloning or music generation.
 - `drama_request_speech_job` freezes one request, source versions/hash, execution policy and parameters without submitting it. `drama_authorize_speech_job` reserves and dispatches one call automatically in automatic mode; manual mode requires an accepted trusted MCP form. HTTP does not expose an approval/execution route. In manual mode cancel, absent confirmation or absent elicitation means zero calls. Error/timeout consumes the one attempt and never triggers automatic retry or service switching.

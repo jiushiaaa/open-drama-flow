@@ -1,4 +1,6 @@
 import fs from "node:fs/promises";
+import { agentHost } from "./platform.mjs";
+import { freezeCallCost, numericUsage } from "./cost-ledger.mjs";
 import { createReadStream } from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
@@ -1761,6 +1763,9 @@ export async function createApproval(projectId, requested = {}) {
     const references = validateProductionAssetReferences(project, creation, production);
     const scoped = { shots: production.shots, assets: project.assets.filter(asset => assetBelongsToCreation(asset, creationId, references)) };
     const limits = resolveApprovalLimits(scoped, state.settings, requested);
+    if (limits.maxImageCalls > 0 && !agentHost.codexImageGen) throw new Error("API_IMAGE_CANDIDATES_USE_DRAMA_PREPARE_PROVIDER_JOB_THEN_ACCEPT_IMPORT");
+    if (limits.maxVideoCalls > 0 && state.settings.providerSelection?.video && state.settings.providerSelection.video !== "ark") throw new Error("VIDEO_PROVIDER_SELECTED_USE_DRAMA_PREPARE_PROVIDER_JOB");
+    if (limits.maxImageCalls > 0 && state.settings.imageProvider !== "codex-imagegen" && state.settings.providerSelection?.fallbackImage && state.settings.providerSelection.fallbackImage !== "ark-seedream") throw new Error("IMAGE_PROVIDER_SELECTED_USE_DRAMA_PREPARE_PROVIDER_JOB");
     if (limits.maxImageCalls === 0 && limits.maxVideoCalls === 0) throw new Error("NO_PAID_WORK_REQUIRED");
     const capability = validateSeedanceShots(production.shots, state.settings, brief);
     if (limits.maxVideoCalls > 0 && !capability.compatible) throw new Error(`SEEDANCE_CAPABILITY_MISMATCH:${capability.errors.map(item => item.code).join(",")}`);
@@ -1933,6 +1938,7 @@ async function runRealPipeline(jobId, approvalId) {
         targetApproval.usedImageCalls += 1;
         const call = { id: safeId("call"), jobId, approvalId, projectId: targetProject.id, creationId, shotId: shot.id, kind: "seedream-image", status: "submitting", charged: true, planRevision: Number(targetProduction.planRevision || 0), promptVersion: Number(targetShot.promptVersion || 1), requestDigest: compiled.requestDigests.image, requestSnapshot: compiled.requests.image, promptCompilerVersion: compiled.compilerVersion, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), error: null };
         next.providerCalls ||= [];
+        freezeCallCost(next, call, { image: 1 });
         next.providerCalls.unshift(call);
         targetShot.imageSubmission = { callId: call.id, status: call.status, approvalId };
         return { call, created: true };
@@ -1962,13 +1968,16 @@ async function runRealPipeline(jobId, approvalId) {
       const outputPath = path.join(projectMediaDir(project.id), "assets", `${shot.id}-r${production.planRevision}-p${shot.promptVersion || 1}-seedream.png`);
       try {
         const request = reservation.call.requestSnapshot;
-        const result = await withRealJobHeartbeat(jobId, runToken, () => generateSeedreamImage({ apiKey: currentKey, baseUrl: settings.arkBaseUrl, model: request.model, prompt: request.prompt, size: request.parameters?.size || "2K", outputPath, watermark: Boolean(request.parameters?.watermark) }));
+        const result = await withRealJobHeartbeat(jobId, runToken, () => generateSeedreamImage({ apiKey: currentKey, baseUrl: settings.arkBaseUrl, model: request.model, prompt: request.prompt, size: request.parameters?.size || "2K", outputPath, watermark: Boolean(request.parameters?.watermark), onUsage: usage => mutateState(next => {
+          const target = next.providerCalls.find(item => item.id === reservation.call.id);
+          if (target) Object.assign(target, { usage: numericUsage(usage), providerStatus: "succeeded" });
+        }) }));
         const imageStat = await fs.stat(result.outputPath);
         const imageSha256 = await fileDigest(result.outputPath);
         await mutateState(next => {
           const call = next.providerCalls.find(item => item.id === reservation.call.id);
           if (!call) throw new Error("PROVIDER_CALL_NOT_FOUND");
-          Object.assign(call, { status: "succeeded", outputPath: result.outputPath, remoteUrl: result.remoteUrl, usage: result.usage || null, sha256: imageSha256, bytes: imageStat.size, updatedAt: new Date().toISOString() });
+          Object.assign(call, { status: "succeeded", outputPath: result.outputPath, remoteUrl: result.remoteUrl, usage: numericUsage(result.usage), sha256: imageSha256, bytes: imageStat.size, updatedAt: new Date().toISOString() });
         });
         await mutateState(next => {
           assertRealJobLease(next, jobId, runToken);
@@ -2059,6 +2068,7 @@ async function runRealPipeline(jobId, approvalId) {
           targetApproval.usedVideoCalls += 1;
           const nextCall = { id: safeId("call"), jobId, approvalId, projectId: targetProject.id, creationId, shotId: shot.id, kind: "seedance-video", status: "submitting", charged: true, planRevision: Number(targetProduction.planRevision || 0), promptVersion: Number(targetShot.promptVersion || 1), inputAsset, requestDigest: compiled.requestDigests.video, requestSnapshot: compiled.requests.video, promptCompilerVersion: compiled.compilerVersion, providerPayloadDigest: digest(providerPayload), providerPayloadSnapshot: providerPayload, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), error: null };
           next.providerCalls ||= [];
+          freezeCallCost(next, nextCall, { second: compiled.requests.video.parameters?.duration });
           next.providerCalls.unshift(nextCall);
           targetShot.providerSubmission = { callId: nextCall.id, status: nextCall.status, approvalId };
           return { call: nextCall, created: true };
@@ -2108,11 +2118,11 @@ async function runRealPipeline(jobId, approvalId) {
           apiKey: currentKey,
           baseUrl: settings.arkBaseUrl,
           taskId,
-          onStatus: async status => {
+          onStatus: async (status, task) => {
             await updateRealJob(jobId, runToken, { status: "running", stage: `video-${shot.order}-${status}` });
             await mutateState(next => {
               const targetCall = next.providerCalls?.find(item => item.id === call.id);
-              if (targetCall) Object.assign(targetCall, { status: status === "succeeded" ? "submitted" : status, providerStatus: status, updatedAt: new Date().toISOString() });
+              if (targetCall) Object.assign(targetCall, { status: status === "succeeded" ? "submitted" : status, providerStatus: status, ...(task.usage ? { usage: numericUsage(task.usage) } : {}), updatedAt: new Date().toISOString() });
             });
           },
           onPoll: async () => updateRealJob(jobId, runToken, { status: "running" })

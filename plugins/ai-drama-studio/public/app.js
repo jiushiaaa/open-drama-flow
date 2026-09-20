@@ -1,6 +1,7 @@
 import { sortSidebarCreations } from "./sidebar-order.js";
 import { buildSkillFileTree, countSkillTreeFiles, skillFileBadge } from "./skill-file-tree.js";
 import { createCanvasPersistence } from "./canvas-persistence.js";
+import { createProductionConsole } from "./production-console.js";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -69,7 +70,8 @@ function toast(message, tone = "info") {
 function activeProject() { return studioState?.projects.find(project => project.id === activeProjectId) || null; }
 function activeCreation() { return activeProject()?.creations?.find(item => item.id === activeCreationId) || null; }
 function activeWorld() { return activeProject()?.worlds?.find(item => item.id === activeCreation()?.worldId) || null; }
-function currentRoute() { return ["start", "project-library", "project", "workspace", "skills", "project-guide"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "start"; }
+const productionConsole = createProductionConsole({ el, api, toast });
+function currentRoute() { return ["start", "project-library", "project", "workspace", "skills", "project-guide", "production-console"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "start"; }
 function go(route) { location.hash = route; }
 
 function sortedProjects() {
@@ -120,10 +122,12 @@ function applyRoute() {
   if (!activeProject() && ["project", "workspace"].includes(route)) route = "project-library";
   if (route !== "workspace" && canvasView) { canvasView.unmount(); canvasView = null; canvasSignature = null; }
   const routeViewIds = { start: "start-view", "project-library": "project-library-view", project: "project-overview-view", workspace: "workspace-view", skills: "skills-view", "project-guide": "project-guide-view" };
+  routeViewIds["production-console"] = "production-console-view";
+  if (route === "production-console") productionConsole.enter(); else productionConsole.leave();
   $$(".route-view").forEach(view => { view.hidden = view.id !== routeViewIds[route]; });
   $$(".primary-nav a").forEach(link => link.classList.toggle("active", link.getAttribute("href") === `#${route}` || (route === "project" && link.getAttribute("href") === "#project-library") || (route === "workspace" && link.getAttribute("href") === "#project-library")));
   const routeTitle = route === "start" ? "开始创作" : route === "project-library" ? "项目库" : route === "skills" ? "Skill" : route === "project-guide" ? "项目新手指引" : activeProject()?.title || "OpenDramaFlow";
-  document.title = `${routeTitle} — OpenDramaFlow`;
+  document.title = `${route === "production-console" ? "用量与工具" : routeTitle} — OpenDramaFlow`;
 }
 
 function renderSidebar() {

@@ -7,6 +7,8 @@ import { mediaCommand } from "./media-inspection.mjs";
 
 const source = z.object({ path: z.string(), sha256: z.string().regex(/^[a-fA-F0-9]{64}$/) }).strict();
 export const audioPlanSchema = z.discriminatedUnion("operation", [
+  z.object({ operation: z.literal("normalize"), source, targetLufs: z.number().min(-36).max(-10).default(-16), truePeakDbtp: z.number().min(-9).max(-1).default(-1.5), loudnessRange: z.number().min(1).max(20).default(11) }).strict(),
+  z.object({ operation: z.literal("denoise"), source, reductionDb: z.number().min(0.01).max(20).default(6), noiseFloorDb: z.number().min(-80).max(-20).default(-50) }).strict(),
   z.object({ operation: z.literal("derive"), source, character: z.string().min(1), acceptanceReference: z.string().min(1), capabilityReference: z.string().min(1), sampleRate: z.enum(["24000", "44100", "48000"]), channels: z.number().int().min(1).max(2), minDurationSeconds: z.number().min(0), maxDurationSeconds: z.number().positive(), maxBytes: z.number().int().positive() }).strict(),
   z.object({ operation: z.literal("measure"), source, startSeconds: z.number().min(0).default(0), durationSeconds: z.number().positive().max(7200), signalLabel: z.enum(["full-mix", "isolated-dialogue"]) }).strict(),
   z.object({ operation: z.literal("extract"), source, character: z.string().min(1), acceptanceReference: z.string().min(1), sampleRate: z.number().int().min(8000).max(192000), startSample: z.number().int().min(0), endSample: z.number().int().positive() }).strict(),
@@ -46,10 +48,12 @@ export async function measureAudio(source, startSeconds, durationSeconds, signal
 }
 
 export async function processLocalAudio({ planPath, outputDirectory }) {
+  const startedAt = Date.now();
   if (!path.isAbsolute(planPath) || !path.isAbsolute(outputDirectory)) throw new Error("AUDIO_ABSOLUTE_PATHS_REQUIRED");
   const plan = audioPlanSchema.parse(JSON.parse(await fs.readFile(planPath, "utf8")));
   const media = await verifySource(plan.source);
   const audio = media.streams.find(s => s.codec_type === "audio");
+  if (["normalize", "denoise"].includes(plan.operation)) return finishAudio(plan, media, outputDirectory, startedAt);
   if (plan.operation === "measure") return measureAudio(plan.source, plan.startSeconds, plan.durationSeconds, plan.signalLabel);
   if (plan.operation === "extract" && (plan.endSample <= plan.startSample || Number(audio.sample_rate) !== plan.sampleRate)) throw new Error("AUDIO_SAMPLE_RANGE_OR_RATE_INVALID");
   const video = media.streams.find(s => s.codec_type === "video");
@@ -92,6 +96,41 @@ export async function processLocalAudio({ planPath, outputDirectory }) {
   const sha256 = await fileHash(output);
   const result = { output, sha256, source: plan.source, operation: plan.operation, listeningReview: "pending", userAcceptance: "pending", registeredInProject: false };
   if (plan.operation === "mix") result.measurement = await measureAudio({ path: output, sha256 }, 0, duration);
+  await fs.writeFile(path.join(outputDirectory, "result.json"), JSON.stringify(result, null, 2));
+  return result;
+}
+
+// Audio-only derivatives preserve the source/video; no silence trimming, stem
+// separation, dialogue replacement or automatic admission to the project library.
+async function finishAudio(plan, media, outputDirectory, startedAt) {
+  const audio = media.streams.find(s => s.codec_type === "audio");
+  const duration = Number(audio.duration || media.format.duration);
+  const sampleRate = Number(audio.sample_rate);
+  if (!Number.isFinite(duration) || duration <= 0 || duration > 7200 || ![1, 2].includes(audio.channels) || !Number.isInteger(sampleRate) || sampleRate < 8000 || sampleRate > 192000) throw new Error("AUDIO_FINISH_FORMAT_UNSUPPORTED");
+  let filter, firstPass = null;
+  if (plan.operation === "normalize") {
+    const target = `loudnorm=I=${plan.targetLufs}:TP=${plan.truePeakDbtp}:LRA=${plan.loudnessRange}`;
+    const { stderr } = await mediaCommand("ffmpeg", ["-nostdin", "-i", plan.source.path, "-map", "0:a:0", "-af", `${target}:print_format=json`, "-vn", "-f", "null", "-"]);
+    firstPass = JSON.parse(stderr.match(/\{\s*"input_i"[\s\S]*?\}/)?.[0] || "null");
+    if (!firstPass || ["input_i", "input_tp", "input_lra", "input_thresh", "target_offset"].some(key => !Number.isFinite(Number(firstPass[key])))) throw new Error("AUDIO_NORMALIZATION_UNMEASURABLE");
+    filter = `${target}:measured_I=${Number(firstPass.input_i)}:measured_TP=${Number(firstPass.input_tp)}:measured_LRA=${Number(firstPass.input_lra)}:measured_thresh=${Number(firstPass.input_thresh)}:offset=${Number(firstPass.target_offset)}:linear=true`;
+  } else filter = `afftdn=nr=${plan.reductionDb}:nf=${plan.noiseFloorDb}`;
+  await fs.mkdir(outputDirectory);
+  await fs.writeFile(path.join(outputDirectory, "audio-plan.json"), JSON.stringify(plan, null, 2));
+  const output = path.join(outputDirectory, `${plan.operation}-review.wav`);
+  await run("ffmpeg", ["-nostdin", "-n", "-i", plan.source.path, "-map", "0:a:0", "-af", filter, "-ar", String(sampleRate), "-ac", String(audio.channels), "-c:a", "pcm_s24le", output], outputDirectory);
+  if (await fileHash(plan.source.path) !== plan.source.sha256.toLowerCase()) throw new Error("AUDIO_SOURCE_HASH_CHANGED");
+  const sha256 = await fileHash(output);
+  const derived = await verifySource({ path: output, sha256 });
+  const stream = derived.streams.find(s => s.codec_type === "audio");
+  if (Math.abs(Number(stream.duration) - duration) > 0.03 || Number(stream.sample_rate) !== sampleRate || stream.channels !== audio.channels) throw new Error("AUDIO_FINISH_TIMING_OR_FORMAT_CHANGED");
+  const measurement = await measureAudio({ path: output, sha256 }, 0, Number(stream.duration));
+  const result = { output, sha256, source: plan.source, operation: plan.operation, firstPass, measurement,
+    technicalTargetMet: plan.operation === "normalize" ? Math.abs(Number(measurement.integratedLufs) - plan.targetLufs) <= 1 && Number(measurement.truePeakDbtp) <= plan.truePeakDbtp + 0.2 : null,
+    durationSeconds: Number(stream.duration), sourceStartSeconds: Number(audio.start_time || 0), sampleRate, channels: stream.channels,
+    cost: { providerFee: 0, computeCost: null, elapsedMs: Date.now() - startedAt },
+    listeningReview: "pending", userAcceptance: "pending", registeredInProject: false,
+    boundary: "WAV derivative of first audio stream only. Source/video untouched; timing relative to video must be retained when mixing back. Denoise may affect speech/music; LUFS is not a semantic quality or listening pass." };
   await fs.writeFile(path.join(outputDirectory, "result.json"), JSON.stringify(result, null, 2));
   return result;
 }

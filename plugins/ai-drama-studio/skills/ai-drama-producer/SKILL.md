@@ -13,9 +13,13 @@ Before continuing this project's next chapter or repairing an accepted sequence,
 
 Before generating, editing or importing generated images, read [the image asset contract](references/image-asset-contract.md). Default to the current Codex session's built-in image tool (called image2 by the user), show candidates outside the project library, and import only the exact images the user accepts. This applies in automatic mode and overrides older migrated instructions to inspect and immediately write back. Use the project's image model only on explicit user request or verified built-in-tool unavailability/failure.
 
+For non-Codex hosts, use `drama_get_capabilities.host` and `image.requiresImageApiKey`: a generic host uses a configured image API, not Codex image tasks. Follow the host-specific route in the image contract; it overrides specialist instructions assuming Codex's built-in tool. All hosts retain the same acceptance, memory and spending boundaries.
+
 The canonical chain is:
 
 `load approved context -> understand request -> route and persist Skills -> create brief and shot contracts -> derive next actions -> freeze capped scope and apply execution policy -> generate and inspect -> recover/resume -> edit locally -> prepare and inspect review evidence -> record quality review -> finalize with SHA-256 manifest`
+
+For an end-to-end video production or resume, read [stage and decision rules](references/stage-contract.md). Select the matching five-type workflow contract, persist hash-bound stage evidence and meaningful decision alternatives, and load selected tools' technical references on demand. These records supplement—not replace—the existing execution and delivery gates. No mandatory online research or per-stage human approval is added.
 
 ## Operating rules
 
@@ -36,7 +40,7 @@ The canonical chain is:
 15. Immediately after each render, call `drama_prepare_quality_evidence` for the current output, then actually open and inspect the returned evidence frames before calling `drama_record_quality_review`. Cite concrete frame labels/timestamps and applicable full-video audio, subtitle and motion checks. Extraction, hashes and a populated manifest prove only that review material exists; they are never an automatic pass.
 16. Call `drama_finalize_delivery` last. Delivery is complete only when the output still matches the reviewed file and the Harness creates a SHA-256 manifest. This tool records a local delivery; it does not imply upload, publication or delivery to another person.
 17. Treat the currently loaded provider adapter as the only authority for model capabilities. Do not claim or plan unsupported reference types, modes, durations, resolutions, audio or editing features merely because a model or tutorial advertises them.
-18. Use the current Codex task as the sole conversational control surface. Persist production work through MCP so the canvas reflects it automatically; never require a duplicate plugin chat, manual node creation or manual connection as part of the production path.
+18. Use the current Agent conversation as the sole conversational control surface. Persist production work through MCP so the canvas reflects it automatically; never require a duplicate plugin chat, manual node creation or manual connection as part of the production path.
 19. Never paste, request, echo, log or store an API key in chat or project files. The user configures credentials locally.
 
 ## Library and multimodal video loop

@@ -8,6 +8,7 @@
   <link rel="icon" href="/assets/studio-favicon.png" type="image/png">
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/desktop-overrides.css">
+  <link rel="stylesheet" href="/production-console.css">
 </head>
 <body>
   <div class="desktop-shell">
@@ -21,6 +22,7 @@
         <a class="nav-create active" href="#start"><img src="/icons/plus.svg" alt="">开始创作</a>
         <a class="nav-item" href="#project-library"><img src="/icons/folder-kanban.svg" alt="">项目库</a>
         <a class="nav-item" href="#skills"><img src="/icons/sparkles.svg" alt="">Skill</a>
+        <a class="nav-item" href="#production-console"><img src="/icons/settings-2.svg" alt="">用量与工具</a>
         <a class="nav-item" href="#project-guide"><img src="/icons/book-open.svg" alt="">项目新手指引</a>
         <button id="settings-button" class="nav-item" type="button"><img src="/icons/key-round.svg" alt="">API Key</button>
       </nav>
@@ -167,7 +169,7 @@
   <dialog id="settings-dialog" class="modal settings-modal">
     <div class="credential-vault">
       <header><div><p class="eyebrow">LOCAL CREDENTIAL VAULT</p><h2>API Key</h2></div><button class="icon-button" type="button" aria-label="关闭 API Key 配置" data-close-dialog="settings-dialog"><img src="/icons/x.svg" alt=""></button></header>
-      <p class="vault-description">密钥仅在本机经 Windows DPAPI 加密保存，不进入项目或 Git 仓库。更换电脑后请重新配置。</p>
+      <p class="vault-description">密钥仅在本机保存：Windows 使用 DPAPI，macOS 使用系统钥匙串，不进入项目或 Git 仓库。Codex 默认内置生图；其他 Agent 需配置生图 API Key，方舟 Key 可同时用于 Seedream 图片与 Seedance 视频。更换电脑后请重新配置。</p>
       <form id="credential-form" class="credential-block">
         <div class="credential-heading"><div><strong>火山方舟 API Key</strong><p>用于 Seedance 2.5 视频与原生声音生成。</p></div><span id="credential-chip" class="status-chip">读取中</span></div>
         <label for="ark-api-key">方舟密钥</label><div class="secret-field"><input id="ark-api-key" type="password" autocomplete="off" spellcheck="false" minlength="12" maxlength="512" required><button id="secret-toggle" class="button subtle" type="button" aria-label="显示方舟密钥" aria-pressed="false">显示</button></div><p id="ark-key-error" class="field-error" role="status"></p>

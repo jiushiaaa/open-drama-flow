@@ -3,6 +3,7 @@ import { seedanceProfile, shotInputMode, shotMediaReferences, shotNeedsImage, ME
 import { validatePlaybackReview } from "./quality-contract.mjs";
 import { hasExecutionAuthorization } from "./execution-policy.mjs";
 import { canonicalSkillNames } from "./skill-identifiers.mjs";
+import { agentHost } from "./platform.mjs";
 
 const allowedAspectRatios = new Set(["16:9", "4:3", "1:1", "3:4", "9:16", "21:9", "adaptive"]);
 const allowedGenerationModes = new Set(["auto", "seedance", "static-motion", "uploaded-video"]);
@@ -463,6 +464,8 @@ export function buildProductionStatus(state, projectId, creationId = null, optio
   const paidWorkMissing = missingImages.length > 0 || missingGeneratedVideos.length > 0;
   const requiresArk = missingGeneratedVideos.length > 0 || (missingImages.length > 0 && state.settings?.imageProvider !== "codex-imagegen");
   const credentialsMissing = requiresArk && options.credentialStatus?.arkConfigured === false;
+  const selectedVideoProvider = state.settings?.providerSelection?.video || "ark";
+  const externalVideoJobs = (state.externalJobs || []).filter(item => item.projectId === projectId && (item.creationId || null) === scopeCreationId && item.kind === "video");
   const nodes = [
     statusNode("brief", "制作简报", briefComplete ? "completed" : "blocked", briefComplete ? "创作目标、交付约束与来源素材已记录" : `缺少或失效：${[...missingBriefFields, ...missingSourceAssetIds.map(id => `source:${id}`), ...staleSourceAssetIds.map(id => `stale:${id}`)].join("、")}`),
     statusNode("delivery-scope", "创作页交付边界", deliveryBoundaryExceeded ? "blocked" : "completed", deliveryBoundaryExceeded ? `当前简报包含 ${brief.deliverables.length} 个交付物；一个创作页只支持 1 个经复核的本地 MP4` : "当前创作页对应 1 个经复核的本地 MP4", ["brief"]),
@@ -498,6 +501,19 @@ export function buildProductionStatus(state, projectId, creationId = null, optio
   else if (!seedance.compatible) action("drama_update_plan", seedance.errors.map(item => item.message).join("；"), "agent", scopeInput());
   else if (queuedTasks.length) action("drama_claim_image_task", `领取 ${queuedTasks.length} 个排队中的 Codex Image Gen 任务`, "agent", { taskId: queuedTasks[0].id });
   else if (claimedTasks.length) action("drama_complete_image_task", `生成、目检并回填已领取任务 ${claimedTasks[0].id}`, "agent-after-visual-inspection", { taskId: claimedTasks[0].id });
+  else if (externalVideoJobs.some(item => ["submitting", "submission-unknown", "submitted", "running"].includes(item.status))) {
+    const external = externalVideoJobs.find(item => ["submitting", "submission-unknown", "submitted", "running"].includes(item.status));
+    if (external.providerTaskId) action("drama_get_provider_job", "只查询已持久化的供应商原任务，不重新提交", "agent", { jobId: external.id, refresh: true });
+    else action("wait", "供应商提交结果未确认；先核对原调用，不能通过更换供应商或 requestKey 重复付费", "user-provider-reconciliation", { jobId: external.id });
+  }
+  else if (selectedVideoProvider !== "ark" && missingGeneratedVideos.length && !job) {
+    const external = [...externalVideoJobs].reverse().find(item => missingGeneratedVideos.includes(item.shotId) && ["prepared", "generated", "downloaded"].includes(item.status));
+    if (external?.status === "prepared") action("drama_start_provider_job", "按冻结范围与自动/手动策略启动已准备的供应商任务；范围变化会被拒绝", "agent", { jobId: external.id });
+    else if (external?.status === "generated") action("drama_download_provider_output", "下载原任务结果，失败只重试下载，不重复生成", "agent", { jobId: external.id });
+    else if (external?.status === "downloaded") action("drama_update_plan", "实际播放并检查候选视频，通过后显式导入和绑定镜头；下载成功不等于质量验收或素材入库", "agent-after-visual-inspection", scopeInput());
+    else if (referenceRequests.length || shots.some(shot => shot.audioMode === "provider-native" || !["seedance", "text-to-video"].includes(shot.generationMode || "seedance"))) action("drama_list_providers", "当前新增适配器仅支持文生视频，不能丢弃参考素材、首尾帧、编辑或原生声音约束；保留方舟或先由用户明确调整制作方案", "user-choice", {});
+    else action("drama_prepare_provider_job", "使用选定供应商准备单次文生视频范围，明确 prompt、帧数、宽高比与 requestKey；图片仍由 Codex 内置工具生成并验收后入库", "agent", { projectId, ...(scopeCreationId ? { creationId: scopeCreationId } : {}), shotId: missingGeneratedVideos[0], profile: selectedVideoProvider, maxCalls: 1 });
+  }
   else if (credentialsMissing) action("wait", "真实模型仍需火山方舟凭据；请由用户在本机 API Key 页面配置后重新读取状态", "user", scopeInput());
   else if (failedTasks.length && job?.status === "waiting" && job.stage === "codex-images") action("drama_resume_paid_batch", "图片任务已记录失败；续跑原审批任务以在剩余调用上限内重建任务", "agent", { jobId: job.id });
   else if (job?.status === "waiting" && ["codex-images", "asset-bridge"].includes(job.stage)) action("drama_resume_paid_batch", "续跑原审批任务且保留原调用上限与已完成证据", "agent", { jobId: job.id });
@@ -544,6 +560,7 @@ export function buildProductionStatus(state, projectId, creationId = null, optio
     harnessProfile,
     deliveryBoundary: { exceeded: deliveryBoundaryExceeded, requestedFiles: brief.deliverables.length, maximumFiles: harnessProfile.delivery.maximumFilesPerCreation, excessDeliverables },
     capabilityCheck: seedance,
+    providerRouting: { video: selectedVideoProvider, imagePrimary: agentHost.codexImageGen ? "codex-imagegen" : state.settings.providerSelection?.fallbackImage || "ark-seedream", imageApiTool: "drama_prepare_provider_job", supportTools: ["drama_select_production_workflow", "drama_get_production_progress", "drama_record_stage_checkpoint", "drama_record_production_decision", "drama_read_production_knowledge", "drama_search_shot_assets", "drama_list_providers", "drama_list_tool_capabilities"] },
     activeApproval: approval,
     activeJob: job,
     latestOutput: output,

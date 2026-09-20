@@ -2,10 +2,19 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { agentHost } from "./platform.mjs";
 import { renderLocalEdit } from "./local-edit.mjs";
 import { processLocalAudio } from "./local-audio.mjs";
 import { prepareAudioEventEvidence } from "./audio-event-evidence.mjs";
 import { compareLocalEdits } from "./local-edit-reuse.mjs";
+import { getToolCatalog } from "./tool-catalog.mjs";
+import { configureUpscale, upscaleRuntimeSchema, upscaleRequestSchema, createUpscale, getUpscale, startUpscale, pauseUpscale } from "./upscale.mjs";
+import { providerCatalog, providerRequestSchema, prepareProviderJob, getProviderJob, submitProviderJob, reconcileProviderJob, downloadProviderOutput } from "./providers.mjs";
+import { assetSearchSchema, searchShotAssets, selectWorkflow, WORKFLOWS } from "./production-discovery.mjs";
+import { productionScopeSchema, stageCheckpointSchema, productionDecisionSchema, getProductionProgress, recordStageCheckpoint, recordProductionDecision } from "./production-journal.mjs";
+import { knowledgeIndex, readProductionKnowledge } from "./production-knowledge.mjs";
+import { syncBilling } from "./billing-sync.mjs";
+import { costReport, setPriceRule, recordSettlement, priceRuleSchema, settlementSchema } from "./cost-ledger.mjs";
 import { VIDEO_INPUT_MODES, MEDIA_ROLES } from "./seedance-contract.mjs";
 import { drainBackgroundJobs, backgroundJobStatus, stopBackgroundJobs } from "./background-jobs.mjs";
 import { hasArkKey, hasSpeechKey } from "./secrets.mjs";
@@ -22,6 +31,30 @@ import { importLocalAsset, inspectAsset, prepareReferenceAsset, createAssetFolde
 import { appendCreationMessage, attachTaskRemoteUrl, authorizeAndStartPipeline, claimTask, completeTask, createApproval, createCreation, createProject, createWorld, decideApproval, failTask, finalizeDelivery, getApprovalSummary, getContextPack, prepareQualityEvidence, promoteAsset, recordQualityReview, resumeRealPipeline, reviewMemory, startLocalRender, updateCreation, updateProjectPlan, upsertMemory } from "./workflow.mjs";
 
 const server = new McpServer({ name: "ai-drama-studio", version: "0.1.0" });
+server.registerTool("drama_configure_upscale", { description: "Configure an existing local Real-ESRGAN NCNN executable and model directory. Hashes files; does not download weights or claim a GPU test.", inputSchema: { runtime: upscaleRuntimeSchema } }, async ({ runtime }) => result(await configureUpscale(runtime)));
+server.registerTool("drama_create_upscale_job", { description: "Prepare a hash-bound local Real-ESRGAN job (CFR <=2h, scale >1 <=4, max long edge 3840). No source overwrite/import. Start separately; output preserves audio streams and requires viewing/listening acceptance.", inputSchema: upscaleRequestSchema.shape }, async input => result(await createUpscale(input)));
+server.registerTool("drama_start_upscale_job", { description: "Start/resume local GPU upscale; durable input/runtime hashes and verified chunk checkpoints prevent restarting completed chunks. No paid model call. Use status tool; paused/failed jobs can resume.", inputSchema: { jobId: z.string() } }, async ({ jobId }) => result(await startUpscale(jobId)));
+server.registerTool("drama_get_upscale_job", { description: "Read managed local upscale progress/output hash; omitted ID lists jobs. Success means technical checks, not creative acceptance.", inputSchema: { jobId: z.string().optional() } }, async ({ jobId }) => result(await getUpscale(jobId)));
+server.registerTool("drama_pause_upscale_job", { description: "Pause only the specified upscale job, retaining verified chunks. Does not stop other tasks.", inputSchema: { jobId: z.string() } }, async ({ jobId }) => result(await pauseUpscale(jobId)));
+server.registerTool("drama_list_providers", { description: "Read configured provider selection, adapter input limits, credential presence. Ark/Doubao remain defaults; Codex built-in images remain primary. Additional adapters have no implied account verification.", inputSchema: {} }, async () => result(await providerCatalog()));
+server.registerTool("drama_prepare_provider_job", { description: "Freeze ONE text-only Ark Seedream/fal/Replicate image or fal Wan video request. Generic hosts use API images with verified-host-unavailable evidence; Codex uses its built-in image tool by default. No paid call. Image candidates stay outside the library pending acceptance. Unsupported references cannot be silently dropped. Separate from Ark video batch tools.", inputSchema: providerRequestSchema.shape }, async input => result(await prepareProviderJob(input)));
+server.registerTool("drama_start_provider_job", { description: "Submit frozen external-provider request ONCE under current automatic/manual policy. Repeated/unknown submissions are blocked; no automatic fallback or increased cap. Generated media stays outside library until accepted.", inputSchema: { jobId: z.string() } }, async ({ jobId }) => {
+  const job = await getProviderJob(jobId); let trusted = false;
+  if (job.executionMode === "manual") {
+    const answer = await server.server.elicitInput({ mode: "form", message: `批准一次 ${job.provider}/${job.model} 调用？项目 ${job.projectId}，提示词 ${job.prompt}，输入 ${JSON.stringify(job.payload)}。结果仅为候选，不自动入库。`, requestedSchema: { type: "object", properties: { confirm: { type: "boolean", title: "批准一次付费调用", default: false } }, required: ["confirm"] } });
+    if (!confirmationOutcome(answer).confirmed) return result({ status: "pending", calls: 0 }); trusted = true;
+  }
+  return result(await submitProviderJob(jobId, trusted));
+});
+server.registerTool("drama_get_provider_job", { description: "Read saved external task or reconcile its ORIGINAL provider task ID. refresh is GET-only (never resubmit), including after app restart.", inputSchema: { jobId: z.string(), refresh: z.boolean().default(false) } }, async ({ jobId, refresh }) => result(await (refresh ? reconcileProviderJob(jobId) : getProviderJob(jobId))));
+server.registerTool("drama_download_provider_output", { description: "Download an existing completed provider task to private candidate staging; no new model call or library admission. Verify/show result before explicit import. Expired URLs require reconciliation, not a new paid submit.", inputSchema: { jobId: z.string() } }, async ({ jobId }) => result(await downloadProviderOutput(jobId)));
+server.registerTool("drama_search_shot_assets", { description: "Rank project assets by shot, locked creation references and lexical metadata. Returns hashes, versions, matching reasons and actual byte verification; not semantic video search. Excludes stale/candidate assets by default; never approves references.", inputSchema: assetSearchSchema.shape }, async input => result(await searchShotAssets(await readState(), input)));
+server.registerTool("drama_select_production_workflow", { description: "Read one of five production contracts: stage inputs, required artifacts, tools, acceptance criteria, recovery and director instructions. Codex orchestrates; existing update_plan and execution gates remain authoritative. No research stage or per-stage approval added.", inputSchema: { type: z.enum(WORKFLOWS.map(w => w.id)) } }, async ({ type }) => result(selectWorkflow(type, (await listSkills()).filter(s => s.enabled !== false).map(s => s.name))));
+server.registerTool("drama_get_production_progress", { description: "Read scoped stage checkpoints and decision history. Rehash artifact files and invalidate downstream evidence after revision/file/upstream changes. Returns first incomplete stage/recovery instructions, NOT permission to bypass existing next_actions gates.", inputSchema: productionScopeSchema.shape }, async input => result(await getProductionProgress(input)));
+server.registerTool("drama_record_stage_checkpoint", { description: "Append a current-revision stage checkpoint: required local report/manifest hashes, per-criterion observations, recovery note and frozen cost snapshot. Complete requires all previous stages and evidence; blocked may be partial. Agent-reported review is NOT image acceptance, memory approval or delivery. Idempotent requestKey; no model calls or budget changes.", inputSchema: stageCheckpointSchema.shape }, async input => result(await recordStageCheckpoint(input)));
+server.registerTool("drama_record_production_decision", { description: "Append a scoped decision with alternatives, selected option, rejection reasons and explicit estimated/unknown cost impact. Optional supersedes preserves history. Does not execute a choice, activate memory, change pricing/budgets or fabricate user approval. Evidence files are hash-checked. Idempotent requestKey.", inputSchema: productionDecisionSchema.innerType().shape }, async input => result(await recordProductionDecision(input)));
+server.registerTool("drama_read_production_knowledge", { description: "List the capability/production/technical knowledge index, or read one allowlisted reference with SHA-256. Load only references required by selected tools; no network research, Skill rewrite or arbitrary file read.", inputSchema: { id: z.string().optional() } }, async ({ id }) => result(id ? await readProductionKnowledge(id) : knowledgeIndex()));
+server.registerTool("drama_sync_account_bill", { description: "Read Volcengine account bill using separately configured read-only AK/SK. Account scope can include other cloud products; NEVER assign aggregate bills to shots or add them to estimates. No generation call. Not Ark bearer API key.", inputSchema: { period: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/) } }, async ({ period }) => result(await syncBilling(period)));
 server.registerTool("drama_prepare_audio_event_evidence", {
   description: "Compare reviewed contact/sound frame markers in a hash-bound local JSON plan; export native-speed AV preview, waveform and consecutive contact frames. Reports offset and suggested correction, never infers semantic events or shifts sound automatically. Requires NEW absolute outputDirectory. See local-edit-tools.md.",
   inputSchema: { planPath: z.string(), outputDirectory: z.string() }
@@ -31,7 +64,7 @@ server.registerTool("drama_edit_local_media", {
   inputSchema: { planPath: z.string(), outputDirectory: z.string(), validateOnly: z.boolean().default(false) }
 }, async input => result(await renderLocalEdit(input)));
 server.registerTool("drama_process_local_audio", {
-  description: "Execute a hash-bound local JSON audio plan: measure interval LUFS/true peak, sample-exact approved voice excerpt, provider-format derivative, or retain native video/dialogue/foley and add timed music/SFX with explicit gain/fades and reviewed-dialogue music ducking. No paid call, no TTS replacement, no automatic acceptance. Mix/extract require NEW outputDirectory. See clip-studio-craft/references/local-edit-tools.md.",
+  description: "Execute a hash-bound local JSON audio plan: measure LUFS, normalize (two-pass targetLufs/truePeakDbtp/loudnessRange), denoise (explicit reductionDb/noiseFloorDb), approved sample excerpt, provider derivative or native-video music/SFX mix with reviewed-dialogue ducking. normalize/denoise output separate WAV; never replace video/audio masters. Non-measure operations require NEW outputDirectory. No paid call or automatic acceptance. Read docs/toolchain.md and clip-studio-craft/references/local-edit-tools.md.",
   inputSchema: { planPath: z.string(), outputDirectory: z.string() }
 }, async input => result(await processLocalAudio(input)));
 server.registerTool("drama_compare_local_edits", {
@@ -87,8 +120,29 @@ server.registerTool("drama_get_capabilities", {
 }, async () => {
   const state = await readState();
   const arkConfigured = await hasArkKey();
-  return result({ image: { primary: state.settings.imageProvider, codexImageGen: true, seedream: state.settings.imageProvider === "ark-seedream" && arkConfigured }, video: getSeedanceCapabilityProfile(state.settings), speech: speechCapabilities(await hasSpeechKey(), state.settings), deterministicEdit: { ffmpeg: true, concat: true, subtitles: true, audioPreservation: true, localManifestEdit: true, frameRangeCfr: true, bilingualCaptionMapping: true, seamEvidence: true, localAudioMix: true, loudnessMeasurement: true, sampleExactVoiceExcerpt: true, exactRange4kReusePlan: true, automaticDucking: true, duckingRequiresReviewedIntervals: true, audioEventEvidence: true, voiceProviderDerivative: true }, unavailable: ["voice cloning", "3D scene editing", "professional NLE project export"] });
+  const speechConfigured = await hasSpeechKey();
+  const tools = await getToolCatalog(state, { arkConfigured, speechConfigured });
+  return result({ host: agentHost.host, image: { primary: agentHost.codexImageGen ? "codex-imagegen" : state.settings.providerSelection?.fallbackImage || "ark-seedream", codexImageGen: agentHost.codexImageGen, seedream: arkConfigured, apiTool: "drama_prepare_provider_job", requiresImageApiKey: !agentHost.codexImageGen }, video: getSeedanceCapabilityProfile(state.settings), speech: speechCapabilities(speechConfigured, state.settings), deterministicEdit: { ffmpeg: tools.dependencies.ffmpeg, concat: true, subtitles: true, audioPreservation: true, localManifestEdit: true, frameRangeCfr: true, bilingualCaptionMapping: true, seamEvidence: true, localAudioMix: true, loudnessMeasurement: true, sampleExactVoiceExcerpt: true, exactRange4kReusePlan: true, automaticDucking: true, duckingRequiresReviewedIntervals: true, audioEventEvidence: true, voiceProviderDerivative: true, audioDenoise: true, twoPassNormalization: true }, tools, legacyCapabilityFlags: "Adapter features, not live readiness; consult tools.entries for dependencies and verification boundaries.", unavailable: ["voice cloning", "3D scene editing", "professional NLE project export"] });
 });
+
+server.registerTool("drama_list_tool_capabilities", {
+  description: "Unified generation/local-post tool catalog: inputs, outputs, actual local dependencies, credentials vs historical provider success, limits, cost/recovery/acceptance rules. No network/model call. Host image tool stays primary; this is not permission to switch models or overwrite masters.", inputSchema: {}
+}, async () => result(await getToolCatalog(await readState(), { arkConfigured: await hasArkKey(), speechConfigured: await hasSpeechKey() })));
+
+server.registerTool("drama_get_cost_report", {
+  description: "Read per-call estimated costs, numeric provider usage and separately recorded bills. Filter by project/creation/shot; aggregate each currency separately. Unknown/failed calls are NOT free; historical calls without frozen prices remain unknown. No paid submission or budget change.",
+  inputSchema: { projectId: z.string().optional(), creationId: z.string().optional(), shotId: z.string().optional() }
+}, async input => result(costReport(await readState(), input)));
+
+server.registerTool("drama_set_cost_price", {
+  description: "Set an explicit user-sourced ESTIMATE rate for one exact kind/model (ISO currency, price per request/image/second/character). Only future call reservations use it. Never invent current prices; source is required. Does not set or increase call/spending budgets. No model call.",
+  inputSchema: { rule: priceRuleSchema }
+}, async ({ rule }) => result(await mutateState(state => ({ rule: setPriceRule(state, rule) }))));
+
+server.registerTool("drama_record_cost_settlement", {
+  description: "Record a provider-bill receipt for one existing call only when actual billing evidence is supplied. Each new receipt is the cumulative net amount for that call, replacing the previous amount for totals while preserving history (refund/correction uses a new receipt ID). Same ID/payload is idempotent; conflicting ID/currency rejected. Estimate/usage is never proof of actual charges. No paid call.",
+  inputSchema: { callId: z.string(), receipt: settlementSchema }
+}, async ({ callId, receipt }) => result(await mutateState(state => ({ receipt: recordSettlement(state, callId, receipt) }))));
 
 server.registerTool("drama_request_speech_job", {
   description: "Prepare exactly one pending ASR, TTS or SeedAudio 1.0 music/song request. Music uses up to 500 characters of prompt/lyrics and returns WAV; requires listening and explicit asset binding. ASR uses a version-bound library audio/video segment (default 5 seconds); TTS uses up to 500 characters; optional contextText freezes TTS2 emotion/dialect direction separately from spoken text; optional speaker selects a verified stock voice ID and is frozen into the request. No paid call. Requires the optional locally configured Doubao Speech key; otherwise use Seedance native sound and manual listening, not fake transcription.",

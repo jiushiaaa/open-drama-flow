@@ -50,13 +50,14 @@ async function downloadBytes(url, timeoutMs = 5 * 60 * 1000) {
   }
 }
 
-export async function generateSeedreamImage({ apiKey, baseUrl, model, prompt, size = "2K", watermark = false, outputPath }) {
+export async function generateSeedreamImage({ apiKey, baseUrl, model, prompt, size = "2K", watermark = false, outputPath, onUsage }) {
   if (!model) throw new Error("SEEDREAM_MODEL_REQUIRED");
   const body = await arkFetch(`${baseUrl.replace(/\/$/, "")}/images/generations`, {
     method: "POST",
     headers: arkHeaders(apiKey),
     body: JSON.stringify({ model, prompt, size, response_format: "url", watermark, output_format: "png" })
   }, 20 * 60 * 1000);
+  await onUsage?.(body.usage || null);
   const remoteUrl = body?.data?.[0]?.url;
   if (!remoteUrl) throw new Error("SEEDREAM_RESULT_URL_MISSING");
   const bytes = await downloadBytes(remoteUrl);

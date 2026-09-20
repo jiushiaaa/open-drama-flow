@@ -93,7 +93,7 @@ test("full multi-modal batch freezes every input and resumes dependencies withou
       payloads.push(JSON.parse(options.body));
       return Response.json({ id: `mock-${payloads.length}` });
     }
-    return Response.json({ id: parsed.pathname.split("/").at(-1), status: "succeeded", content: { video_url: "https://result.invalid/result.mp4" } });
+    return Response.json({ id: parsed.pathname.split("/").at(-1), status: "succeeded", usage: { completion_tokens: 123 }, content: { video_url: "https://result.invalid/result.mp4" } });
   };
   try {
     const job = await workflow.authorizeAndStartPipeline(approval.id, { method: "mcp-elicitation", action: "accept" }); // Isolated fake provider only.
@@ -109,6 +109,7 @@ test("full multi-modal batch freezes every input and resumes dependencies withou
     assert.equal(payloads[4].content[1].type, "video_url");
     assert.deepEqual(payloads[6].content.slice(1).map(item => item.role), ["first_frame", "last_frame"]);
     assert.ok(state.providerCalls.filter(item => item.jobId === job.id).every(item => item.outputAssetId && item.lastFrameAssetId && item.requestDigest));
+    assert.ok(state.providerCalls.filter(item => item.jobId === job.id).every(item => item.cost?.estimateStatus === "price-not-configured" && item.usage?.completion_tokens === 123));
     await workflow.authorizeAndStartPipeline(approval.id, { method: "mcp-elicitation", action: "accept" });
     await workflow.drainBackgroundJobs();
     assert.equal(payloads.length, 7, "original authorization cannot be spent twice");
