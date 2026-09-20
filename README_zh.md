@@ -44,7 +44,7 @@ OpenDramaFlow 是面向 **Windows Codex Desktop** 的开源视频生产插件。
 
 ### 《从姑获鸟开始》城寨风云篇 · 第一集
 
-**[在抖音观看](https://v.douyin.com/rD_OP4_kMSI/)** · **[在小红书观看](https://www.xiaohongshu.com/discovery/item/6aa5351d0000000028029cea)**
+**[在抖音观看](https://v.douyin.com/rD_OP4_kMSI/)** · **[在bilibili观看](https://www.bilibili.com/video/BV1WtYC6UEEN/?vd_source=e0643483c6a3517007cd0589b285add0#reply117268142886086)**
 
 [![第一集封面，点击在抖音观看](docs/images/episode-one-cover.jpg)](https://v.douyin.com/rD_OP4_kMSI/)
 
