@@ -3,7 +3,7 @@ import path from "node:path";
 import { spawn } from "node:child_process";
 import { shutdownSignal } from "./background-jobs.mjs";
 
-function run(command, args, cwd) {
+export function run(command, args, cwd) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, { cwd, windowsHide: true, stdio: ["ignore", "pipe", "pipe"], signal: shutdownSignal, timeout: 30 * 60 * 1000 });
     child.stdout.resume();

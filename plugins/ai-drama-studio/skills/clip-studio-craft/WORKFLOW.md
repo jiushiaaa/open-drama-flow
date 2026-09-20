@@ -24,6 +24,12 @@ for imaginary methods or report a file export as an editor-project update.
 
 ## Perception before decision
 
+For local deterministic editing, read [local edit tools](references/local-edit-tools.md)
+first. Freeze source hashes and approved ranges, validate the edit manifest, render
+to a new directory, then inspect every generated seam and caption boundary.
+Use the audio and reuse tools for supplementary mixing and existing 4K ranges.
+Technical success never substitutes for viewing, listening or user acceptance.
+
 Never make a content decision (where to cut, what the best moment is, whether
 a look works) from clip names, durations or assumptions. Look first:
 

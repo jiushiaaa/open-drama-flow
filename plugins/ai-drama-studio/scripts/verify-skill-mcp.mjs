@@ -34,6 +34,9 @@ async function call(name,args={}) {
 }
 try {
   await client.connect(transport);
+  const exposed = new Set((await client.listTools()).tools.map(tool => tool.name));
+  for (const name of ["drama_edit_local_media", "drama_process_local_audio", "drama_compare_local_edits"]) assert.ok(exposed.has(name), name);
+  assert.equal((await call("drama_get_capabilities")).deterministicEdit.localManifestEdit, true);
   const listing = await call("drama_list_skills");
   assert.equal(listing.count,specializedSkills.length + 1);
   assert.deepEqual(new Set(listing.skills.map(s=>s.name)),new Set(["ai-drama-producer",...specializedSkills.map(s=>s.name)]));

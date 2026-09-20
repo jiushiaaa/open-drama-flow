@@ -2,6 +2,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { renderLocalEdit } from "./local-edit.mjs";
+import { processLocalAudio } from "./local-audio.mjs";
+import { compareLocalEdits } from "./local-edit-reuse.mjs";
 import { VIDEO_INPUT_MODES, MEDIA_ROLES } from "./seedance-contract.mjs";
 import { drainBackgroundJobs, backgroundJobStatus, stopBackgroundJobs } from "./background-jobs.mjs";
 import { hasArkKey, hasSpeechKey } from "./secrets.mjs";
@@ -18,6 +21,18 @@ import { importLocalAsset, inspectAsset, prepareReferenceAsset, createAssetFolde
 import { appendCreationMessage, attachTaskRemoteUrl, authorizeAndStartPipeline, claimTask, completeTask, createApproval, createCreation, createProject, createWorld, decideApproval, failTask, finalizeDelivery, getApprovalSummary, getContextPack, prepareQualityEvidence, promoteAsset, recordQualityReview, resumeRealPipeline, reviewMemory, startLocalRender, updateCreation, updateProjectPlan, upsertMemory } from "./workflow.mjs";
 
 const server = new McpServer({ name: "ai-drama-studio", version: "0.1.0" });
+server.registerTool("drama_edit_local_media", {
+  description: "Validate or execute a local version-1 JSON edit manifest: hash-bound accepted sources, CFR frame ranges, native audio, bilingual captions, seam movies/contact sheets. Requires absolute planPath and a NEW outputDirectory with an existing parent. No model call, upload, master overwrite, project registration or automatic creative acceptance. Read clip-studio-craft/references/local-edit-tools.md for schema and limits. validateOnly performs preflight without writing.",
+  inputSchema: { planPath: z.string(), outputDirectory: z.string(), validateOnly: z.boolean().default(false) }
+}, async input => result(await renderLocalEdit(input)));
+server.registerTool("drama_process_local_audio", {
+  description: "Execute a hash-bound local JSON audio plan: measure interval LUFS/true peak, sample-exact approved voice excerpt, or retain native video/dialogue/foley and add timed music/SFX with explicit gain/fades. No paid call, no TTS replacement, no automatic acceptance. Mix/extract require NEW outputDirectory. See clip-studio-craft/references/local-edit-tools.md.",
+  inputSchema: { planPath: z.string(), outputDirectory: z.string() }
+}, async input => result(await processLocalAudio(input)));
+server.registerTool("drama_compare_local_edits", {
+  description: "Compare two version-1 edit plans and verify explicitly listed approved 4K derivatives. Returns conservative reusable/changed intervals; never upscales, deletes or auto-accepts media. Each derivative must bind the source SHA and exact source frame range. See local-edit-tools.md.",
+  inputSchema: { previousPlanPath: z.string(), nextPlanPath: z.string(), derivativesPath: z.string().optional() }
+}, async input => result(await compareLocalEdits(input)));
 let workbench = { url: "http://127.0.0.1:4317", available: false, reused: false };
 let ownedWorkbenchServer = null;
 try {
@@ -67,7 +82,7 @@ server.registerTool("drama_get_capabilities", {
 }, async () => {
   const state = await readState();
   const arkConfigured = await hasArkKey();
-  return result({ image: { primary: state.settings.imageProvider, codexImageGen: true, seedream: state.settings.imageProvider === "ark-seedream" && arkConfigured }, video: getSeedanceCapabilityProfile(state.settings), speech: speechCapabilities(await hasSpeechKey(), state.settings), deterministicEdit: { ffmpeg: true, concat: true, subtitles: true, audioPreservation: true }, unavailable: ["voice cloning", "3D scene editing", "professional NLE project export"] });
+  return result({ image: { primary: state.settings.imageProvider, codexImageGen: true, seedream: state.settings.imageProvider === "ark-seedream" && arkConfigured }, video: getSeedanceCapabilityProfile(state.settings), speech: speechCapabilities(await hasSpeechKey(), state.settings), deterministicEdit: { ffmpeg: true, concat: true, subtitles: true, audioPreservation: true, localManifestEdit: true, frameRangeCfr: true, bilingualCaptionMapping: true, seamEvidence: true, localAudioMix: true, loudnessMeasurement: true, sampleExactVoiceExcerpt: true, exactRange4kReusePlan: true, automaticDucking: false }, unavailable: ["voice cloning", "3D scene editing", "professional NLE project export"] });
 });
 
 server.registerTool("drama_request_speech_job", {
