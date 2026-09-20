@@ -18,7 +18,7 @@ description: 对现有视频时间线做节奏、剪切、转场、字幕、颜�
 
 ## 制作重点
 
-- 高频本地剪辑先读 [可靠剪辑工具合同](references/local-edit-tools.md)，使用 `drama_edit_local_media`、`drama_process_local_audio`、`drama_compare_local_edits`。以版本清单固化帧区间、原声策略和字幕；不要反复手写临时命令。
+- 高频本地剪辑先读 [可靠剪辑工具合同](references/local-edit-tools.md)，使用 `drama_edit_local_media`、`drama_process_local_audio`、`drama_compare_local_edits`、`drama_prepare_audio_event_evidence`。以版本清单固化帧区间、原声策略和字幕；不要反复手写临时命令。
 
 - 先观看和理解现有素材，再决定剪切
 - 以叙事、节奏和可读性约束转场、字幕与速度

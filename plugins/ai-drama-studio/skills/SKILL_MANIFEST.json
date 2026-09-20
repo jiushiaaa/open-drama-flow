@@ -1603,7 +1603,7 @@
         },
         {
           "path": "references/local-edit-tools.md",
-          "sha256": "a67c011f65785b3e7f0eb3300bcf782465611df84ebb3d4910f38098f8746599"
+          "sha256": "a12da0d36793ffff74238997851f1282f8560179b7f199a57c4fb5498ee461ae"
         },
         {
           "path": "references/postproduction-preservation.md",
@@ -1615,7 +1615,7 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "8e2086ae678840688abcd72786b8970a0b7fa7e144b73fa99efb8fcb04724a24"
+          "sha256": "19f70faae592e66bf996e92e49b33b2f06f943b8d27906a144793411730dc79c"
         },
         {
           "path": "WORKFLOW.md",

@@ -53,7 +53,7 @@ Skill 决定叙事、剪点、眼神、动作、字幕措辞；工具负责版�
 - 母版精裁：`{operation:"extract",source,character:"角色名",acceptanceReference:"用户选择依据",sampleRate:48000,startSample:48000,endSample:144000}`。必须符合实际采样率；按解码后的样本序号裁，保留声道和采样率，输出 PCM24 WAV，核对样本数。语义仍需听音。供应商格式用现有 prepare_reference_asset 创建独立派生版本，不能替换此母版。
 - 混音：`{operation:"mix",source,nativeGainDb:0,tracks:[{source:{path,sha256},atSeconds:1,inSeconds:0,durationSeconds:3,gainDb:-18,fadeSeconds:0.2,purpose:"music"}]}`。source 必须为零起始视频及原生音轨；保留视频包，原声保留，补充音乐/环境/音效按精确时间、增益和淡入淡出叠加，输出限幅并测量。purpose 为 music/ambience/foley。
 - 不能默认整段消音重配，已有脚步、碗筷、击打声不重复叠加。事件落点靠正常速度听看验收，能量峰值不是语义接触点。
-- 自动对白检测/自动 ducking 暂未实现；需压音乐时按对白区间拆轨设置增益及短淡变，不把整条原生混音当孤立对白进行 sidechain。
+- 自动压音乐已支持：mix 计划可加 dialogue:[{startSeconds:1,endSeconds:3}]、dialogueEvidence（核实来源）、duckDb:-12、duckRampSeconds:0.15。只降低 music 轨，保留 native/foley/ambience；重叠对白按最大包络合并，不叠加衰减。需经核实的对白区间，不把完整原生混音的响度当成对白检测；自动识别语义仍未实现。
 
 ## drama_compare_local_edits
 
@@ -66,3 +66,15 @@ Skill 决定叙事、剪点、眼神、动作、字幕措辞；工具负责版�
 ## 发布边界
 
 每次结果区分 technicalPassed、visualReview、listeningReview、userAcceptance。未播放不能填已播放；工具完成不等于角色/发音/字幕已验收。锁定母版只在用户接受具体候选后升级，旧版本与修改区间保留证据。
+
+
+## 声音母版的供应商派生
+
+在 drama_process_local_audio 中使用 operation:"derive"，source、character、acceptanceReference、capabilityReference（本次能力核查来源），sampleRate:"24000"/"44100"/"48000"、channels:1或2、minDurationSeconds、maxDurationSeconds、maxBytes。输出单独 PCM16 WAV，保存输入计划与哈希。时长不合规就报错，不循环、不补词、不拉长母版。不上传、不调用模型、不自动绑定角色；参数来自本次供应商实际能力，格式通过不代表供应商必定接受。
+
+## drama_prepare_audio_event_evidence
+
+参数 planPath、outputDirectory，后者为全新目录。计划包含 source:{path,sha256}、fps 和 events 数组，每项为 {id,contactFrame,soundFrame,evidenceReference,toleranceFrames:1}。
+接触帧和声音帧来自实际看听，零起始源片坐标。要求零起始音画、匹配整数帧率；事件范围不得越界。
+输出各事件的约前后1秒带声预览、波形、接触附近12连续帧，以及声画偏差（正数表示声音晚）、建议移动秒数。波形横坐标与拼图首末帧写入 result.json，方便复核。
+工具不直接移动原声；如果是独立补充音效，可据此修订 mix 计划的 atSeconds 后重新验收。对白口型不匹配和模型自身动作错误不能靠整体挪音轨掩盖。

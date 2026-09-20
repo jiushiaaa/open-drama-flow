@@ -7,9 +7,13 @@ import { mediaCommand } from "./media-inspection.mjs";
 
 const source = z.object({ path: z.string(), sha256: z.string().regex(/^[a-fA-F0-9]{64}$/) }).strict();
 export const audioPlanSchema = z.discriminatedUnion("operation", [
+  z.object({ operation: z.literal("derive"), source, character: z.string().min(1), acceptanceReference: z.string().min(1), capabilityReference: z.string().min(1), sampleRate: z.enum(["24000", "44100", "48000"]), channels: z.number().int().min(1).max(2), minDurationSeconds: z.number().min(0), maxDurationSeconds: z.number().positive(), maxBytes: z.number().int().positive() }).strict(),
   z.object({ operation: z.literal("measure"), source, startSeconds: z.number().min(0).default(0), durationSeconds: z.number().positive().max(7200), signalLabel: z.enum(["full-mix", "isolated-dialogue"]) }).strict(),
   z.object({ operation: z.literal("extract"), source, character: z.string().min(1), acceptanceReference: z.string().min(1), sampleRate: z.number().int().min(8000).max(192000), startSample: z.number().int().min(0), endSample: z.number().int().positive() }).strict(),
   z.object({ operation: z.literal("mix"), source, nativeGainDb: z.number().min(-12).max(6).default(0),
+    dialogue: z.array(z.object({ startSeconds: z.number().min(0), endSeconds: z.number().positive() }).strict()).default([]),
+    dialogueEvidence: z.string().min(1).optional(),
+    duckDb: z.number().min(-30).max(0).default(-12), duckRampSeconds: z.number().min(0.01).max(2).default(0.15),
     tracks: z.array(z.object({ source, atSeconds: z.number().min(0), inSeconds: z.number().min(0).default(0), durationSeconds: z.number().positive(), gainDb: z.number().min(-60).max(6), fadeSeconds: z.number().min(0).max(5).default(0), purpose: z.enum(["music", "ambience", "foley"]) }).strict()).min(1).max(16)
   }).strict()
 ]);
@@ -21,6 +25,14 @@ async function verifySource(source) {
   const media = JSON.parse(stdout);
   if (!media.streams.some(s => s.codec_type === "audio")) throw new Error("AUDIO_STREAM_MISSING");
   return media;
+}
+
+// A timeline envelope driven by reviewed speech intervals, not full-mix energy.
+export function duckExpression(intervals, db, ramp) {
+  if (!intervals.length) return "1";
+  const envelopes = intervals.map(i => `max(0,min(1,min((t-${i.startSeconds - ramp})/${ramp},(${i.endSeconds + ramp}-t)/${ramp})))`);
+  const envelope = envelopes.reduce((a, b) => a ? `max(${a},${b})` : b, "");
+  return `pow(10,(${db})*(${envelope})/20)`;
 }
 
 export async function measureAudio(source, startSeconds, durationSeconds, signalLabel = "full-mix") {
@@ -42,8 +54,12 @@ export async function processLocalAudio({ planPath, outputDirectory }) {
   if (plan.operation === "extract" && (plan.endSample <= plan.startSample || Number(audio.sample_rate) !== plan.sampleRate)) throw new Error("AUDIO_SAMPLE_RANGE_OR_RATE_INVALID");
   const video = media.streams.find(s => s.codec_type === "video");
   const duration = Number(video?.duration || media.format.duration);
+  const audioDuration = Number(audio.duration || media.format.duration);
+  if (plan.operation === "derive" && (plan.minDurationSeconds > plan.maxDurationSeconds || audioDuration < plan.minDurationSeconds || audioDuration > plan.maxDurationSeconds)) throw new Error("AUDIO_PROVIDER_DURATION_UNSUPPORTED_NO_PADDING");
   if (plan.operation === "mix") {
     if (!video || Number(video.start_time || 0) !== 0 || Number(audio.start_time || 0) !== 0) throw new Error("AUDIO_MIX_ZERO_BASED_VIDEO_REQUIRED");
+    if (plan.dialogue.length && !plan.dialogueEvidence) throw new Error("AUDIO_DIALOGUE_EVIDENCE_REQUIRED");
+    for (const cue of plan.dialogue) if (cue.endSeconds <= cue.startSeconds || cue.endSeconds > duration) throw new Error("AUDIO_DIALOGUE_RANGE_INVALID");
     for (const track of plan.tracks) {
       const item = await verifySource(track.source);
       if (track.inSeconds + track.durationSeconds > Number(item.format.duration) + 0.001 || track.atSeconds + track.durationSeconds > duration + 0.001 || track.fadeSeconds * 2 > track.durationSeconds) throw new Error("AUDIO_TRACK_RANGE_INVALID");
@@ -52,7 +68,14 @@ export async function processLocalAudio({ planPath, outputDirectory }) {
   await fs.mkdir(outputDirectory);
   await fs.writeFile(path.join(outputDirectory, "audio-plan.json"), JSON.stringify(plan, null, 2));
   let output;
-  if (plan.operation === "extract") {
+  if (plan.operation === "derive") {
+    output = path.join(outputDirectory, "voice-reference.wav");
+    await run("ffmpeg", ["-nostdin", "-n", "-i", plan.source.path, "-map", "0:a:0", "-ar", plan.sampleRate, "-ac", String(plan.channels), "-c:a", "pcm_s16le", output], outputDirectory);
+    if ((await fs.stat(output)).size > plan.maxBytes) throw new Error("AUDIO_PROVIDER_SIZE_EXCEEDED");
+    const { stdout } = await mediaCommand("ffprobe", ["-v", "error", "-show_streams", "-of", "json", output]);
+    const derived = JSON.parse(stdout).streams[0];
+    if (Number(derived.duration) < plan.minDurationSeconds || Number(derived.duration) > plan.maxDurationSeconds || derived.sample_rate !== plan.sampleRate || derived.channels !== plan.channels) throw new Error("AUDIO_PROVIDER_OUTPUT_OUTSIDE_LIMITS");
+  } else if (plan.operation === "extract") {
     output = path.join(outputDirectory, "voice-master.wav");
     await run("ffmpeg", ["-nostdin", "-n", "-i", plan.source.path, "-map", "0:a:0", "-af", `atrim=start_sample=${plan.startSample}:end_sample=${plan.endSample},asetpts=PTS-STARTPTS`, "-c:a", "pcm_s24le", output], outputDirectory);
     const { stdout } = await mediaCommand("ffprobe", ["-v", "error", "-show_streams", "-of", "json", output]);
@@ -62,7 +85,7 @@ export async function processLocalAudio({ planPath, outputDirectory }) {
     const args = ["-nostdin", "-n", "-i", plan.source.path];
     for (const track of plan.tracks) args.push("-i", track.source.path);
     const filters = [`[0:a:0]aresample=48000,aformat=channel_layouts=stereo,volume=${plan.nativeGainDb}dB,apad,atrim=duration=${duration}[native]`];
-    plan.tracks.forEach((track, i) => filters.push(`[${i + 1}:a:0]atrim=start=${track.inSeconds}:duration=${track.durationSeconds},asetpts=PTS-STARTPTS,aresample=48000,aformat=channel_layouts=stereo,volume=${track.gainDb}dB${track.fadeSeconds ? `,afade=t=in:d=${track.fadeSeconds},afade=t=out:st=${track.durationSeconds - track.fadeSeconds}:d=${track.fadeSeconds}` : ""},adelay=${Math.round(track.atSeconds * 48000)}S:all=1[t${i}]`));
+    plan.tracks.forEach((track, i) => filters.push(`[${i + 1}:a:0]atrim=start=${track.inSeconds}:duration=${track.durationSeconds},asetpts=PTS-STARTPTS,aresample=48000,aformat=channel_layouts=stereo,volume=${track.gainDb}dB${track.fadeSeconds ? `,afade=t=in:d=${track.fadeSeconds},afade=t=out:st=${track.durationSeconds - track.fadeSeconds}:d=${track.fadeSeconds}` : ""},adelay=${Math.round(track.atSeconds * 48000)}S:all=1${track.purpose === "music" && plan.dialogue.length ? `,volume='${duckExpression(plan.dialogue, plan.duckDb, plan.duckRampSeconds)}':eval=frame` : ""}[t${i}]`));
     filters.push(`[native]${plan.tracks.map((_, i) => `[t${i}]`).join("")}amix=inputs=${plan.tracks.length + 1}:duration=first:normalize=0,alimiter=limit=0.891251:level=false:latency=true[a]`);
     await run("ffmpeg", [...args, "-filter_complex", filters.join(";"), "-map", "0:v:0", "-map", "[a]", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", output], outputDirectory);
   }
