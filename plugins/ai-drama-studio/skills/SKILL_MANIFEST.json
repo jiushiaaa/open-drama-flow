@@ -37,7 +37,7 @@
         },
         {
           "path": "references/project-profiles/guhuoniao.md",
-          "sha256": "cfd4afb051ef876e30e2db35936eefa89efba3a33bc4a896f850937a6e492836"
+          "sha256": "d099829523ec01a841d7e001abf52f130e9c2dff15d215076d0dbb1fca44d817"
         },
         {
           "path": "references/project-profiles/reference-cases/20260906-cyberhero-motion.md",
@@ -113,6 +113,14 @@
           "sha256": "9ffb01efd6749ae38418663ec92f9b9ba89906e4d2299773ab754accb75c400e"
         },
         {
+          "path": "references/hell-grind-MIT.txt",
+          "sha256": "5200ac0cb0743ea421a812adbee1a5f32baf29bfdef1ca5d5dade3843492de5d"
+        },
+        {
+          "path": "references/hell-grind-transfer.md",
+          "sha256": "4459386b8275e5cd9ed0be868349681d9912f8ddd314fbab05da981adf7a44a6"
+        },
+        {
           "path": "references/jimeng-method-transfer.md",
           "sha256": "937a8017f21f7faf24ee2b2a3537584d9ac79af35944c61ee60e27886bb5cb7f"
         },
@@ -130,7 +138,7 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "5e01cb6c46d85874d242b8d5126f86c027a285d3c9cf29bdd0e908eec99c5b3d"
+          "sha256": "0cc5e43ab8524601200650d6fa91b98a30d99287ac95ace157ab5d8a86767b46"
         },
         {
           "path": "WORKFLOW.md",
