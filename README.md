@@ -44,7 +44,7 @@ OpenDramaFlow is an open-source video production plugin for **Codex Desktop on W
 
 ### 《从姑获鸟开始》城寨风云篇 · Episode 1
 
-**[Watch on Douyin](https://v.douyin.com/rD_OP4_kMSI/)** · **[Watch on BiliBili](https://www.bilibili.com/video/BV1WtYC6UEEN/?vd_source=e0643483c6a3517007cd0589b285add0#reply117268142886086)**
+**[Watch on Douyin](https://v.douyin.com/rD_OP4_kMSI/)** · **[Watch on bilibili](https://www.bilibili.com/video/BV1WtYC6UEEN/?vd_source=e0643483c6a3517007cd0589b285add0#reply117268142886086)**
 
 [![Episode-one cover—watch on Douyin](docs/images/episode-one-cover.jpg)](https://v.douyin.com/rD_OP4_kMSI/)
 
