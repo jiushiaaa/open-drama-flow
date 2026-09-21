@@ -86,8 +86,8 @@ export function falImageUsage(output) {
 }
 
 function callEstimate(call) {
-  const cost = call.cost, rule = cost?.frozenRule;
-  // Only use a price captured at submission, never today's price for historical calls.
+  const cost = call.cost?.frozenRule || call.cost?.estimate ? call.cost : call.cost?.backfill || call.cost, rule = cost?.frozenRule;
+  // Use the original price, or an explicitly requested, separately preserved backfill.
   const raw = rule?.unit === "million_tokens" ? call.usage?.completion_tokens
     : rule?.unit === "megapixel" ? call.usage?.billing_megapixels
     : call.kind === "music" && rule?.unit === "second" ? call.usage?.billing_duration_seconds : undefined;
@@ -97,6 +97,27 @@ function callEstimate(call) {
     estimateStatus: "provider-usage-estimated-not-billed"
   };
   return { estimate: cost?.estimate || null, estimateStatus: cost?.estimateStatus || "historical-unknown" };
+}
+
+export function backfillCostEstimates(state) {
+  const result = { updated: 0, retained: 0, missingEvidence: 0, missingPrice: 0, notSucceeded: 0 };
+  for (const call of state.providerCalls || []) {
+    if (call.cost?.frozenRule || call.cost?.estimate || call.cost?.backfill) { result.retained++; continue; }
+    if (call.status !== "succeeded") { result.notSucceeded++; continue; }
+    const job = (state.speechJobs || []).find(j => j.id === call.jobId && j.requestDigest && j.requestDigest === call.requestDigest);
+    const snapshot = job?.snapshot;
+    const model = callModel(call) || snapshot?.profile?.resourceId || snapshot?.profile?.model;
+    const quantities = { second: snapshot?.audio?.durationSeconds, character: typeof snapshot?.text === "string" ? [...snapshot.text].length : undefined, ...call.cost?.requestedQuantities };
+    const candidate = { ...call, model, cost: undefined };
+    freezeCallCost(state, candidate, quantities);
+    const calculated = callEstimate(candidate);
+    if (!candidate.cost.frozenRule) { result.missingPrice++; continue; }
+    if (!calculated.estimate) result.missingEvidence++;
+    call.cost ||= { version: 1, model: callModel(call), estimate: null, estimateStatus: "historical-unknown", settlements: [] };
+    call.cost.backfill = { ...candidate.cost, ...calculated, recordedAt: new Date().toISOString(), basis: "current-price-and-recorded-usage" };
+    if (calculated.estimate) result.updated++;
+  }
+  return result;
 }
 
 export function recordSettlement(state, callId, input) {

@@ -915,4 +915,5 @@ window.addEventListener("hashchange", () => { applyRoute(); if (currentRoute() =
 document.addEventListener("click", event => { if (!event.target.closest(".sidebar-creation-row")) $$('[data-creation-menu]').forEach(menu => { menu.hidden = true; }); if (!event.target.closest(".sidebar-world-title")) $$('[data-world-sort-menu]').forEach(menu => { menu.hidden = true; }); if (!event.target.closest(".sort-control")) $("#library-sort-menu").hidden = true; if (!event.target.closest(".sidebar-project-section")) $("#sidebar-sort-menu").hidden = true; if (!event.target.closest("#asset-context-menu") && !event.target.closest(".asset-more-button")) closeAssetContextMenu(); });
 window.addEventListener("blur", closeAssetContextMenu);
 
+applyRoute();
 refreshState();

@@ -13,7 +13,7 @@ import { appendEvent, mutateState, readState } from "./store.mjs";
 import { clearArkKey, hasArkKey, saveArkKey, clearSpeechKey, hasSpeechKey, saveSpeechKey } from "./secrets.mjs";
 import { speechCapabilities } from "./speech.mjs";
 import { usageDashboard } from "./usage-dashboard.mjs";
-import { setPriceRule, recordSettlement } from "./cost-ledger.mjs";
+import { setPriceRule, recordSettlement, backfillCostEstimates } from "./cost-ledger.mjs";
 import { providerCatalog, validateProviderSelection } from "./providers.mjs";
 import { saveCustomProvider, changeVendorSecret } from "./provider-config.mjs";
 import { saveProviderKey, clearProviderKey } from "./secrets.mjs";
@@ -232,6 +232,7 @@ async function handleApi(req, res, url) {
   const segments = url.pathname.split("/").filter(Boolean);
   if (req.method === "GET" && url.pathname === "/api/usage") { json(res, 200, usageDashboard(await readState(), Object.fromEntries(url.searchParams))); return; }
   if (req.method === "PUT" && url.pathname === "/api/usage/prices") { const input = await readJson(req); json(res, 200, await mutateState(s => setPriceRule(s, input))); return; }
+  if (req.method === "POST" && url.pathname === "/api/usage/backfill") { await readJson(req); json(res, 200, await mutateState(s => backfillCostEstimates(s))); return; }
   if (req.method === "POST" && url.pathname === "/api/usage/settlements") { const input = await readJson(req); json(res, 200, await mutateState(s => recordSettlement(s, input.callId, input.receipt))); return; }
   if (req.method === "GET" && url.pathname === "/api/providers") { json(res, 200, await providerCatalog()); return; }
   if (req.method === "PUT" && url.pathname === "/api/providers") { const input = await readJson(req); const selection = await mutateState(s => (s.settings.providerSelection = validateProviderSelection(s, input))); json(res, 200, { selection }); return; }

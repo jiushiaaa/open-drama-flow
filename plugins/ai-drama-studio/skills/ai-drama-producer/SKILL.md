@@ -63,6 +63,8 @@ ASR results preserve the source asset version/hash, segment offset and utterance
 
 ## Codex Image Gen loop
 
+Built-in image generation consumes Codex host quota, not external image API fees. Missing receipts require output recovery, not duplicate-fee approval; keep actual paid fallbacks separate and follow the recovery rules in the image asset contract. Attempt caps, tool limits and candidate acceptance still apply.
+
 Read [references/image-asset-contract.md](references/image-asset-contract.md) for both standalone images and queued tasks. For an existing valid queued task:
 
 1. Claim the task.

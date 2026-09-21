@@ -12,7 +12,7 @@ Only `drama_authorize_and_start_paid_batch` transitions a frozen scope to execut
 
 Use `drama_set_execution_mode` only in response to a user preference: `manual` for explicit per-call approval, `automatic` to return to automatic operation. Manual mode requires the trusted server MCP form with action=accept and confirm=true; HTTP actions, agent-supplied assertions and prior silence do not satisfy it. Unavailable/cancelled/unconfirmed elicitation means zero calls. Changing policy starts nothing and does not reinterpret an old manual or rejected scope; prepare a new scope when its policy no longer matches.
 
-Start at most one job for one scope. Enforce both call caps; a failed or claimed attempt consumes its cap unless authoritative billing evidence establishes otherwise. Never create new scopes to bypass exhausted budgets or uncertain calls. Host sandbox/network/tool permissions are separate and remain enforced. Production memory approval is unaffected.
+Start at most one job for one scope. Enforce both call caps; a failed or claimed attempt consumes its cap. Call-cap consumption is not monetary billing evidence, and Codex host-quota calls have no external API bill to reconcile. Never create new scopes to bypass exhausted budgets or unresolved submissions on the same route. Host sandbox/network/tool permissions are separate and remain enforced. Production memory approval is unaffected.
 
 ## Codex Image Gen
 
@@ -21,6 +21,8 @@ First read `drama_get_capabilities().host`. This section applies to `codex`; on 
 Codex Image Gen is the default agent tool route, not a localhost provider endpoint. Follow [the image asset contract](image-asset-contract.md): generate with the current Codex session's built-in image tool, inspect and display candidates outside the project library, then wait for user acceptance of the exact bytes before import or task completion. Automatic call execution is not image acceptance. For an existing queued task, retain its frozen prompt and budget; standalone image tasks need no fabricated video brief or duration. Record failure honestly instead of attaching a placeholder.
 
 The resulting asset must keep a stable `assetId`, version and approval/revision binding. Downstream work must use the exact approved version, not whichever file is newest.
+
+Billing boundary: the built-in tool consumes Codex host quota, not the configured image provider's API balance. Keep it outside the external API cost ledger; `callCharged` and `usedImageCalls` count reserved attempts, not currency charges. A missing built-in receipt is an unknown generation result, not unknown external billing. Reconcile the original call and candidate files first; recover an existing output without generating again. Once the original attempt has ended with no recoverable output, a same-tool replacement within the user's authorized recovery scope and remaining attempt cap needs no extra duplicate-fee confirmation merely because it consumes host quota. Quota limits, permissions and image acceptance still apply. See the image asset contract for recovery details. Any actual external fallback retains its own provider ID and unresolved billing record; it must not be relabeled as a built-in call or treated as zero-cost, but does not itself block separately authorized built-in recovery.
 
 ## Seedream
 

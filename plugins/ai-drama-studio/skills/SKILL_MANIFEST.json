@@ -17,7 +17,7 @@
         },
         {
           "path": "references/image-asset-contract.md",
-          "sha256": "f8c68a355d1110e41d45189b0168a2d317f7206604a1e023381fd350d2944b0d"
+          "sha256": "c6737eb80268d5b239418a0b6458cecb4e3e15c33b37c597ad31d134175fbed6"
         },
         {
           "path": "references/narrative-continuity.md",
@@ -65,7 +65,7 @@
         },
         {
           "path": "references/provider-contract.md",
-          "sha256": "027ce2b992c128ceece11a8d69d5556e9f57937ec0d5c30bda68476df61396b3"
+          "sha256": "8c423a4788107adabfbd7bc066cd22f872327e16f0c60cb5f2ed33fdbe9b2004"
         },
         {
           "path": "references/routing-contract.md",
@@ -85,7 +85,7 @@
         },
         {
           "path": "SKILL.md",
-          "sha256": "7e3025bfa7ec3bc2e835d3bca4cb80dc4ea56a1556e40f2fb00ce7996ee99a67"
+          "sha256": "cc6f764ba1a6e2b7cee60b248f6c8995274c8ecd878efd58e068ae7b386dae97"
         }
       ]
     },
