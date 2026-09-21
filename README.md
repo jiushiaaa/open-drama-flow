@@ -30,6 +30,7 @@ Built for **Windows and macOS**, with a native Codex plugin and standard local M
 - **Built around Seedance.** Give image, video, audio and first/last-frame references distinct roles across generation, extension and editing.
 - **Revise and resume.** Version-bound stage checkpoints and provider task IDs help recover interrupted work. Record alternatives, decisions and cost impact; repair affected shots while preserving accepted work.
 - **Project-scoped memory.** Keep experimental lessons separate from approved facts so one experiment cannot silently rewrite a character or another project.
+- **A clear control panel.** Choose default models, manage provider keys, inspect usage and configure local tools in separate pages. A chapter-linked beginner guide walks you through the first production.
 
 ![OpenDramaFlow infinite canvas: assets, shots and production relationships](docs/images/production-canvas.png)
 
@@ -39,6 +40,40 @@ Built for **Windows and macOS**, with a native Codex plugin and standard local M
 ![Project library](docs/images/project-library.png)
 
 ![Skill directory and file browser](docs/images/skill-browser.png)
+
+</details>
+
+### Inside the workbench
+
+| Page | What you can do |
+| --- | --- |
+| Project library | Organize projects, volumes and creation pages; collapse each level and sort creation pages by name or creation order |
+| Skill | Search and enable Skills; explore independently collapsible folders and instruction files |
+| Usage Details | Filter by provider, its models and UTC date range; view request counts, estimated costs and daily trends; edit model prices below the logs |
+| Providers & API | Set default video/image/TTS models separately from provider credentials and compatible custom endpoints |
+| Tools | Configure local Real-ESRGAN, save Video Depth Anything environment paths, and check FFmpeg dependencies |
+| Beginner guide | Follow setup, assets, production, costs and troubleshooting instructions with a two-level table of contents and shareable chapter links |
+
+Projects and Skills load independently. A compact, revision-aware read model keeps large production histories off the page-loading path; usage reads run in a separate worker and reuse unchanged state.
+
+<details>
+<summary>Providers, usage, local tools and the beginner guide</summary>
+
+**Default models and credentials are separate.** Saving a key does not change your preferred model or retarget existing jobs.
+
+![Default models and provider credentials](docs/images/provider-settings.png)
+
+**Provider-scoped usage.** This view selects a model with no consumption records.
+
+![Usage filters and model pricing](docs/images/usage-details.png)
+
+**Local tools in one place.** Machine-specific paths are hidden in this screenshot. Upscale rows are processing tasks, not billing records; depth-path configuration does not run inference.
+
+![Local upscaling, video depth and FFmpeg settings](docs/images/local-tools.png)
+
+**A guide you can navigate.** Select a section or subsection without leaving the guide.
+
+![Beginner guide with a two-level navigation tree](docs/images/beginner-guide.png)
 
 </details>
 
@@ -252,9 +287,9 @@ In Codex, API image models are fallbacks used only on explicit request or verifi
 
 | Tool | Purpose | Integration |
 | --- | --- | --- |
-| FFmpeg | Editing, mixing, captions, inspection and export | Local tool |
-| [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN) | Resumable local MCP upscaling | Runs on your own machine with separately installed runtime/weights; verified chunks and preserved audio; 4K is postproduction output |
-| [Video Depth Anything](https://github.com/DepthAnything/Video-Depth-Anything) | Temporally consistent video depth references | Separate installation; experimental motion analysis |
+| FFmpeg | Editing, mixing, captions, inspection and export | Tools page detects FFmpeg / ffprobe and required filters; per-task processing parameters are supplied by the Agent |
+| [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN) | Resumable local MCP upscaling | Configure runtime/weights, GPU and tile size in Tools; inspect task progress and pause/resume; verified chunks and preserved audio |
+| [Video Depth Anything](https://github.com/DepthAnything/Video-Depth-Anything) | Temporally consistent video depth references | Tools saves Python, repository and checkpoint paths for Agent-operated external processing; path validation is not installation or inference verification |
 
 **Upscaling is local only.** OpenDramaFlow does not provide hosted Real-ESRGAN, cloud upscaling or a shared GPU server.
 
@@ -288,7 +323,7 @@ This is an **optional action-reference experiment**, not a prerequisite for ordi
 - [Production guide: models, acceptance and local data](docs/production-guide.md)
 - [Stage contracts, recovery and decision records](plugins/ai-drama-studio/docs/production-contracts.md)
 - [Tool capabilities, local audio finishing and cost records](plugins/ai-drama-studio/docs/toolchain.md)
-- **Usage Details (用量详情)** separates provider/model filters, currency totals, cost trends and request logs. Official price presets include their source and specification; edit them for your account discounts. Unknown prices remain unknown, estimates are not bills, and changes apply only to future calls. Provider credentials and local upscale/billing settings have separate pages. Account billing requires separate read-only credentials.
+- [Workbench settings, usage filters and local tools](docs/provider-settings.md) — provider credentials, estimated costs and local processing have separate pages; the UI no longer includes account-bill synchronization settings.
 - [Plugin and MCP documentation](plugins/ai-drama-studio/README.md)
 - [Public examples and reproducible assets](production/publish-examples/README.md)
 - [Model and reference sources](docs/reference-sources.md)

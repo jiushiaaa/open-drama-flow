@@ -90,6 +90,17 @@ test("a blank project never receives sample production data", { timeout: 15_000 
     assert.equal("maxImageCallsPerBatch" in initial.settings, false);
     assert.equal("maxVideoCallsPerBatch" in initial.settings, false);
 
+    const toolsBefore = await (await fetch(`${baseUrl}/api/local-tools`)).json();
+    assert.equal(toolsBefore.videoDepth, null);
+    assert.equal(typeof toolsBefore.dependencies.ffmpeg, "boolean");
+    const depthConfig = { python: path.join(tempRoot, "python"), repository: tempRoot, checkpoint: path.join(tempRoot, "test.pth") };
+    for (const file of [depthConfig.python, depthConfig.checkpoint, path.join(tempRoot, "run.py")]) await fs.writeFile(file, "test-only, not executable");
+    const saveDepth = await fetch(`${baseUrl}/api/local-tools/video-depth`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(depthConfig) });
+    assert.equal(saveDepth.status, 200);
+    assert.deepEqual((await (await fetch(`${baseUrl}/api/local-tools`)).json()).videoDepth, depthConfig);
+    const invalidDepth = await fetch(`${baseUrl}/api/local-tools/video-depth`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...depthConfig, python: "relative" }) });
+    assert.equal(invalidDepth.status, 400);
+
     const attemptedOverride = await fetch(`${baseUrl}/api/settings`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -237,7 +248,7 @@ test("a blank project never receives sample production data", { timeout: 15_000 
     assert.deepEqual((await (await fetch(`${baseUrl}/api/state`)).json()).projects[0].creations, []);
 
     const page = await (await fetch(baseUrl)).text();
-    assert.match(page, /项目新手指引/);
+    assert.match(page, /新手指南/);
     assert.match(page, /不会写入项目数据/);
     assert.match(page, /id="start-view"/);
     assert.match(page, /用 Codex 创作你的 AI 视频/);

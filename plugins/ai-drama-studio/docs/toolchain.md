@@ -53,7 +53,7 @@ FFmpeg afftdn 频谱降噪，不是人声分离或声音克隆。需显式选择
 
 ### Real-ESRGAN 可恢复超分
 
-工作台「供应商与 API → 本地超分与账单同步设置」配置 NCNN 可执行文件、权重目录、模型、GPU 和 tile；不自动下载不明权重。也可调用 `drama_configure_upscale({runtime})`，runtime 包含 executable、modelsDirectory、model、gpu、tile。
+工作台「工具 → 视频超分 · Real-ESRGAN」配置 NCNN 可执行文件、权重目录、模型、GPU 和 tile；下方展示超分任务与恢复操作，不是消费记录。不自动下载不明权重。也可调用 `drama_configure_upscale({runtime})`，runtime 包含 executable、modelsDirectory、model、gpu、tile。
 
 1. `drama_create_upscale_job({sourcePath,sourceSha256,longEdge:3840,chunkFrames:120})`：准备新任务，可携带 projectId / creationId / shotId。
 2. `drama_start_upscale_job({jobId})`：后台运行；相同入口恢复暂停/失败任务。
@@ -65,6 +65,10 @@ FFmpeg afftdn 频谱降噪，不是人声分离或声音克隆。需显式选择
 这是**本地托管任务**，不是云端 Real-ESRGAN 服务；云托管超分供应商尚未接入。模型与运行时需单独安装，4K 不代表恢复出真实原生 4K 细节。
 
 ## 制作流程与镜头素材检索
+
+视频深度的本机配置位于「工具 → 视频深度 · Video Depth Anything」，保存 Python 可执行文件、仓库目录及权重的绝对路径。标题旁的信息图标支持悬浮和键盘聚焦，说明配置不等于依赖安装或推理验证。
+
+`GET /api/local-tools` 返回已保存配置及本机依赖检测；`PUT /api/local-tools/video-depth` 接受 `python`、`repository`、`checkpoint`，校验文件、目录与 `run.py` 后保存。工具目录以 `externalTools.videoDepthAnything` 暴露配置，仍属于 Agent 操作的外部工具，不是内置深度推理适配器。配置过程不会生成视频或修改素材。
 
 `drama_select_production_workflow({type})` 支持 drama、advertising、explainer、music-video、motion，返回阶段清单和已启用专业 Skill。随后用现有 `drama_update_plan` 保存实际 brief、拍摄脚本和镜头；选择流程不会创建示例素材或批准记忆。
 
@@ -101,20 +105,7 @@ FFmpeg afftdn 频谱降噪，不是人声分离或声音克隆。需显式选择
 
 rule 字段：kind、精确 model、ISO 三字母 currency、unit、rate、source，以及 provider、可选 profile。新增供应商 kind 为 provider-image／video／audio 且必须声明匹配的 provider；价格按供应商、模型、能力配置隔离。语音 model 使用目录的资源 ID 或音乐模型 ID。
 
-| kind | 可用 unit | 数量 |
-| --- | --- | --- |
-| seedream-image | request / image | 单次 / 1 张 |
-| seedance-video | request / second | 单次 / 请求秒数 |
-| asr | request / second | 单次 / 输入片段秒数 |
-| tts | request / character | 单次 / 文本 JavaScript length |
-| music | request | 单次；生成时长事前未知 |
-| fal-image / replicate-image | request / image | 单次 / 1 张 |
-| fal-video | request / second | 单次 / 帧数除以 16 |
-| 新增 provider-image | request / image | 单次 / 1 张 |
-| 新增 provider-video | request / second | 单次 / 目录固定秒数；未知时不估算秒数 |
-| minimax-audio / minimax-cn-audio | request / character | 单次 / 汉字按 2、其他字符按 1 估算 |
-
-这些是估算单位，不是供应商实际计费声明。简单按秒估算不覆盖分辨率、参考媒体、Token、声音开关等差异；本版不抓取价目表或做外币换算，精确费用以账单为准。
+官方规格、计费单位与来源见[供应商价格说明](../../../docs/provider-settings.md#用量详情与价格)。Seedance 2.5 使用返回的计费 Token，不能用请求秒数代替；fal FLUX 按输出像素、SeedAudio 按返回的原始音频时长计算。缺少必要用量时保留未知。预设用于估算，不等于供应商最终扣款；本版不自动抓取价目表或做外币换算。
 
 receipt 字段：receiptId、currency、amount、source。每张记录表示**该调用的累计净额**，不是追加费用。同 ID 同内容幂等，冲突拒绝。退款/修正用新 ID 与修正后净额，历史保留，汇总取最新值。来源由操作方提供，工具不连接账单 API 验真，不应记录敏感凭证。
 
@@ -126,9 +117,9 @@ receipt 字段：receiptId、currency、amount、source。每张记录表示**�
 
 ### 工作台费用页面与账户账单
 
-「用量详情」提供统计卡片、按币种的每日趋势（UTC）、请求日志分页、供应商/模型汇总、日期筛选、分供应商定价编辑和逐次凭据核账。工具不在此混排，超分与账单同步在独立设置页。不是 CC Switch 的 Codex Token 账单镜像：插件无法凭空知道宿主订阅成本。未知费用不显示为已扣费零元。
+「用量详情」提供请求数、预估成本、按币种的每日趋势（UTC）、请求日志分页、供应商/模型汇总与日期筛选。供应商与模型联动；“确认”应用条件，“重置”清空条件，未消费模型显示空表。分供应商定价编辑位于表格底部。前端不展示实账、核账操作或账单同步设置；本地超分、视频深度与 FFmpeg 集中在「工具」。不是 CC Switch 的 Codex Token 账单镜像：插件无法凭空知道宿主订阅成本。未知费用不显示为已扣费零元。
 
-可选「火山引擎账户账单」使用具有 `ListBillDetail` 只读权限的独立 AK / SK，**不是 Ark 生成 API Key**。手动同步或显式开启工作台运行期间每六小时同步，账期留空跟随当月。失败保留上次成功结果；分页不完整不显示部分金额为总额。只保留必要费用字段，不保存账户姓名等响应信息。
+后台兼容接口保留「火山引擎账户账单」，使用具有 `ListBillDetail` 只读权限的独立 AK / SK，**不是 Ark 生成 API Key**。界面已移除该设置，不因浏览用量页开启同步。已有明确启用的后台配置仍按原规则执行：账期留空跟随当月，失败保留上次成功结果，分页不完整不显示部分金额为总额。只保留必要费用字段，不保存账户姓名等响应信息。
 
 账户账单采用供应商 `PayableAmount`，有延迟，可能包含其他云产品；单独展示，不把它猜测分摊到镜头、不与本地估算相加。当前只有火山账户账单适配，fal / Replicate 账单仍需按凭据核对。自动拉取价格、汇率换算、Codex 历史用量扫描尚未实现。
 

@@ -3,6 +3,7 @@ import { buildSkillFileTree, countSkillTreeFiles, skillFileBadge } from "./skill
 import { createCanvasPersistence } from "./canvas-persistence.js";
 import { createProductionConsole } from "./production-console.js";
 import { createProviderSettings } from "./provider-settings.js";
+import { mountBeginnerGuide } from "./beginner-guide.js";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -27,6 +28,8 @@ let mutationParentId = null;
 let deleteTargetType = "project";
 let pollTimer = null;
 let availableSkills = [];
+let skillRefresh = null;
+let stateRefreshGeneration = 0;
 let skillSearch = "";
 let skillFilter = "all";
 let activeSkillDetail = null;
@@ -74,7 +77,8 @@ function activeWorld() { return activeProject()?.worlds?.find(item => item.id ==
 const productionConsole = createProductionConsole({ el, api, toast });
 const providerSettings = createProviderSettings({ el, api, toast });
 const localSettings = createProductionConsole({ el, api, toast, mode: "settings" });
-function currentRoute() { return ["start", "project-library", "project", "workspace", "skills", "project-guide", "production-console", "providers", "local-settings"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "start"; }
+const beginnerGuide = mountBeginnerGuide(el);
+function currentRoute() { const route = location.hash.slice(1).split("/")[0]; return route === "local-settings" ? "tools" : ["start", "project-library", "project", "workspace", "skills", "project-guide", "production-console", "providers", "tools"].includes(route) ? route : "start"; }
 function go(route) { location.hash = route; }
 
 function sortedProjects() {
@@ -89,19 +93,32 @@ function sortItems(items) {
 function sortedCreations(project) { return sortItems([...(project?.creations || [])]); }
 
 async function refreshState({ quiet = false } = {}) {
+  const generation = ++stateRefreshGeneration;
+  void refreshSkills({ quiet });
   try {
-    const [stateResponse, skillResponse] = await Promise.all([api("/api/state"), api("/api/skills")]);
+    const stateResponse = await api("/api/workbench");
+    if (generation !== stateRefreshGeneration) return;
+    if (stateResponse.revision && studioState?.revision === stateResponse.revision) return;
     studioState = stateResponse;
-    availableSkills = skillResponse.skills || [];
     if (!activeProjectId || !studioState.projects.some(project => project.id === activeProjectId)) activeProjectId = studioState.projects[0]?.id || null;
     if (activeProjectId && !expandedProjectIds.size) expandedProjectIds.add(activeProjectId);
     const project = activeProject();
     if (project && (!activeCreationId || !project.creations?.some(item => item.id === activeCreationId))) activeCreationId = project.creations?.[0]?.id || null;
     render();
-    schedulePoll();
   } catch (error) {
-    if (!quiet) toast("本地工作台未连接，请重新打开插件。", "error");
+    if (!quiet) toast(error.message === "HTTP_404" || error.message === "NOT_FOUND" ? "工作台服务版本较旧，请重启工作台以加载新版接口。" : "本地工作台未连接，请重新打开插件。", "error");
+  } finally {
+    if (generation === stateRefreshGeneration) schedulePoll();
   }
+}
+
+function refreshSkills({ quiet = false } = {}) {
+  if (skillRefresh) return skillRefresh;
+  skillRefresh = api("/api/skills").then(response => {
+    const skills = response.skills || [];
+    if (JSON.stringify(skills) !== JSON.stringify(availableSkills)) { availableSkills = skills; renderSkills(); }
+  }).catch(() => { if (!quiet) toast("技能列表加载失败，正在等待重新连接。", "error"); }).finally(() => { skillRefresh = null; });
+  return skillRefresh;
 }
 
 function schedulePoll() {
@@ -112,29 +129,28 @@ function schedulePoll() {
 
 function render() {
   renderSidebar();
-  renderLibrary();
-  renderProjectOverview();
-  renderSkills();
   applyRoute();
   if (currentRoute() === "workspace") renderWorkspace();
 }
 
 function applyRoute() {
   let route = currentRoute();
-  document.documentElement.classList.toggle("responsive-console-route", ["providers", "production-console", "local-settings"].includes(route));
+  document.documentElement.classList.toggle("responsive-console-route", ["providers", "production-console", "tools", "project-guide"].includes(route));
   if (!activeProject() && ["project", "workspace"].includes(route)) route = "project-library";
   if (route !== "workspace" && canvasView) { canvasView.unmount(); canvasView = null; canvasSignature = null; }
   const routeViewIds = { start: "start-view", "project-library": "project-library-view", project: "project-overview-view", workspace: "workspace-view", skills: "skills-view", "project-guide": "project-guide-view" };
   routeViewIds["production-console"] = "production-console-view";
   routeViewIds.providers = "provider-settings-view";
-  routeViewIds["local-settings"] = "local-settings-view";
+  routeViewIds.tools = "local-settings-view";
   if (route === "providers") providerSettings.enter(); else providerSettings.leave();
-  if (route === "local-settings") localSettings.enter(); else localSettings.leave();
+  if (route === "tools") localSettings.enter(); else localSettings.leave();
   if (route === "production-console") productionConsole.enter(); else productionConsole.leave();
   $$(".route-view").forEach(view => { view.hidden = view.id !== routeViewIds[route]; });
+  if (route === "project-library") renderLibrary();
+  if (route === "project") renderProjectOverview();
   $$(".primary-nav a").forEach(link => link.classList.toggle("active", link.getAttribute("href") === `#${route}` || (route === "project" && link.getAttribute("href") === "#project-library") || (route === "workspace" && link.getAttribute("href") === "#project-library")));
-  const routeTitle = route === "start" ? "开始创作" : route === "project-library" ? "项目库" : route === "skills" ? "Skill" : route === "project-guide" ? "项目新手指引" : activeProject()?.title || "OpenDramaFlow";
-  document.title = `${route === "production-console" ? "用量详情" : route === "providers" ? "供应商与 API" : route === "local-settings" ? "本地与账单设置" : routeTitle} — OpenDramaFlow`;
+  const routeTitle = route === "start" ? "开始创作" : route === "project-library" ? "项目库" : route === "skills" ? "Skill" : route === "project-guide" ? "新手指南" : activeProject()?.title || "OpenDramaFlow";
+  document.title = `${route === "production-console" ? "用量详情" : route === "providers" ? "供应商与 API" : route === "tools" ? "工具" : routeTitle} — OpenDramaFlow`;
 }
 
 function renderSidebar() {
@@ -294,7 +310,7 @@ function renderProjectOverview() {
     )
   ));
   if (!visibleCreations.length) creations.append(el("button", { class: "new-project-tile creation-empty", type: "button", onclick: () => openProjectDialog("create-creation") }, el("img", { src: "/icons/message-square.svg", alt: "" }), el("strong", { text: "新建创作页" }), el("span", { text: activeWorldId === "all" ? "先建立分卷 / 季度，或直接创建系列总览" : "每张画布负责一集或一个明确生产任务" })));
-  renderAssets(project);
+  if (activeProjectTab === "assets") renderAssets(project);
 }
 
 function assetKindLabel(kind) { return ({ image: "图片", video: "视频", audio: "音频", document: "文档", spreadsheet: "表格" })[kind] || "文件"; }
@@ -911,9 +927,10 @@ $("#skill-dropzone").addEventListener("drop", event => { event.preventDefault();
 $("#skill-search").addEventListener("input", event => { skillSearch = event.target.value; renderSkills(); });
 $$("[data-skill-filter]").forEach(button => button.addEventListener("click", () => { skillFilter = button.dataset.skillFilter; $$("[data-skill-filter]").forEach(item => item.classList.toggle("active", item === button)); renderSkills(); }));
 $("#skill-detail-toggle").addEventListener("change", event => { if (activeSkillDetail?.skill) setSkillEnabled(activeSkillDetail.skill, event.currentTarget.checked); });
-window.addEventListener("hashchange", () => { applyRoute(); if (currentRoute() === "workspace") renderWorkspace(); });
+window.addEventListener("hashchange", () => { applyRoute(); beginnerGuide.navigate(); if (currentRoute() === "workspace") renderWorkspace(); });
 document.addEventListener("click", event => { if (!event.target.closest(".sidebar-creation-row")) $$('[data-creation-menu]').forEach(menu => { menu.hidden = true; }); if (!event.target.closest(".sidebar-world-title")) $$('[data-world-sort-menu]').forEach(menu => { menu.hidden = true; }); if (!event.target.closest(".sort-control")) $("#library-sort-menu").hidden = true; if (!event.target.closest(".sidebar-project-section")) $("#sidebar-sort-menu").hidden = true; if (!event.target.closest("#asset-context-menu") && !event.target.closest(".asset-more-button")) closeAssetContextMenu(); });
 window.addEventListener("blur", closeAssetContextMenu);
 
 applyRoute();
+beginnerGuide.navigate();
 refreshState();

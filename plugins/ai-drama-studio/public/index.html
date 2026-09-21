@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/desktop-overrides.css">
   <link rel="stylesheet" href="/production-console.css">
   <link rel="stylesheet" href="/provider-settings.css">
+  <link rel="stylesheet" href="/beginner-guide.css">
 </head>
 <body>
   <div class="desktop-shell">
@@ -24,8 +25,9 @@
         <a class="nav-item" href="#project-library"><img src="/icons/folder-kanban.svg" alt="">项目库</a>
         <a class="nav-item" href="#skills"><img src="/icons/sparkles.svg" alt="">Skill</a>
         <a class="nav-item" href="#production-console"><img src="/icons/settings-2.svg" alt="">用量详情</a>
-        <a class="nav-item" href="#project-guide"><img src="/icons/book-open.svg" alt="">项目新手指引</a>
         <a id="settings-button" class="nav-item" href="#providers"><img src="/icons/key-round.svg" alt="">供应商与 API</a>
+        <a class="nav-item" href="#tools"><img src="/icons/settings-2.svg" alt="">工具</a>
+        <a class="nav-item" href="#project-guide"><img src="/icons/book-open.svg" alt="">新手指南</a>
       </nav>
 
       <section class="sidebar-project-section" aria-labelledby="sidebar-project-title">
@@ -55,7 +57,7 @@
           <div class="start-actions">
             <button class="button primary" type="button" data-route="project-library"><img src="/icons/folder-plus.svg" alt="">新建空白项目</button>
             <button id="start-settings-button" class="button outline" type="button"><img src="/icons/settings-2.svg" alt="">配置 API Key</button>
-            <button class="button outline" type="button" data-route="project-guide"><img src="/icons/book-open.svg" alt="">查看新手指引</button>
+            <button class="button outline" type="button" data-route="project-guide"><img src="/icons/book-open.svg" alt="">查看新手指南</button>
           </div>
         </div>
       </section>
@@ -148,8 +150,7 @@
       </section>
 
       <section id="project-guide-view" class="route-view document-view" hidden>
-        <p class="eyebrow">OFFICIAL GUIDE</p><h1>项目新手指引</h1><p>这是独立的正式操作说明，不会写入项目数据。</p>
-<ol class="guide-steps"><li><span>01</span><div><strong>创建项目</strong><p>在项目库建立空白项目，只保存你主动创建的内容。</p></div></li><li><span>02</span><div><strong>让 Codex 规划创作</strong><p>说明目标、风格和参考资料，Codex 自动匹配 Skill；只制作图片时，无需先建立视频分镜或填写视频时长。</p></div></li><li><span>03</span><div><strong>内置工具生成候选图</strong><p>默认使用当前 Codex 会话的内置图片生成工具（image2），在会话里展示候选图，暂不写入项目素材库。只有内置工具不可用、执行失败或你明确指定时，才启用项目图片模型，并说明原因。</p></div></li><li><span>04</span><div><strong>你验收通过后才入库</strong><p>确认具体候选图后，Codex 才将该版本写回指定项目素材库。未通过的图不入库、不替换母版，也不用作 Seedance 参考；全访问权限和自动执行不等于自动验收。</p></div></li><li><span>05</span><div><strong>生成视频、剪辑与验片</strong><p>使用已验收素材按限定批次调用 Seedance，再由本机 FFmpeg 合成真实镜头、声音和字幕，核验后交付成片。</p></div></li></ol>
+        <p class="eyebrow">OFFICIAL GUIDE</p><h1>新手指南</h1><p>这是独立的正式操作说明，不会写入项目数据。</p>
       </section>
     </main>
   </div>

@@ -12,7 +12,11 @@ import { allowedAudioExtensions, allowedDocumentExtensions, allowedImageExtensio
 import { appendEvent, mutateState, readState } from "./store.mjs";
 import { clearArkKey, hasArkKey, saveArkKey, clearSpeechKey, hasSpeechKey, saveSpeechKey } from "./secrets.mjs";
 import { speechCapabilities } from "./speech.mjs";
-import { usageDashboard } from "./usage-dashboard.mjs";
+import { usageFilterSchema } from "./usage-dashboard.mjs";
+import { createWorkbenchReader } from "./workbench-reader.mjs";
+import { registeredMediaPath } from "./workbench-state.mjs";
+import { probeLocalTools } from "./tool-catalog.mjs";
+import { validateVideoDepthSettings } from "./local-tool-settings.mjs";
 import { setPriceRule, recordSettlement, backfillCostEstimates } from "./cost-ledger.mjs";
 import { providerCatalog, validateProviderSelection } from "./providers.mjs";
 import { saveCustomProvider, changeVendorSecret } from "./provider-config.mjs";
@@ -30,6 +34,7 @@ const mimeTypes = {
   ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", ".doc": "application/msword", ".md": "text/markdown; charset=utf-8", ".txt": "text/plain; charset=utf-8", ".pdf": "application/pdf", ".csv": "text/csv; charset=utf-8", ".json": "application/json; charset=utf-8", ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ".xls": "application/vnd.ms-excel", ".svg": "image/svg+xml"
 };
 const runtimeIdentity = createHash("sha256").update(`${dataRoot}\n${agentHost.host}`).digest("hex");
+const workbenchReader = createWorkbenchReader();
 
 function json(res, status, body) {
   const payload = Buffer.from(JSON.stringify(body));
@@ -99,20 +104,6 @@ function publicState(state, keyConfigured, assetBridge, speechConfigured = false
     jobs: state.jobs.map(({ outputPath, ...job }) => job),
     tasks: state.tasks.map(({ localPath, remoteUrl, ...task }) => ({ ...task, hasLocalAsset: Boolean(localPath), hasRemoteSource: Boolean(remoteUrl) }))
   };
-}
-
-function registeredMediaPath(state, kind, id) {
-  const collection = kind === "assets"
-    ? state.projects.flatMap(project => project.assets)
-    : kind === "outputs" ? state.projects.flatMap(project => project.outputs) : [];
-  const item = collection.find(entry => entry.id === id);
-  if (!item?.localPath) throw new Error("FILE_NOT_FOUND");
-  const candidate = path.resolve(item.localPath);
-  for (const root of [dataRoot, mediaRoot, workspaceRoot]) {
-    try { return assertInside(root, candidate); }
-    catch {}
-  }
-  throw new Error("PATH_OUTSIDE_WORKSPACE");
 }
 
 function editableAssetExtension(asset) {
@@ -230,7 +221,8 @@ function validateSettings(input, previous) {
 
 async function handleApi(req, res, url) {
   const segments = url.pathname.split("/").filter(Boolean);
-  if (req.method === "GET" && url.pathname === "/api/usage") { json(res, 200, usageDashboard(await readState(), Object.fromEntries(url.searchParams))); return; }
+  if (req.method === "GET" && url.pathname === "/api/usage") { json(res, 200, await workbenchReader.read("usage", usageFilterSchema.parse(Object.fromEntries(url.searchParams)))); return; }
+  if (req.method === "GET" && url.pathname === "/api/workbench") { json(res, 200, await workbenchReader.read("workbench")); return; }
   if (req.method === "PUT" && url.pathname === "/api/usage/prices") { const input = await readJson(req); json(res, 200, await mutateState(s => setPriceRule(s, input))); return; }
   if (req.method === "POST" && url.pathname === "/api/usage/backfill") { await readJson(req); json(res, 200, await mutateState(s => backfillCostEstimates(s))); return; }
   if (req.method === "POST" && url.pathname === "/api/usage/settlements") { const input = await readJson(req); json(res, 200, await mutateState(s => recordSettlement(s, input.callId, input.receipt))); return; }
@@ -244,6 +236,15 @@ async function handleApi(req, res, url) {
   if (["fal", "replicate", "volc-billing-ak", "volc-billing-sk"].includes(segments[2]) && segments[1] === "secrets") {
     if (req.method === "PUT") { await saveProviderKey(segments[2], (await readJson(req, 4096)).apiKey); json(res, 200, { configured: true }); return; }
     if (req.method === "DELETE") { await clearProviderKey(segments[2]); json(res, 200, { configured: false }); return; }
+  }
+  if (req.method === "GET" && url.pathname === "/api/local-tools") {
+    const [settings, dependencies] = await Promise.all([workbenchReader.read("local-tools"), probeLocalTools()]);
+    json(res, 200, { ...settings, dependencies }); return;
+  }
+  if (req.method === "PUT" && url.pathname === "/api/local-tools/video-depth") {
+    const config = await validateVideoDepthSettings(await readJson(req));
+    await mutateState(state => { state.settings.videoDepthRuntime = config; });
+    json(res, 200, { videoDepth: config }); return;
   }
   if (req.method === "GET" && url.pathname === "/api/upscale") { json(res, 200, { ...await getUpscale(), runtime: (await readState()).settings.upscaleRuntime || null }); return; }
   if (req.method === "PUT" && url.pathname === "/api/upscale/runtime") { json(res, 200, await configureUpscale(await readJson(req))); return; }
@@ -437,7 +438,7 @@ async function handler(req, res) {
     if (url.pathname.startsWith("/api/")) { await handleApi(req, res, url); return; }
     if (url.pathname.startsWith("/media/")) {
       const [, , kind, encodedId] = url.pathname.split("/");
-      await serveFile(req, res, registeredMediaPath(await readState(), kind, decodeURIComponent(encodedId || ""))); return;
+      await serveFile(req, res, await workbenchReader.read("media", { kind, id: decodeURIComponent(encodedId || "") })); return;
     }
     const requestPath = url.pathname === "/" ? "index.html" : url.pathname.slice(1);
     await serveFile(req, res, assertInside(publicRoot, path.join(publicRoot, requestPath)));
@@ -479,7 +480,7 @@ export async function startHttpServer({ log = false } = {}) {
     });
     server.listen(port, host, () => {
       runningServer = server;
-      const stopBilling = startBillingTimer(); server.once("close", stopBilling);
+      const stopBilling = startBillingTimer(); server.once("close", () => { stopBilling(); void workbenchReader.close(); });
       if (log) console.log(`OpenDramaFlow: ${url}`);
       resolve({ server, url, reused: false });
     });

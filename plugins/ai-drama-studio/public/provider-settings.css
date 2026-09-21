@@ -23,5 +23,14 @@
 .provider-routes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .provider-routes .button { grid-column: 1 / -1; justify-self: start; }
 .provider-footer { padding: 24px 0; font-size: 14px; }
+.provider-image-policy { padding: 12px 16px; border-radius: 10px; background: #eef2ff; }
+.provider-config-heading { margin: 30px 0 18px; }
+.provider-config-heading h2 { margin-bottom: 8px; }
+.tool-filter-list { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0; }
+.tool-heading { display: inline-flex; gap: 10px; align-items: center; }
+.tool-help { position: relative; display: inline-flex; font-weight: normal; }
+.tool-help-button { width: 22px; height: 22px; padding: 0; border: 1px solid #b5c1d5; border-radius: 50%; background: #f8fafc; color: #64748b; font: 600 13px/1 sans-serif; cursor: help; }
+.tool-help-tooltip { display: none; position: absolute; z-index: 10; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); width: min(320px, 70vw); padding: 12px 14px; background: #243047; color: white; border-radius: 8px; box-shadow: 0 6px 20px #18243526; font-size: 13px; line-height: 1.7; }
+.tool-help:hover .tool-help-tooltip, .tool-help:focus-within .tool-help-tooltip { display: block; }
 @media (max-width: 1100px) { .provider-layout { grid-template-columns: minmax(0, 1fr); } .provider-picker { position: static; } .provider-list { grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: 240px; } .provider-routes { grid-template-columns: 1fr; } }
 @media (max-width: 650px) { .provider-settings { padding: 16px; } .provider-key-row { grid-template-columns: 1fr 1fr; } .provider-key-row label { grid-column: 1 / -1; } .provider-list { grid-template-columns: 1fr; } }

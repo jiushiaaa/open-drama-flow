@@ -30,6 +30,7 @@ OpenDramaFlow 把你的 AI 助手连接成一个视频制作工作台：规划�
 - **围绕 Seedance 制作。** 按职责组织图片、视频、音频与首尾帧参考，支持视频生成、续写和编辑。
 - **可以修改，也可以接着做。** 保存绑定版本的阶段检查点和供应商任务 ID，记录方案选择与成本影响；恢复中断任务时保护已认可片段，减少重复生成。
 - **经验留在项目里。** 将候选经验与已批准设定分开，避免一次实验覆盖角色、剧情和其他项目的规则。
+- **设置各归其位。** 默认模型、供应商密钥、用量和本地工具分开管理；可跳转章节的新手指南带你完成第一次制作。
 
 ![OpenDramaFlow 无限画布：素材、镜头与制作关系](docs/images/production-canvas.png)
 
@@ -39,6 +40,40 @@ OpenDramaFlow 把你的 AI 助手连接成一个视频制作工作台：规划�
 ![项目库](docs/images/project-library.png)
 
 ![Skill 目录与文件浏览](docs/images/skill-browser.png)
+
+</details>
+
+### 工作台一览
+
+| 页面 | 可以做什么 |
+| --- | --- |
+| 项目库 | 管理项目、分卷和创作页；各层级独立折叠，创作页按名称或创建顺序排列 |
+| Skill | 搜索、启停技能；按文件夹层级展开和折叠指令与参考资料 |
+| 用量详情 | 按供应商、所属模型和 UTC 日期筛选；查看请求数、预估成本与每日趋势，在日志底部编辑模型定价 |
+| 供应商与 API | 分别管理默认视频／图片／TTS 模型、供应商密钥和兼容的自定义接口 |
+| 工具 | 配置本地 Real-ESRGAN，保存 Video Depth Anything 环境路径，检测 FFmpeg 依赖 |
+| 新手指南 | 通过两级目录与章节链接查看配置、素材、制作、费用和常见问题说明 |
+
+项目与 Skill 独立加载；轻量展示数据避免把完整制作历史传给页面。用量读取移至独立线程，同一文件版本复用解析结果，减少大项目打开和切换时的等待。
+
+<details>
+<summary>查看供应商、用量、工具与新手指南</summary>
+
+**默认模型与密钥各自管理。** 保存 Key 不会改变默认模型，也不会切换已创建任务。
+
+![默认生成模型与供应商密钥配置](docs/images/provider-settings.png)
+
+**按供应商和模型查看用量。** 图中选择的是暂无消费记录的模型。
+
+![用量筛选与模型定价](docs/images/usage-details.png)
+
+**本地工具集中配置。** 截图已隐藏本机路径；超分列表展示处理任务而非消费记录，保存深度环境路径不会启动推理。
+
+![视频超分、视频深度与 FFmpeg 工具设置](docs/images/local-tools.png)
+
+**指南可以按章节阅读。** 点击一级或二级目录，直接定位操作说明。
+
+![支持两级目录与章节跳转的新手指南](docs/images/beginner-guide.png)
 
 </details>
 
@@ -251,9 +286,9 @@ Skill 提供专业工作流，不等于新增模型能力。[浏览全部技能]
 
 | 工具 | 用途 | 接入方式 |
 | --- | --- | --- |
-| FFmpeg | 剪辑、混音、字幕、媒体检查与导出 | 本地工具 |
-| [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN) | 可恢复的本地 MCP 超分 | 使用用户本机算力，单独安装运行时与权重；分块恢复、音轨保留，4K 为后期输出 |
-| [Video Depth Anything](https://github.com/DepthAnything/Video-Depth-Anything) | 视频时序深度参考 | 单独安装；实验性动作分析 |
+| FFmpeg | 剪辑、混音、字幕、媒体检查与导出 | 在「工具」检测 FFmpeg／ffprobe 与滤镜依赖；处理参数由 Agent 按任务指定 |
+| [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN) | 可恢复的本地 MCP 超分 | 在「工具」配置运行时、权重、GPU 与 Tile；查看任务进度及暂停／恢复，复用校验通过的分块并保留音轨 |
+| [Video Depth Anything](https://github.com/DepthAnything/Video-Depth-Anything) | 视频时序深度参考 | 在「工具」保存 Python、项目与权重路径，供 Agent 操作外部工具；路径校验不等于安装或推理验证 |
 
 **超分目前仅支持本地执行。** 项目不提供 Real-ESRGAN 云端托管、云端超分接口或供其他用户使用的 GPU 服务器。
 
@@ -287,7 +322,7 @@ Codex 模型由你选择，不硬编码为某个版本。SeedAudio 1.0 音乐通
 - [制作指南：模型、验收与本地数据](docs/production-guide_zh.md)
 - [阶段合同、恢复与决策记录](plugins/ai-drama-studio/docs/production-contracts.md)
 - [统一工具能力、本地声音后期与费用记录](plugins/ai-drama-studio/docs/toolchain.md)
-- 「用量详情」按供应商、模型筛选，分币种显示费用趋势与请求日志。官方定价预设附来源和规格，可按账号优惠修改；未知价格保持未知，估算不等于账单，改价仅影响后续调用。供应商配置、本地超分与账单设置使用独立页面，账户账单需单独配置只读凭据。
+- [工作台配置、用量筛选与本地工具](docs/provider-settings.md)：供应商密钥、预估费用和本地处理分开管理，前端不再提供账户账单同步设置。
 - [插件与 MCP 说明](plugins/ai-drama-studio/README.md)
 - [公开样例与复现素材](production/publish-examples/README.md)
 - [模型和参考来源](docs/reference-sources.md)

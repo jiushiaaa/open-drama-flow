@@ -61,9 +61,10 @@ export function createProviderSettings({ el, api, toast }) {
     searchBox.addEventListener("input", () => { search = searchBox.value; populate(); }); populate();
     const vendor = data.vendors.find(v => v.id === selected);
     root.replaceChildren(el("header", { class: "provider-page-header" }, el("div", {}, el("p", { class: "eyebrow" }, "PROVIDER SETTINGS"), el("h1", {}, "供应商与 API"), el("p", {}, "选择供应商，保存密钥，即可交给 Agent 调用。")), button("＋ 添加供应商", () => { selected = "new"; render(); }, true)),
-      el("section", { class: "console-panel" }, el("h2", {}, "默认生成路由"), el("p", {}, data.host === "codex" ? "Codex 图片优先使用会话内置 imagegen；仅在你明确指定或内置工具不可用时调用图片 API。生成候选仍须验收后入库。" : "其他 Agent 使用下方图片 API。候选先暂存，验收后入库。"), routeForm()),
+      el("section", { class: "console-panel" }, el("h2", {}, "默认生成模型"), el("p", {}, "未特别指定时，Agent 优先使用以下模型。修改只影响新任务，不会切换已创建的任务。"), el("p", { class: "provider-image-policy" }, data.host === "codex" ? "图片默认：Codex 内置 imagegen · 使用 Codex 额度。下方图片 API 仅在明确指定或内置生图不可用时使用。" : "图片默认使用所选图片 API，需先配置对应供应商的密钥。"), routeForm()),
+      el("header", { class: "provider-config-heading" }, el("h2", {}, "供应商与密钥配置"), el("p", {}, "在这里配置各家的连接信息。保存密钥不会改变上方的默认模型。")),
       el("div", { class: "provider-layout" }, el("aside", { class: "console-panel provider-picker", "aria-label": "供应商列表" }, searchBox, el("div", { class: "provider-region-tabs" }, ["全部", "国内", "海外", "自定义"].map(r => button(r, () => { filter = r; render(); }, filter === r))), list), selected === "new" ? customForm() : vendor ? editor(vendor) : el("p", {}, "请选择供应商")),
-      el("footer", { class: "provider-footer" }, el("a", { href: "#production-console" }, "查看用量与模型定价 →"), el("a", { href: "#local-settings" }, "本地超分与账单同步设置 →")));
+    );
   }
   async function load() { const token = ++generation; data = await api("/api/providers"); if (token === generation && entered) render(); }
   return { enter() { if (entered) return; entered = true; void load().catch(e => { toast(e.message, "error"); root.replaceChildren(el("p", {}, "配置页面加载失败，请确认已启动新版服务。"), button("重试", load)); }); }, leave() { if (!entered) return; entered = false; generation++; root.querySelectorAll('input[type="password"]').forEach(n => { n.value = ""; }); } };

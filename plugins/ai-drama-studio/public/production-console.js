@@ -99,11 +99,6 @@ export function createProductionConsole({ el, api, toast, mode = "usage" }) {
       r.estimate ? el("span", { title: `${r.estimate.quantity} ${unitLabel(r.estimate.unit)} × ${r.estimate.rate}` }, `${r.estimate.currency} ${r.estimate.amount.toFixed(4)}`) : estimateLabel(r.estimateStatus)
     ]));
   }
-  function keyForm(provider, configured) {
-    const key = input("apiKey", "password", "", { autocomplete: "off", minlength: 12, maxlength: 512, required: true, placeholder: configured ? "已加密保存，输入新 Key 可替换" : "尚未配置" });
-    const form = el("form", { class: "console-key-form" }, field(provider, key), el("button", { type: "submit", class: "button outline" }, "安全保存"), button("清除", async () => { await api(`/api/secrets/${provider}`, { method: "DELETE" }); key.value = ""; key.placeholder = "尚未配置"; toast("已清除该凭据"); }));
-    return submitForm(form, async values => { await api(`/api/secrets/${provider}`, { method: "PUT", body: JSON.stringify(values) }); key.value = ""; key.placeholder = "已加密保存"; });
-  }
   function upscalePanel(data) {
     const runtime = data.runtime || {}, form = el("form", { class: "console-form" },
       field("Real-ESRGAN 可执行文件绝对路径", input("executable", "text", runtime.executable || "", { required: true })),
@@ -111,29 +106,43 @@ export function createProductionConsole({ el, api, toast, mode = "usage" }) {
       field("模型", select("model", ["realesrgan-x4plus", "realesrgan-x4plus-anime", "realesr-animevideov3"].map(v => [v, v]), runtime.model || "realesrgan-x4plus")),
       field("GPU 编号（-1 为 CPU）", input("gpu", "number", runtime.gpu ?? 0, { min: -1, max: 16 })), field("Tile", input("tile", "number", runtime.tile || 256, { min: 32, max: 1024 })), el("button", { type: "submit", class: "button primary" }, "验证文件并保存"));
     submitForm(form, values => api("/api/upscale/runtime", { method: "PUT", body: JSON.stringify({ ...values, gpu: Number(values.gpu), tile: Number(values.tile) }) }));
-    return detail("本地超分 · Real-ESRGAN", el("p", {}, "由 Codex 创建并启动超分任务。支持分块恢复、源文件与模型哈希校验、音轨保留；不覆盖原片。完成后仍需看画面与听声音。"), form,
-      table(["任务", "进度", "状态", "操作"], (data.jobs || []).slice().reverse().map(j => [j.id, `${j.completedFrames} / ${j.frames} 帧`, j.status,
+    return detail("视频超分 · Real-ESRGAN", el("p", {}, "配置本机运行环境，由 Agent 创建并启动超分任务。支持分块恢复、源文件与模型哈希校验、音轨保留；不覆盖原片。"), form,
+      el("h3", {}, "超分任务"), (data.jobs || []).length ? table(["任务", "进度", "状态", "操作"], data.jobs.slice().reverse().map(j => [j.id, `${j.completedFrames} / ${j.frames} 帧`, j.status,
         j.status === "running" ? button("暂停", async () => { await api(`/api/upscale/${j.id}/pause`, { method: "POST", body: "{}" }); await load(); }) : j.status !== "succeeded" ? button("恢复", async () => { await api(`/api/upscale/${j.id}/resume`, { method: "POST", body: "{}" }); await load(); }) : "待视觉验收"
-      ])));
+      ])) : el("p", { class: "console-empty" }, "暂无超分任务"));
   }
-  function billingPanel(data) {
-    const form = el("form", { class: "console-form" }, field("自动同步", select("enabled", [["false", "关闭"], ["true", "工作台运行期间每 6 小时同步"]], String(data.settings.enabled))),
-      field("指定账期（留空跟随当前月）", input("period", "month", data.settings.period || "")), el("button", { type: "submit", class: "button primary" }, "保存同步设置"));
-    submitForm(form, values => api("/api/billing", { method: "PUT", body: JSON.stringify({ enabled: values.enabled === "true", ...(values.period ? { period: values.period } : {}) }) }));
-    return detail("火山引擎账户账单 · 独立核对", el("p", {}, "需要具有 ListBillDetail 只读权限的独立 AK / SK，不是方舟生成 Key。拉取的是账户级月账单，可能包括其他云产品，不会按猜测分摊到镜头，也不会与估算相加。"),
-      keyForm("volc-billing-ak", data.configured), keyForm("volc-billing-sk", data.configured), form,
-      button("立即同步", async () => { await api("/api/billing/sync", { method: "POST", body: JSON.stringify({ ...(form.elements.period.value ? { period: form.elements.period.value } : {}) }) }); await load(); }),
-      el("p", { role: "status" }, `最近同步：${data.lastAttempt?.status || "从未同步"} ${data.lastAttempt?.error || ""}`),
-      table(["账期", "账户应付金额", "明细数", "更新时间"], data.bills.map(b => [b.period, money(b.totals), b.rowCount, b.at])));
+  function depthPanel(config = {}) {
+    const form = el("form", { class: "console-form" },
+      field("Python 可执行文件绝对路径", input("python", "text", config.python || "", { required: true })),
+      field("Video Depth Anything 项目目录", input("repository", "text", config.repository || "", { required: true })),
+      field("模型权重绝对路径", input("checkpoint", "text", config.checkpoint || "", { required: true })),
+      el("button", { type: "submit", class: "button primary" }, "验证路径并保存"));
+    const note = "外部工具：这里保存供 Agent 使用的本机路径，不会安装依赖或启动推理。Agent 使用前仍需检查运行环境、模型版本与输出。";
+    const help = el("span", { class: "tool-help" }, el("button", { type: "button", class: "tool-help-button", "aria-label": "视频深度使用说明", "aria-describedby": "video-depth-help", onclick: event => event.preventDefault() }, "i"), el("span", { id: "video-depth-help", class: "tool-help-tooltip", role: "tooltip" }, note));
+    return detail(el("span", { class: "tool-heading" }, "视频深度 · Video Depth Anything", help), el("p", {}, "将参考视频转为时序深度视频，用于空间、运动与动作预演参考。"),
+      el("p", {}, el("a", { href: "https://github.com/DepthAnything/Video-Depth-Anything", target: "_blank", rel: "noopener noreferrer" }, "安装说明与模型下载 ↗")),
+      submitForm(form, values => api("/api/local-tools/video-depth", { method: "PUT", body: JSON.stringify(values) })));
+  }
+  function mediaToolsPanel(dependencies) {
+    return detail("剪辑与音频 · FFmpeg", el("p", {}, "自动使用工作台进程 PATH 中的 FFmpeg / ffprobe，无需 API Key。安装或修改 PATH 后重启工作台。"),
+      el("p", {}, `FFmpeg：${dependencies.versions.ffmpeg || "未检测到"}`), el("p", {}, `ffprobe：${dependencies.versions.ffprobe || "未检测到"}`),
+      el("p", {}, "剪辑、抽帧、格式转换与媒体检查由 Agent 按任务调用；音量、降噪和字幕参数按每条任务单独设置。"),
+      el("div", { class: "tool-filter-list" }, Object.entries(dependencies.filters).map(([name, available]) => el("span", { class: `console-status ${available ? "success" : "pending"}` }, `${({ afftdn: "音频降噪", loudnorm: "响度归一", subtitles: "字幕烧录", amix: "混音", silencedetect: "静音检测", blackdetect: "黑场检测", freezedetect: "冻结检测" })[name]} · ${available ? "可用" : "缺少依赖"}`))),
+      button("重新检测", load));
   }
   async function load() {
     const token = ++generation;
-    if (!root.childElementCount) root.append(el("p", { role: "status" }, "正在读取本机用量…"));
+    if (!root.childElementCount) root.append(el("p", { role: "status" }, mode === "settings" ? "正在读取工具配置…" : "正在读取本机用量…"));
     try {
       if (mode === "settings") {
-        const [upscales, billing] = await Promise.all([api("/api/upscale"), api("/api/billing")]);
-        if (token !== generation) return;
-        root.replaceChildren(el("header", {}, el("h1", {}, "本地与账单设置"), el("a", { href: "#providers" }, "← 返回供应商配置")), upscalePanel(upscales), billingPanel(billing)); return;
+        const upscaleSlot = section("视频超分 · Real-ESRGAN", el("p", {}, "正在读取配置…"));
+        const localSlot = section("本地工具", el("p", {}, "正在检测运行环境…"));
+        root.replaceChildren(el("header", {}, el("p", { class: "eyebrow" }, "LOCAL TOOLS"), el("h1", {}, "工具"), el("p", {}, "集中管理视频超分、深度处理、剪辑与音频工具。配置保存在本机，生成任务仍由 Agent 发起。")), upscaleSlot, localSlot);
+        const fill = async (slot, request, render) => {
+          try { const data = await api(request); if (token === generation) slot.replaceWith(...render(data)); }
+          catch (error) { if (token === generation) slot.replaceChildren(el("p", { role: "alert" }, /HTTP_404|NOT_FOUND/.test(error.message) ? "请重启工作台，加载新版工具配置接口。" : "工具配置读取失败"), button("重试", load)); }
+        };
+        await Promise.all([fill(upscaleSlot, "/api/upscale", data => [upscalePanel(data)]), fill(localSlot, "/api/local-tools", data => [depthPanel(data.videoDepth || {}), mediaToolsPanel(data.dependencies)])]); return;
       }
       const data = await api(`/api/usage?${new URLSearchParams(filters)}`);
       if (token !== generation) return; report = data;

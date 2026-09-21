@@ -74,6 +74,7 @@ export async function getToolCatalog(state, credentials = {}, { probeDependencie
     { id: "production-workflow", tool: "drama_select_production_workflow", category: "planning", adapterImplemented: true, readiness: "dependency-ready", inputs: ["production-type"], outputs: ["stage-contracts", "enabled-specialists"], limits: "Read-only contracts; checkpoint and decision tools record evidence, never authorize generation." }
   ];
   return { version: 1, checkedAt: new Date().toISOString(), dependencies,
+    externalTools: { videoDepthAnything: { configuration: state.settings.videoDepthRuntime || null, execution: "agent-operated-external-tool", adapterImplemented: false, verification: "Configured paths are checked on save; Python dependencies, weights compatibility and inference must be verified by the Agent before use." } },
     entries: entries.map(entry => ({ ...entry, knowledgeRefs: knowledgeForTool(entry.id) })), knowledge: knowledgeIndex(),
     policy: "Catalog is descriptive, not a router or permission grant. Explicit model choice, frozen budgets, approval policy and image-acceptance gates override convenience. Dependency readiness is not a tested task or quality guarantee." };
 }
