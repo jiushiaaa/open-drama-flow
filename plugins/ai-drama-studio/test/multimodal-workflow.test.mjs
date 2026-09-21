@@ -14,6 +14,7 @@ const { readState, mutateState } = await import("../src/store.mjs");
 const { mediaCommand } = await import("../src/media-inspection.mjs");
 const { closeAssetBridge, ensureAssetRemoteUrl, startAssetBridgeServer } = await import("../src/asset-bridge.mjs");
 const { saveArkKey } = await import("../src/secrets.mjs");
+const { costReport } = await import("../src/cost-ledger.mjs");
 const realFetch = globalThis.fetch;
 const imagePath = path.join(root, "reference.png"), videoPath = path.join(root, "reference.mp4"), audioPath = path.join(root, "reference.wav");
 before(async () => {
@@ -109,7 +110,13 @@ test("full multi-modal batch freezes every input and resumes dependencies withou
     assert.equal(payloads[4].content[1].type, "video_url");
     assert.deepEqual(payloads[6].content.slice(1).map(item => item.role), ["first_frame", "last_frame"]);
     assert.ok(state.providerCalls.filter(item => item.jobId === job.id).every(item => item.outputAssetId && item.lastFrameAssetId && item.requestDigest));
-    assert.ok(state.providerCalls.filter(item => item.jobId === job.id).every(item => item.cost?.estimateStatus === "price-not-configured" && item.usage?.completion_tokens === 123));
+    assert.ok(state.providerCalls.filter(item => item.jobId === job.id).every(item => item.cost?.estimateStatus === "quantity-unknown" && item.usage?.completion_tokens === 123));
+    const priced = costReport(state, { creationId: creation.id }).records;
+    for (const call of priced) {
+      assert.equal(call.estimateStatus, "provider-usage-estimated-not-billed");
+      assert.equal(call.estimate.rate, ["multi", "extend", "edit"].includes(call.shotId) ? 42 : 70);
+      assert.equal(call.estimate.amount, Number((call.estimate.rate * 123 / 1000000).toFixed(8)));
+    }
     await workflow.authorizeAndStartPipeline(approval.id, { method: "mcp-elicitation", action: "accept" });
     await workflow.drainBackgroundJobs();
     assert.equal(payloads.length, 7, "original authorization cannot be spent twice");

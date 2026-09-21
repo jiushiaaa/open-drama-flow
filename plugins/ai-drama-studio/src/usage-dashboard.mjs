@@ -15,7 +15,10 @@ export function usageDashboard(state, input = {}) {
       currencies[entry.currency][key] = Number((currencies[entry.currency][key] + entry.amount).toFixed(8));
       currencies[entry.currency][`${key}Records`]++;
     }
-    return { calls: rows.length, unpriced: rows.filter(r => !r.estimate).length, unreconciled: rows.filter(r => !r.actual).length, currencies };
+    return { calls: rows.length, unpriced: rows.filter(r => !r.estimate).length, unreconciled: rows.filter(r => !r.actual).length, currencies,
+      estimateGaps: { historical: rows.filter(r => r.estimateStatus === "historical-unknown").length,
+        quantity: rows.filter(r => r.estimateStatus === "quantity-unknown").length,
+        price: rows.filter(r => r.estimateStatus === "price-not-configured").length } };
   };
   const grouped = key => [...new Set(records.map(key))].sort().map(value => ({ key: value, ...summarize(records.filter(r => key(r) === value)) }));
   return { summary: summarize(records), trend: grouped(r => r.at?.slice(0, 10) || "unknown"), byProvider: grouped(r => r.provider), byModel: grouped(r => `${r.provider} / ${r.model || "unknown"}`),

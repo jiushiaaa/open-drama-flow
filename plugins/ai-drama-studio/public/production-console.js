@@ -12,6 +12,8 @@ export function createProductionConsole({ el, api, toast, mode = "usage" }) {
   const section = (title, ...children) => el("section", { class: "console-panel" }, el("h2", {}, title), ...children);
   const table = (headers, rows) => el("div", { class: "console-table-wrap" }, el("table", {}, el("thead", {}, el("tr", {}, headers.map(h => el("th", {}, h)))), el("tbody", {}, rows.length ? rows.map(row => el("tr", {}, row.map(cell => el("td", {}, cell ?? "—")))) : el("tr", {}, el("td", { colspan: headers.length, class: "console-empty" }, "暂无记录；未测试或未定价不等于免费。")))));
   const detail = (title, ...nodes) => el("details", { class: "console-panel" }, el("summary", {}, title), ...nodes);
+  const unitLabel = unit => ({ request: "次", image: "张", second: "秒", character: "字符", million_tokens: "百万 Token", megapixel: "百万像素（向上取整）" }[unit] || unit);
+  const estimateLabel = status => ({ "historical-unknown": "历史价格未记录", "quantity-unknown": "等待计费用量", "price-not-configured": "缺少匹配价格" }[status] || "暂无估算");
   const providerOf = rule => rule.provider === "doubao-speech" ? "speech" : rule.provider || (["asr", "tts", "music"].includes(rule.kind) ? "speech" : rule.kind.startsWith("fal-") ? "fal" : rule.kind.startsWith("replicate-") ? "replicate" : "ark");
   function submitForm(form, action) {
     form.addEventListener("submit", async event => { event.preventDefault(); const submit = form.querySelector('[type="submit"]'); if (submit) submit.disabled = true;
@@ -25,8 +27,13 @@ export function createProductionConsole({ el, api, toast, mode = "usage" }) {
         const speechModel = catalog.speechPriceModels?.find(p => p.model === models.value);
         if (vendor.value === "speech" && speechModel) { body.replaceChildren(priceForm(report.prices.find(r => providerOf(r) === "speech" && r.model === speechModel.model) || speechModel)); return; }
         const p = catalog.providers.find(p => p.id === models.value); if (!p) return;
-        const known = report.prices.find(r => r.provider === p.provider && r.model === p.model && (!r.profile || r.profile === p.id));
-        body.replaceChildren(priceForm(known || { provider: p.provider, profile: p.id, model: p.model, kind: p.id === "ark" ? "seedance-video" : p.id === "ark-seedream" ? "ark-image" : `${p.provider}-${p.kind}`, unit: p.kind === "image" ? "image" : p.kind === "video" ? "second" : "character" }));
+        const rules = report.prices.filter(r => providerOf(r) === p.provider && r.model === p.model && (!r.profile || r.profile === p.id));
+        if (rules.length > 1) {
+          const variants = select("variant", rules.map((r, i) => [String(i), r.specification || r.variant || "自定义通用价格"]), "0"), editor = el("div", {}, priceForm(rules[0]));
+          variants.addEventListener("change", () => editor.replaceChildren(priceForm(rules[Number(variants.value)])));
+          body.replaceChildren(field("计费规格", variants), editor); return;
+        }
+        body.replaceChildren(priceForm(rules[0] || { provider: p.provider, profile: p.id, model: p.model, kind: p.id === "ark" ? "seedance-video" : p.id === "ark-seedream" ? "ark-image" : `${p.provider}-${p.kind}`, unit: p.kind === "image" ? "image" : p.kind === "video" ? "second" : "character" }));
       };
       const changeVendor = () => { const items = vendor.value === "speech" ? (catalog.speechPriceModels || []).map(p => ({ id: p.model, model: `${p.kind.toUpperCase()} · ${p.model}` })) : catalog.providers.filter(p => p.provider === vendor.value); models.replaceChildren(...items.map(p => el("option", { value: p.id }, p.model))); update(); };
       vendor.addEventListener("change", changeVendor); models.addEventListener("change", update); changeVendor();
@@ -38,11 +45,11 @@ export function createProductionConsole({ el, api, toast, mode = "usage" }) {
       field("完整模型 ID", input("model", "text", rule.model || "", { required: true, readonly: true })),
       input("profile", "hidden", rule.profile || ""),
       field("币种", input("currency", "text", rule.currency || "CNY", { pattern: "[A-Z]{3}", required: true })),
-      field("计费单位", select("unit", [["request", "每次请求"], ["second", "每秒"], ["image", "每张图"], ["character", "每字符"]], rule.unit || "request")),
+      field("计费单位", select("unit", [["request", "每次请求"], ["second", "每秒"], ["image", "每张图"], ["character", "每字符"], ["million_tokens", "每百万 Token"], ["megapixel", "每百万像素（向上取整）"]], rule.unit || "request")),
       field("单位估价", input("rate", "number", rule.rate ?? "", { min: 0, max: 1000000, step: "any", required: true })),
       field("价格来源 / 日期", input("source", "text", rule.source || "", { required: true, maxlength: 500 })),
       el("button", { type: "submit", class: "button primary" }, "保存定价"));
-    return submitForm(form, async values => { if (!values.profile) delete values.profile; await api("/api/usage/prices", { method: "PUT", body: JSON.stringify({ ...values, rate: Number(values.rate) }) }); await load(); });
+    return submitForm(form, async values => { if (!values.profile) delete values.profile; await api("/api/usage/prices", { method: "PUT", body: JSON.stringify({ ...values, rate: Number(values.rate), ...(rule.variant ? { variant: rule.variant, conditions: rule.conditions } : {}) }) }); await load(); });
   }
   function trend(data) {
     const panels = [];
@@ -56,14 +63,14 @@ export function createProductionConsole({ el, api, toast, mode = "usage" }) {
       }
       panels.push(el("h3", {}, `${currency} · 蓝色估算 / 绿色已核对账单`), chart);
     }
-    return section("每日费用趋势 · UTC", ...(panels.length ? panels : [el("p", {}, "配置定价并产生新的调用后显示估算；录入账单后显示实账。不回填历史价格。") ]));
+    return section("每日费用趋势 · UTC", ...(panels.length ? panels : [el("p", {}, "新调用会自动匹配价格；Token、像素和音频时长计费需等接口返回用量。历史未记录价格的调用不按现价回填；录入账单后显示实账。") ]));
   }
   function requestTable() {
     const groups = tab === "providers" ? report.byProvider : report.byModel;
     if (tab !== "requests") return table([tab === "providers" ? "供应商" : "模型", "请求数", "估算", "已核对账单", "未核账"], groups.map(g => [g.key, g.calls, currencies(g, "estimated"), currencies(g, "actual"), g.unreconciled]));
     return table(["时间 (UTC)", "供应商 / 模型", "项目 / 镜头", "状态", "估算", "实账", "操作"], report.records.map(r => [
       r.at?.replace("T", " ").slice(0, 19), `${r.provider} / ${r.model || "未知模型"}`, [r.projectId, r.shotId].filter(Boolean).join(" / "), r.status,
-      r.estimate ? `${r.estimate.currency} ${r.estimate.amount}` : "未定价", r.actual ? `${r.actual.currency} ${r.actual.amount}` : "待核对",
+      r.estimate ? el("span", { title: `${r.estimate.quantity} ${unitLabel(r.estimate.unit)} × ${r.estimate.rate}；${r.estimateStatus === "provider-usage-estimated-not-billed" ? "按接口返回用量估算，非账单" : "按请求用量估算，非账单"}` }, `${r.estimate.currency} ${r.estimate.amount}`) : estimateLabel(r.estimateStatus), r.actual ? `${r.actual.currency} ${r.actual.amount}` : "待核对",
       button("录入账单", () => {
         const dialog = el("dialog", { class: "modal" }), form = el("form", { class: "console-form" }, el("h2", {}, "此调用的累计净账单"),
           field("凭据编号", input("receiptId", "text", "", { required: true })), field("币种", input("currency", "text", r.actual?.currency || r.estimate?.currency || "CNY", { required: true, pattern: "[A-Z]{3}" })),
@@ -120,10 +127,10 @@ export function createProductionConsole({ el, api, toast, mode = "usage" }) {
       const log = section("调用记录", el("div", { class: "console-tabs" }, [["requests", "请求日志"], ["providers", "供应商统计"], ["models", "模型统计"]].map(([id, title]) => button(title, () => { tab = id; void load(); }, `button ${tab === id ? "primary" : "outline"}`))), requestTable(),
         el("div", { class: "console-pagination" }, button("上一页", () => { filters.page = String(Math.max(1, data.page - 1)); void load(); }), el("span", {}, `${data.page} / ${data.pages}`), button("下一页", () => { filters.page = String(Math.min(data.pages, data.page + 1)); void load(); })));
       root.replaceChildren(el("header", {}, el("p", { class: "eyebrow" }, "USAGE & COSTS"), el("h1", {}, "用量详情"), el("p", {}, "按供应商、模型与币种查看制作费用。"), el("a", { href: "#providers" }, "管理供应商与 API →")), controls,
-        el("div", { class: "console-metrics" }, [["请求数", data.summary.calls], ["预估成本", currencies(data.summary, "estimated")], ["已核对账单", currencies(data.summary, "actual")], ["待核对 / 未定价", `${data.summary.unreconciled} / ${data.summary.unpriced}`]].map(([label, value]) => el("article", {}, el("small", {}, label), el("strong", {}, value)))),
-        el("p", { class: "console-note" }, "估算与实账分开，各币种不混算。未定价、失败和结果未知的请求不视为免费；不统计 Codex 订阅或本机电费。"), trend(data), log,
-        detail("模型定价 · 官方预设与自定义优惠", el("p", {}, "预设按目录中的固定规格计价，保留官方来源与核验日期。优惠可覆盖，仅影响后续调用；未核实报价不视为免费。"), priceForm(),
-          ...catalog.vendors.map(v => { const rules = data.prices.filter(r => providerOf(r) === v.id); return detail(v.name, ...(rules.length ? rules.map(rule => detail(`${rule.model} · ${rule.currency} ${rule.rate}/${rule.unit} · ${rule.preset ? "官方预设" : "自定义"}`, el("p", {}, `${rule.specification || "自定义规格"} · ${rule.recordedAt || ""}`), /^https:\/\//.test(rule.source) ? el("a", { href: rule.source, target: "_blank", rel: "noopener noreferrer" }, "查看官方价格来源 ↗") : null, priceForm(rule))) : [el("p", {}, "此供应商尚无可可靠匹配的单价，请按账号规格填写；不是免费。") ])); })));
+        el("div", { class: "console-metrics" }, [["请求数", data.summary.calls], ["预估成本", currencies(data.summary, "estimated")], ["已核对账单", currencies(data.summary, "actual")], ["待核账 / 暂无估算", `${data.summary.unreconciled} / ${data.summary.unpriced}`]].map(([label, value]) => el("article", {}, el("small", {}, label), el("strong", {}, value)))),
+        el("p", { class: "console-note" }, `估算与实账分开，各币种不混算。历史未记录价格 ${data.summary.estimateGaps?.historical || 0} 条 · 等待用量 ${data.summary.estimateGaps?.quantity || 0} 条 · 缺匹配价格 ${data.summary.estimateGaps?.price || 0} 条。不统计 Codex 订阅或本机电费；失败或未知不等于免费。`),
+        detail(`模型定价 · ${data.prices.filter(r => r.preset).length} 条官方规格预设与自定义优惠`, el("p", {}, "内置供应商目录均有价格预设，自动应用于新调用，无需先保存。按供应商、模型和规格隔离；资源包、免费额度和阶梯折扣不自动推断，可自行修改优惠单价。Seedance 按返回的 completion_tokens 计价；声音开关不改变其 2.5 单价。"), priceForm(),
+          ...catalog.vendors.map(v => { const rules = data.prices.filter(r => providerOf(r) === v.id); return detail(v.name, ...(rules.length ? rules.map(rule => detail(`${rule.model} · ${rule.variant || "默认规格"} · ${rule.currency} ${Number(rule.rate.toPrecision(8))}/${unitLabel(rule.unit)} · ${rule.preset ? "官方预设" : "自定义"}`, el("p", {}, `${rule.specification || "自定义规格"} · ${rule.recordedAt || ""}`), /^https:\/\//.test(rule.source) ? el("a", { href: rule.source, target: "_blank", rel: "noopener noreferrer" }, "查看官方价格来源 ↗") : null, priceForm(rule))) : [el("p", {}, "自定义供应商请填写约定价格；不继承其他供应商的报价。") ])); })), trend(data), log);
     } catch (error) { toast(error.message, "error"); if (!report) root.replaceChildren(el("p", { role: "alert" }, "用量页面加载失败。请确认新版工作台服务已启动。"), button("重试", load)); }
   }
   return { enter() { if (!entered) { entered = true; void load(); } }, leave() { if (!entered) return; entered = false; generation++; root.querySelectorAll('input[type="password"]').forEach(node => { node.value = ""; }); } };

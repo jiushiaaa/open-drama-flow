@@ -40,12 +40,23 @@ export const PROFILES = [
   profile("fal-flux", "fal", "image", "fal-ai/flux/schnell", "fal-image", "/fal-ai/flux/schnell"),
   profile("replicate-flux", "replicate", "image", "black-forest-labs/flux-schnell", "replicate-image", "/models/black-forest-labs/flux-schnell/predictions")
 ];
-const price = (id, currency, unit, rate, source) => {
+const price = (id, currency, unit, rate, source, extra = {}) => {
   const p = PROFILES.find(p => p.id === id);
   return { provider: p.provider, profile: id, kind: `${p.provider}-${p.kind}`, model: p.model, currency, unit, rate, source,
-    recordedAt: VERIFIED_ON, specification: p.specification || "目录默认规格", preset: true };
+    recordedAt: "2026-09-21", specification: p.specification || "目录默认规格", preset: true, ...extra };
 };
 export const PRICE_PRESETS = [
+  price("ark-seedream", "CNY", "image", 0.22, "https://docs.volcengine.com/docs/ark/model-pricing?lang=zh", { specification: "Seedream 5.0 Lite · 每张输出图片；5-0 与 5-0-lite 为官方别名" }),
+  ...["480p", "720p", "1080p"].flatMap(resolution => [false, true].map(videoInput =>
+    price("ark", "CNY", "million_tokens", resolution === "1080p" ? (videoInput ? 46 : 77) : (videoInput ? 42 : 70), "https://docs.volcengine.com/docs/ark/model-pricing?lang=zh", {
+      kind: "seedance-video", variant: `${resolution}-${videoInput ? "video" : "no-video"}`, conditions: { resolution, videoInput },
+      specification: `${resolution} · ${videoInput ? "有视频输入" : "无视频输入"} · 每百万 completion_tokens；声音开关不改变单价；以接口返回用量为准`
+    }))),
+  ...[
+    ["asr", "volc.bigasr.auc_turbo", "second", 4.5 / 3600, "录音文件识别极速版 · 4.5 元/小时（不是录音文件识别 2.0）"],
+    ["tts", "seed-tts-2.0", "character", 3 / 10000, "语音合成 2.0 · 3 元/万字符；标点、空白计入"],
+    ["music", "seed-audio-1.0", "second", 1 / 60, "音频生成 · 1 元/分钟；按变速前原始音频时长"]
+  ].map(([kind, model, unit, rate, specification]) => price("speech", "CNY", unit, rate, "https://docs.volcengine.com/docs/DoubaoVoice/Billinginstructions-21?lang=zh", { kind, model, specification })),
   price("minimax-cn-image", "CNY", "image", 0.025, "https://platform.minimax.cn/docs/guides/pricing-paygo"),
   price("minimax-cn-video", "CNY", "request", 2, "https://platform.minimax.cn/docs/guides/pricing-paygo"),
   price("minimax-cn-tts", "CNY", "character", 0.00035, "https://platform.minimax.cn/docs/guides/pricing-paygo"),
@@ -55,14 +66,20 @@ export const PRICE_PRESETS = [
   price("dashscope-image", "CNY", "image", 0.14, "https://help.aliyun.com/zh/model-studio/model-pricing"),
   price("dashscope-video", "CNY", "second", 0.6, "https://help.aliyun.com/zh/model-studio/model-pricing"),
   price("tencent-image", "CNY", "image", 0.099, "https://cloud.tencent.com/document/product/1729/105925"),
+  price("tencent-video", "CNY", "request", 1.8, "https://cloud.tencent.com/document/product/1616/118994", { specification: "720p · 5 秒 · 1.5 学分 × 后付费 1.2 元/学分；不套用预付费优惠" }),
+  price("kling-image", "USD", "image", 0.028, "https://kling.ai/document-api/pricing/base/image"),
+  price("kling-video", "USD", "second", 0.084, "https://kling.ai/document-api/pricing/base/video"),
   price("zhipu-image", "CNY", "request", 0.1, "https://docs.bigmodel.cn/cn/guide/start/pricing"),
   price("zhipu-video", "CNY", "request", 1, "https://docs.bigmodel.cn/cn/guide/start/pricing"),
   price("runway-image", "USD", "image", 0.05, "https://docs.dev.runwayml.com/guides/pricing/"),
-  price("runway-video", "USD", "second", 0.12, "https://docs.dev.runwayml.com/guides/pricing/")
+  price("runway-video", "USD", "second", 0.12, "https://docs.dev.runwayml.com/guides/pricing/"),
+  ...[["480p", 0.04], ["580p", 0.06], ["720p", 0.08]].map(([resolution, rate]) => price("fal-wan", "USD", "second", rate, "https://fal.ai/models/fal-ai/wan/v2.2-a14b/text-to-video", { variant: resolution, conditions: { resolution }, specification: `${resolution} · 计费秒数 = num_frames / 16` })),
+  price("fal-flux", "USD", "megapixel", 0.003, "https://fal.ai/models/fal-ai/flux/schnell", { specification: "每张输出图片的百万像素向上取整；按返回的宽高计算" }),
+  price("replicate-flux", "USD", "image", 0.003, "https://replicate.com/blog/flux-state-of-the-art-image-generation")
 ];
 export const SPEECH_PRICE_MODELS = [
   { provider: "speech", kind: "asr", model: "volc.bigasr.auc_turbo", unit: "second" },
   { provider: "speech", kind: "tts", model: "seed-tts-2.0", unit: "character" },
-  { provider: "speech", kind: "music", model: "seed-audio-1.0", unit: "request" }
+  { provider: "speech", kind: "music", model: "seed-audio-1.0", unit: "second" }
 ];
 export const CUSTOM_PROTOCOLS = ["openai-image", "minimax-image", "minimax-video", "minimax-tts", "dashscope-image", "dashscope-video", "runway-image", "runway-video", "kling-image", "kling-video", "fal-image", "fal-video", "replicate-image"];

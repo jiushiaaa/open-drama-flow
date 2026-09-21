@@ -135,7 +135,7 @@ server.registerTool("drama_get_cost_report", {
 }, async input => result(costReport(await readState(), input)));
 
 server.registerTool("drama_set_cost_price", {
-  description: "Set an explicit user-sourced ESTIMATE rate for one exact kind/model (ISO currency, price per request/image/second/character). Only future call reservations use it. Never invent current prices; source is required. Does not set or increase call/spending budgets. No model call.",
+  description: "Set an explicit user-sourced ESTIMATE rate for an exact provider/kind/model/profile and optional variant/conditions (ISO currency, price per request/image/second/character/million_tokens/megapixel). Preserve variant conditions when overriding an official specification. Only future call reservations use it; later numeric usage uses that frozen rate. Never invent current prices; source is required. Does not set or increase call/spending budgets. No model call.",
   inputSchema: { rule: priceRuleSchema }
 }, async ({ rule }) => result(await mutateState(state => ({ rule: setPriceRule(state, rule) }))));
 

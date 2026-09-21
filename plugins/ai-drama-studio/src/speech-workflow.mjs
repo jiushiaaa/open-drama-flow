@@ -149,7 +149,7 @@ export async function authorizeSpeechJob(jobId, elicit, deps = {}) {
     target.startedAt = now();
     target.approval = { method: automatic ? "automatic-policy" : "mcp-elicitation", action: automatic ? "start" : "accept", at: now(), requestDigest: target.requestDigest };
     const call = { id: requestId, jobId, projectId: job.projectId, creationId: snapshot.creationId || null, provider: "doubao-speech", model: snapshot.profile.resourceId || snapshot.profile.model, kind: snapshot.mode, status: "submitted", requestDigest: job.requestDigest, at: now() };
-    freezeCallCost(state, call, { second: snapshot.audio?.durationSeconds, character: snapshot.text?.length });
+    freezeCallCost(state, call, { second: snapshot.audio?.durationSeconds, character: snapshot.text === undefined ? undefined : [...snapshot.text].length });
     state.providerCalls.push(call);
     return bytes;
   });

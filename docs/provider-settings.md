@@ -47,13 +47,24 @@ Agent 先调用 `drama_list_providers` 查看实际工具、输入与默认选�
 
 | 预设 | 默认价格 | 官方来源 |
 | --- | --- | --- |
+| 方舟 Seedream 5.0 Lite（`doubao-seedream-5-0-260128`） | ¥0.22／张；`5-0-lite-260128` 为同模型官方别名，不套用到 Pro | [方舟定价](https://docs.volcengine.com/docs/ark/model-pricing?lang=zh) |
+| 方舟 Seedance 2.5 · 480P／720P | 无视频输入 ¥70／百万 Token；有视频输入 ¥42／百万 Token | [方舟定价](https://docs.volcengine.com/docs/ark/model-pricing?lang=zh) |
+| 方舟 Seedance 2.5 · 1080P 价格参考 | 无视频输入 ¥77／百万 Token；有视频输入 ¥46／百万 Token；预设价格不代表当前生成参数已支持该分辨率 | [方舟定价](https://docs.volcengine.com/docs/ark/model-pricing?lang=zh) |
+| 豆包 ASR 极速版／TTS 2.0／SeedAudio 1.0 | ¥4.50／小时；¥3／万字符；¥1／分钟 | [豆包语音定价](https://docs.volcengine.com/docs/DoubaoVoice/Billinginstructions-21?lang=zh) |
 | MiniMax 国内 image-01／Hailuo 2.3 768P 6 秒／speech-2.8-hd | ¥0.025／张；¥2／次；¥3.50／万计费字符 | [国内定价](https://platform.minimax.cn/docs/guides/pricing-paygo) |
 | MiniMax 国际对应三项 | $0.0035／张；$0.28／次；$100／百万计费字符 | [国际定价](https://platform.minimax.io/docs/guides/pricing-paygo) |
 | 百炼北京 Wanx turbo／Wan 2.7 720P | ¥0.14／张；¥0.60／秒 | [百炼定价](https://help.aliyun.com/zh/model-studio/model-pricing) |
 | 腾讯混元生图 Lite | ¥0.099／张，阶梯首档 | [腾讯定价](https://cloud.tencent.com/document/product/1729/105925) |
+| 腾讯混元生视频 720P · 5 秒 | ¥1.80／次（1.5 学分 × 后付费 ¥1.20／学分） | [腾讯视频定价](https://cloud.tencent.com/document/product/1616/118994) |
+| 可灵 Image 3.0 1K／Video 3.0 720P 无声 | $0.028／张；$0.084／秒 | [图片](https://kling.ai/document-api/pricing/base/image)、[视频](https://kling.ai/document-api/pricing/base/video) |
 | 智谱 GLM-Image／CogVideoX-3 | ¥0.10／次；¥1／次 | [智谱定价](https://docs.bigmodel.cn/cn/guide/start/pricing) |
 | Runway Gen-4 Image 720P／Gen-4.5 | $0.05／张；$0.12／秒 | [Runway 定价](https://docs.dev.runwayml.com/guides/pricing/) |
+| fal Wan 2.2 A14B · 480P／580P／720P | $0.04／$0.06／$0.08 每秒；计费秒数为 `num_frames / 16` | [fal Wan](https://fal.ai/models/fal-ai/wan/v2.2-a14b/text-to-video) |
+| fal FLUX Schnell | $0.003／百万像素，每张输出图向上取整；1024×1024 为 2 个计费单位 | [fal FLUX](https://fal.ai/models/fal-ai/flux/schnell) |
+| Replicate FLUX Schnell | $0.003／张，与 fal 的像素计费独立 | [Replicate 官方说明](https://replicate.com/blog/flux-state-of-the-art-image-generation) |
 
-共 13 条官方价格预设。MiniMax TTS 按中文汉字 2、其他字符 1 估算计费字符。规格限定在目录默认模式，不把低清、无声等模式的单价套到其他模式。方舟、豆包、可灵、fal、Replicate 等未能可靠映射到当前配置的价格保持未配置，不借用邻近模型或把每百万像素价当每张价。
+价格核验于 **2026-09-21**，共 **31 条规格规则**，覆盖全部 22 个内置能力配置（豆包语音细分为 ASR、TTS、音乐）。预设自动生效，无需用户先保存。MiniMax TTS 按中文汉字 2、其他字符 1 估算；豆包按字符计数。账号资源包、赠送额度、阶梯折扣和已结束的活动不自动推断；可按自己的优惠修改。
 
-可按优惠修改单位、币种、单价与来源；调用时冻结估价，不回写历史价格。估算与人工录入的供应商账单分列，未知金额不当作零，失败任务也不假定免费。此版本不自动抓取全平台账单或价格，不包含 Codex 订阅账单。已有火山只读账单同步保留，使用独立账单凭据。
+Seedance 2.5 按分辨率与视频输入区分单价，声音开关不改变该版本单价。调用时冻结单价，完成后按接口返回的 `usage.completion_tokens` 计算估算，不拿输出秒数冒充 Token，也不忽略视频输入的最低计费门槛。fal FLUX 根据返回的输出宽高计算像素数量；SeedAudio 使用返回的变速前原始音频时长。等待这些用量时显示“等待计费用量”，不显示为“未定价”。
+
+可按优惠修改单位、币种、单价与来源，规格优惠只覆盖该规格且只影响之后提交的调用。已冻结价格的任务即使跨重启，也继续使用原价；没有冻结价格的历史记录显示“历史价格未记录”，不会冒用今天的价格回填。估算与人工录入的供应商账单分列，未知金额不当作零，失败任务也不假定免费。此版本不自动抓取全平台账单或价格，不包含 Codex 订阅账单。已有火山只读账单同步保留，使用独立账单凭据。

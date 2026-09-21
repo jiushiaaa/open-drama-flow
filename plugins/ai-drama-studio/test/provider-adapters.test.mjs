@@ -10,7 +10,7 @@ const temp = await fs.mkdtemp(path.join(os.tmpdir(), "odf-vendors-"));
 process.env.AI_DRAMA_DATA_DIR = temp;
 process.env.LOCALAPPDATA = temp;
 process.env.AI_DRAMA_PORT = "0";
-const { PROFILES, VENDORS, PRICE_PRESETS } = await import("../src/provider-presets.mjs");
+const { PROFILES, VENDORS, PRICE_PRESETS, SPEECH_PRICE_MODELS } = await import("../src/provider-presets.mjs");
 const { adapterSubmit, adapterPoll, adapterRequest, tencentHeaders } = await import("../src/provider-adapters.mjs");
 const { providerPayload, prepareProviderJob, submitProviderJob, reconcileProviderJob, providerCatalog, providerRequestSchema } = await import("../src/providers.mjs");
 const { saveCustomProvider, customProviderSchema, configuredProfiles } = await import("../src/provider-config.mjs");
@@ -31,9 +31,10 @@ const media = "https://media.example.com/result.png";
 test("catalog IDs, official models and price identities are unique", () => {
   assert.equal(new Set(PROFILES.map(p => p.id)).size, PROFILES.length);
   assert.equal(new Set(VENDORS.map(p => p.id)).size, VENDORS.length);
-  assert.equal(new Set(PRICE_PRESETS.map(p => `${p.provider}/${p.profile}/${p.model}`)).size, PRICE_PRESETS.length);
+  assert.equal(new Set(PRICE_PRESETS.map(p => `${p.provider}/${p.profile}/${p.model}/${p.variant || ""}`)).size, PRICE_PRESETS.length);
   for (const p of PROFILES) assert.ok(VENDORS.some(v => v.id === p.provider));
-  for (const p of PRICE_PRESETS) assert.ok(PROFILES.some(v => v.id === p.profile && v.model === p.model && v.provider === p.provider));
+  for (const p of PRICE_PRESETS) assert.ok(PROFILES.some(v => v.id === p.profile && v.provider === p.provider && (v.model === p.model || p.profile === "speech" && SPEECH_PRICE_MODELS.some(s => s.model === p.model))));
+  for (const p of PROFILES) assert.ok(PRICE_PRESETS.some(r => r.profile === p.id), `missing price: ${p.id}`);
 });
 
 test("Windows vendor secrets round-trip encrypted and stay out of state/catalog", { skip: process.platform !== "win32" }, async () => {

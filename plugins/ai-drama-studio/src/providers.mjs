@@ -6,7 +6,7 @@ import { dataRoot, safeId } from "./config.mjs";
 import { mutateState, readState } from "./store.mjs";
 import { readProviderKey, readArkKey } from "./secrets.mjs";
 import { agentHost } from "./platform.mjs";
-import { freezeCallCost, numericUsage } from "./cost-ledger.mjs";
+import { freezeCallCost, numericUsage, falImageUsage } from "./cost-ledger.mjs";
 import { shutdownSignal } from "./background-jobs.mjs";
 import { inspectMediaFile } from "./media-inspection.mjs";
 import { fileHash } from "./upscale.mjs";
@@ -118,7 +118,7 @@ export async function submitProviderJob(id, trustedManual = false, dependencies 
       && (j.shotId || null) === (job.shotId || null) && j.kind === job.kind
       && ["submitting", "submission-unknown", "submitted", "running"].includes(j.status))) throw new Error("PROVIDER_UNRESOLVED_SCOPE_RECONCILE_ORIGINAL_TASK");
     const call = { id: safeId("call"), projectId: job.projectId, creationId: job.creationId, shotId: job.shotId, provider: job.provider,
-      model: job.model, profile: job.profile, kind: `${job.provider}-${job.kind}`, requestDigest: job.requestDigest, status: "submitting", createdAt: new Date().toISOString() };
+      model: job.model, profile: job.profile, kind: `${job.provider}-${job.kind}`, pricingContext: { resolution: job.payload.resolution }, requestDigest: job.requestDigest, status: "submitting", createdAt: new Date().toISOString() };
     const seconds = job.payload.duration || job.payload.parameters?.duration || job.payload.settings?.duration || (job.profile === "fal-wan" || job.connection?.protocol === "fal-video" ? job.frames / 16 : undefined);
     const characters = [...job.prompt].reduce((n, c) => n + (job.connection?.protocol === "minimax-tts" && /\p{Script=Han}/u.test(c) ? 2 : 1), 0);
     freezeCallCost(state, call, job.kind === "video" ? { second: seconds === undefined ? undefined : Number(seconds) } : job.kind === "audio" ? { character: characters } : { image: 1 });
@@ -163,7 +163,7 @@ export async function reconcileProviderJob(id, dependencies = {}) {
   if (output.error) return updateJob(id, { status: "failed", error: "PROVIDER_OUTPUT_FAILED" });
   const urls = job.provider === "fal" ? (job.kind === "image" ? output.images?.map(i => i.url) : [output.video?.url]) : (Array.isArray(output.output) ? output.output : [output.output]);
   if (!urls?.length || urls.some(u => typeof u !== "string")) throw new Error("PROVIDER_OUTPUT_MISSING");
-  return updateJob(id, { status: "generated", outputUrls: urls.slice(0, 1), usage: numericUsage(response.metrics || output.timings), acceptance: "pending-no-library-import" });
+  return updateJob(id, { status: "generated", outputUrls: urls.slice(0, 1), usage: job.provider === "fal" && job.kind === "image" ? falImageUsage(output) : numericUsage(response.metrics || output.timings), acceptance: "pending-no-library-import" });
 }
 export async function downloadProviderOutput(id) {
   const job = await getProviderJob(id); if (!["generated", "downloaded"].includes(job.status)) throw new Error("PROVIDER_OUTPUT_NOT_READY");

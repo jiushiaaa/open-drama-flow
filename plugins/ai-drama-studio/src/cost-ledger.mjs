@@ -5,13 +5,16 @@ const kinds = ["seedream-image", "seedance-video", "asr", "tts", "music", "fal-i
 export const priceRuleSchema = z.object({
   kind: z.string().refine(v => kinds.includes(v) || /^[a-z0-9-]+-(image|video|audio)$/.test(v)), model: z.string().trim().min(1).max(160),
   provider: z.string().regex(/^[a-z0-9-]{1,100}$/).optional(), profile: z.string().regex(/^[a-z0-9-]{1,100}$/).optional(),
-  currency: z.string().regex(/^[A-Z]{3}$/), unit: z.enum(["request", "image", "second", "character"]),
+  variant: z.string().regex(/^[a-z0-9-]{1,100}$/).optional(),
+  conditions: z.object({ resolution: z.enum(["480p", "580p", "720p", "1080p"]), videoInput: z.boolean().optional() }).strict().optional(),
+  currency: z.string().regex(/^[A-Z]{3}$/), unit: z.enum(["request", "image", "second", "character", "million_tokens", "megapixel"]),
   rate: z.number().finite().nonnegative().max(1000000),
   source: z.string().trim().min(1).max(500)
 }).strict().superRefine((rule, ctx) => {
   if (!kinds.includes(rule.kind) && (!rule.provider || rule.kind !== `${rule.provider}-${rule.kind.split("-").at(-1)}`)) ctx.addIssue({ code: "custom", message: "COST_PROVIDER_REQUIRED_AND_MUST_MATCH_KIND" });
-  const allowed = { "seedream-image": ["request", "image"], "seedance-video": ["request", "second"], asr: ["request", "second"], tts: ["request", "character"], music: ["request"], "fal-image": ["request", "image"], "fal-video": ["request", "second"], "replicate-image": ["request", "image"] };
-  const units = allowed[rule.kind] || (rule.kind.endsWith("image") ? ["request", "image"] : rule.kind.endsWith("video") ? ["request", "second"] : ["request", "character", "second"]);
+  if (Boolean(rule.variant) !== Boolean(rule.conditions)) ctx.addIssue({ code: "custom", message: "COST_VARIANT_CONDITIONS_REQUIRED" });
+  const allowed = { "seedream-image": ["request", "image"], "seedance-video": ["request", "second", "million_tokens"], asr: ["request", "second"], tts: ["request", "character"], music: ["request", "second"], "fal-image": ["request", "image", "megapixel"], "fal-video": ["request", "second"], "replicate-image": ["request", "image"] };
+  const units = allowed[rule.kind] || (rule.kind.endsWith("image") ? ["request", "image", "megapixel"] : rule.kind.endsWith("video") ? ["request", "second", "million_tokens"] : ["request", "character", "second"]);
   if (!units.includes(rule.unit)) ctx.addIssue({ code: "custom", message: "COST_UNIT_UNSUPPORTED_FOR_KIND" });
 });
 export const settlementSchema = z.object({
@@ -40,7 +43,10 @@ export function numericUsage(value, depth = 0) {
 }
 
 export function priceProvider(rule) { return rule.provider === "doubao-speech" ? "speech" : rule.provider || (["asr", "tts", "music"].includes(rule.kind) ? "speech" : rule.kind?.startsWith("fal-") ? "fal" : rule.kind?.startsWith("replicate-") ? "replicate" : "ark"); }
-const priceIdentity = r => `${priceProvider(r)}|${r.kind}|${r.model}|${r.profile || ""}`;
+const priceKind = kind => kind === "seedream-image" ? "ark-image" : kind;
+const priceModel = model => model === "doubao-seedream-5-0-lite-260128" ? "doubao-seedream-5-0-260128" : model;
+const callProfile = call => call.profile || ({ "seedream-image": "ark-seedream", "seedance-video": "ark", asr: "speech", tts: "speech", music: "speech" }[call.kind]);
+const priceIdentity = r => `${priceProvider(r)}|${priceKind(r.kind)}|${priceModel(r.model)}|${r.profile || ""}|${r.variant || ""}`;
 export function effectivePrices(state) {
   const overrides = state.settings.costPrices || [];
   return [...PRICE_PRESETS.filter(p => !overrides.some(r => priceIdentity(r) === priceIdentity(p))), ...overrides];
@@ -57,15 +63,40 @@ export function freezeCallCost(state, call, quantities = {}) {
   // Freeze once, inside the existing atomic call reservation. Never charge or retry here.
   if (call.cost) return call.cost;
   const model = callModel(call);
-  const matches = item => item.kind === call.kind && item.model === model && priceProvider(item) === priceProvider(call) && (!item.profile || item.profile === call.profile);
+  const request = call.requestSnapshot;
+  const context = call.pricingContext || { resolution: request?.parameters?.resolution,
+    videoInput: Array.isArray(request?.inputs) ? request.inputs.some(i => ["reference_video", "video"].includes(i.providerRole) || i.kind === "video") : undefined };
+  const matches = item => priceKind(item.kind) === priceKind(call.kind) && priceModel(item.model) === priceModel(model) && priceProvider(item) === priceProvider(call) && (!item.profile || item.profile === callProfile(call))
+    && (!item.conditions || Object.entries(item.conditions).every(([key, value]) => context[key] === value));
   const rule = (state.settings.costPrices || []).find(matches) || PRICE_PRESETS.find(matches);
   const quantity = rule?.unit === "request" ? 1 : quantities[rule?.unit];
   const valid = rule && Number.isFinite(quantity) && quantity >= 0;
-  call.cost = { version: 1, model, requestedQuantities: numericUsage(quantities), estimate: valid ? {
+  call.cost = { version: 2, model, frozenRule: rule ? structuredClone(rule) : null, requestedQuantities: numericUsage(quantities), estimate: valid ? {
     amount: Number((rule.rate * quantity).toFixed(8)), currency: rule.currency,
     quantity, unit: rule.unit, rate: rule.rate, source: rule.source, priceRecordedAt: rule.recordedAt
   } : null, estimateStatus: valid ? "estimated-not-billed" : rule ? "quantity-unknown" : "price-not-configured", settlements: [] };
   return call.cost;
+}
+
+// fal bills rounded-up output megapixels, not image count or inference time.
+export function falImageUsage(output) {
+  const images = output?.images;
+  const known = Array.isArray(images) && images.length > 0 && images.every(i => Number.isInteger(i.width) && i.width > 0 && Number.isInteger(i.height) && i.height > 0);
+  return numericUsage({ ...output?.timings, ...(known ? { billing_megapixels: images.reduce((n, i) => n + Math.ceil(i.width * i.height / 1000000), 0) } : {}) });
+}
+
+function callEstimate(call) {
+  const cost = call.cost, rule = cost?.frozenRule;
+  // Only use a price captured at submission, never today's price for historical calls.
+  const raw = rule?.unit === "million_tokens" ? call.usage?.completion_tokens
+    : rule?.unit === "megapixel" ? call.usage?.billing_megapixels
+    : call.kind === "music" && rule?.unit === "second" ? call.usage?.billing_duration_seconds : undefined;
+  const quantity = rule?.unit === "million_tokens" ? raw / 1000000 : raw;
+  if (Number.isFinite(quantity) && quantity >= 0) return {
+    estimate: { amount: Number((rule.rate * quantity).toFixed(8)), currency: rule.currency, quantity, unit: rule.unit, rate: rule.rate, source: rule.source, priceRecordedAt: rule.recordedAt },
+    estimateStatus: "provider-usage-estimated-not-billed"
+  };
+  return { estimate: cost?.estimate || null, estimateStatus: cost?.estimateStatus || "historical-unknown" };
 }
 
 export function recordSettlement(state, callId, input) {
@@ -92,7 +123,7 @@ export function costReport(state, { projectId, creationId, shotId } = {}) {
     provider: priceProvider(call),
     providerTaskId: call.providerTaskId || null, requestDigest: call.requestDigest || null,
     at: call.createdAt || call.at || null, usage: numericUsage(call.usage), requestedQuantities: call.cost?.requestedQuantities || null,
-    estimate: call.cost?.estimate || null, estimateStatus: call.cost?.estimateStatus || "historical-unknown",
+    ...callEstimate(call),
     actual: call.cost?.settlements?.at(-1) || null, settlementHistory: call.cost?.settlements || [],
     billingStatus: call.cost?.settlements?.length ? "recorded-bill" : "unreconciled"
   }));
